@@ -1,17 +1,29 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --color-purple: #6534f5;
+  --color-purple-light: #cbbeff;
+  --color-orange: #ff782d;
+  --color-orange-dark: #ec6a1e;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: #0c0e12;
+  --color-surface: rgba(22, 24, 31, 0.9);
+  --color-input: #111318;
+  --color-border: #2e3240;
+  --color-header-bg: rgba(17, 19, 23, 0.8);
+  --color-header-border: rgba(40, 42, 46, 0.6);
+
+  --color-text: #ffffff;
+  --color-text-muted: rgba(202, 195, 217, 0.7);
+  --color-text-label: #cac3d9;
+  --color-text-placeholder: #64748b;
+  --color-icon-muted: #938ea2;
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
 }
 
 html {
   height: 100%;
+  color-scheme: dark;
 }
 
 html,
@@ -26,7 +38,7 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), "Plus Jakarta Sans", Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +54,12 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
 }

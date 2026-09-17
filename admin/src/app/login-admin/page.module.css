@@ -1,0 +1,36 @@
+.main {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 48px 32px;
+}
+
+.glowTop {
+  position: absolute;
+  z-index: 0;
+  top: -15%;
+  left: 50%;
+  width: min(550px, 90vw);
+  height: 70%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  filter: blur(64px);
+  background: linear-gradient(45deg, rgba(101, 52, 245, 0.15) 0%, rgba(236, 106, 30, 0.1) 50%, rgba(236, 106, 30, 0) 100%);
+  pointer-events: none;
+}
+
+.glowBottom {
+  position: absolute;
+  z-index: 0;
+  bottom: 40px;
+  right: 15%;
+  width: min(420px, 60vw);
+  height: 350px;
+  border-radius: 9999px;
+  filter: blur(64px);
+  background: rgba(101, 52, 245, 0.12);
+  pointer-events: none;
+}
