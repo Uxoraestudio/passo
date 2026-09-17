@@ -58,9 +58,9 @@ export default function Header() {
               />
             </svg>
           </button>
-          <a href="#" className={styles.loginButton}>
+          <Link href="/login-usuario/" className={styles.loginButton}>
             Iniciar sesión
-          </a>
+          </Link>
         </div>
       </div>
     </header>

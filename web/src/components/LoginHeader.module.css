@@ -1,0 +1,43 @@
+.header {
+  background: #fff;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.container {
+  max-width: 1280px;
+  height: 80px;
+  margin: 0 auto;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-sans), "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -1.2px;
+  text-transform: lowercase;
+  color: var(--color-gray-900);
+}
+
+.signupHint {
+  font-size: 14px;
+  color: var(--color-gray-500);
+}
+
+.signupHint a {
+  font-weight: 700;
+  color: var(--color-purple);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 24px;
+  }
+
+  .signupHint {
+    display: none;
+  }
+}
