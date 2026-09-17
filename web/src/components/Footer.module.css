@@ -1,0 +1,163 @@
+.footer {
+  background: #120721;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 65px 0 48px;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr 3fr;
+  gap: 40px;
+  padding-bottom: 65px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 32px;
+  letter-spacing: -0.7px;
+  text-transform: lowercase;
+  color: #fff;
+}
+
+.tagline {
+  padding-top: 8px;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+  line-height: 15px;
+}
+
+.socials {
+  display: flex;
+  gap: 16px;
+  padding-top: 12px;
+}
+
+.socialLink svg {
+  width: 20px;
+  height: 20px;
+}
+
+.col h4,
+.newsletterCol h4 {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+}
+
+.col ul {
+  list-style: none;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.col a {
+  font-size: 12px;
+  color: var(--color-gray-400);
+}
+
+.newsletterCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.newsletterCol p {
+  font-size: 12px;
+  line-height: 19.5px;
+  color: var(--color-gray-400);
+}
+
+.newsletterForm {
+  position: relative;
+  display: flex;
+  padding-top: 8px;
+}
+
+.newsletterForm input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 48px 13px 16px;
+  border: none;
+  border-radius: 9999px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--color-gray-900);
+  outline: none;
+}
+
+.newsletterForm input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.newsletterForm button {
+  position: absolute;
+  top: 10px;
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--color-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.newsletterForm button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.copyright {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.signature {
+  font-family: var(--font-script), "Caveat", cursive;
+  font-size: 30px;
+  line-height: 36px;
+  color: #fff;
+  filter: drop-shadow(0 1px 0.5px rgba(0, 0, 0, 0.06)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+}
+
+@media (max-width: 1024px) {
+  .top {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,26 @@
+.hero {
+  background: #140924;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 1280px;
+  height: 540px;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #140924 0%, rgba(20, 9, 36, 0) 50%, rgba(0, 0, 0, 0.4) 100%);
+}
