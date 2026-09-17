@@ -1,6 +1,7 @@
 .section {
   background: #fff;
   padding: 64px 0;
+  scroll-margin-top: 80px;
 }
 
 .container {

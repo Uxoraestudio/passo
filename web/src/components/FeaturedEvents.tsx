@@ -4,7 +4,7 @@ import styles from "./EventsGrid.module.css";
 
 export default function FeaturedEvents() {
   return (
-    <section className={styles.section}>
+    <section id="eventos-destacados" className={styles.section}>
       <div className={styles.container}>
         <div className={styles.headerRow}>
           <div>

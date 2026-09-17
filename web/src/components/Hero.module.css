@@ -1,26 +1,366 @@
 .hero {
-  background: #140924;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px 0;
-}
-
-.container {
   position: relative;
   width: 100%;
-  max-width: 1280px;
-  height: 540px;
+  height: clamp(480px, 62vw, 680px);
   overflow: hidden;
+  background: #140924;
+  touch-action: pan-y;
+}
+
+.hero:focus-visible {
+  outline: 3px solid var(--color-orange);
+  outline-offset: -3px;
+}
+
+.slides {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  user-select: none;
+}
+
+.slides:active {
+  cursor: grabbing;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.slide[data-active="true"] {
+  opacity: 1;
 }
 
 .image {
   object-fit: cover;
   object-position: center 30%;
+  animation: kenburns 12s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
 }
 
 .gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #140924 0%, rgba(20, 9, 36, 0) 50%, rgba(0, 0, 0, 0.4) 100%);
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(14, 9, 29, 0.92) 0%, rgba(14, 9, 29, 0.1) 42%, rgba(14, 9, 29, 0.35) 100%),
+    linear-gradient(to right, rgba(14, 9, 29, 0.55) 0%, rgba(14, 9, 29, 0) 45%);
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 200ms ease, transform 150ms ease;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.hero:hover .arrow,
+.hero:focus-within .arrow {
+  opacity: 0.9;
+}
+
+.arrow:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.12);
+}
+
+.arrowPrev {
+  left: 16px;
+}
+
+.arrowNext {
+  right: 16px;
+}
+
+.arrow svg {
+  width: 32px;
+  height: 32px;
+}
+
+@media (hover: none) {
+  .arrow {
+    opacity: 0.55;
+  }
+}
+
+.content {
+  position: absolute;
+  z-index: 1;
+  user-select: none;
+  left: 0;
+  right: 0;
+  bottom: 68px;
+  max-width: 640px;
+  padding: 0 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  animation: content-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 120, 45, 0.5);
+  background: rgba(255, 120, 45, 0.14);
+  backdrop-filter: blur(4px);
+  color: var(--color-orange);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.title {
+  font-weight: 800;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 500;
+  color: var(--color-gray-200);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-gray-300);
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.metaItem svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.metaDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-gray-400);
+}
+
+.ctaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 9999px;
+  background: var(--color-orange);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.25),
+    0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 20px -4px rgba(0, 0, 0, 0.3),
+    0 4px 6px -4px rgba(0, 0, 0, 0.2);
+}
+
+.cta svg {
+  width: 16px;
+  height: 16px;
+}
+
+.price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.85;
+}
+
+.progressRow {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1280px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.segments {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+
+.segment {
+  flex: 1;
+  max-width: 120px;
+  padding: 6px 0;
+  border: none;
+  background: none;
+}
+
+.segmentTrack {
+  position: relative;
+  display: block;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.segmentFill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: var(--color-orange);
+  border-radius: inherit;
+}
+
+.segmentFill[data-complete="true"] {
+  transform: scaleX(1);
+}
+
+.segmentFill:not([data-complete]) {
+  animation-name: segment-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.segmentFill[data-playing="false"] {
+  animation-play-state: paused;
+}
+
+@keyframes segment-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  background: rgba(20, 9, 36, 0.35);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.playButton svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    height: clamp(460px, 145vw, 600px);
+  }
+
+  .progressRow {
+    top: 14px;
+    padding: 0 20px;
+  }
+
+  .content {
+    padding: 0 20px;
+    bottom: 52px;
+    gap: 10px;
+  }
+
+  .ctaRow {
+    gap: 10px;
+  }
+
+  .cta {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .arrow {
+    width: 36px;
+    height: 36px;
+  }
+
+  .arrow svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .arrowPrev {
+    left: 6px;
+  }
+
+  .arrowNext {
+    right: 6px;
+  }
 }
