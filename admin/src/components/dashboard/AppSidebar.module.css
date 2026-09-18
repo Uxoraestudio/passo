@@ -1,0 +1,146 @@
+.sidebar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 256px;
+  min-height: 800px;
+  flex-shrink: 0;
+  background: #0f0b1e;
+  z-index: 2;
+}
+
+.branding {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px 24px 16px;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 32px;
+  text-transform: lowercase;
+  color: #fff;
+}
+
+.tagline {
+  font-weight: 600;
+  font-size: 9px;
+  line-height: 11.25px;
+  letter-spacing: 2.16px;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 12px 0;
+  overflow-y: auto;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.navLink[data-active="true"] {
+  background: #f95721;
+  color: #fff;
+  font-weight: 600;
+  box-shadow:
+    0 4px 6px -1px rgba(67, 20, 7, 0.2),
+    0 2px 4px -2px rgba(67, 20, 7, 0.2);
+}
+
+.navIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.bottomArt {
+  position: relative;
+  height: 256px;
+  overflow: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.bottomGlow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 100%, #8b5cf6 0%, #7747d2 15%, #6332ad 30%, #4f1c89 45%, #3b0764 60%, rgba(59, 7, 100, 0) 100%);
+}
+
+.bottomDots {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bottomGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #090514 0%, rgba(33, 13, 72, 0.8) 50%, rgba(33, 13, 72, 0) 100%);
+}
+
+.bottomContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.handwritten {
+  font-family: var(--font-script), "Caveat", cursive;
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 30px;
+  letter-spacing: 0.75px;
+  text-align: center;
+  color: #f1f5f9;
+  transform: rotate(-3deg);
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.06)) drop-shadow(0 4px 1.5px rgba(0, 0, 0, 0.07));
+}
+
+.bottomDivider {
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bottomLabels {
+  padding-top: 8px;
+  font-weight: 700;
+  font-size: 9px;
+  line-height: 14.6px;
+  letter-spacing: 1.98px;
+  text-transform: uppercase;
+  color: rgba(203, 213, 225, 0.8);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+}

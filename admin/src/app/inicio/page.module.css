@@ -1,0 +1,133 @@
+.shell {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+  background: #f4f5fa;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 1600px;
+  padding: 32px;
+}
+
+.heroRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: -0.75px;
+  color: #0f172a;
+}
+
+.pageSubtitle {
+  padding-top: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dateFilter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  font-size: 12px;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.dateFilterIcon {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.dateFilterChevron {
+  width: 14px;
+  height: 14px;
+  color: #94a3b8;
+}
+
+.createButton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #f95721;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(249, 115, 22, 0.2),
+    0 2px 4px -2px rgba(249, 115, 22, 0.2);
+  white-space: nowrap;
+}
+
+.createIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.kpiGrid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.bottomGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 1100px) {
+  .analyticsGrid,
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .main {
+    padding: 20px;
+    gap: 20px;
+  }
+}

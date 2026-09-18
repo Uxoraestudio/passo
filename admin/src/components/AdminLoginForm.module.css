@@ -183,6 +183,28 @@
   background: var(--color-border);
 }
 
+.error {
+  margin-top: -8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.1);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.demoHint {
+  padding-top: 4px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--color-text-placeholder);
+}
+
+.demoHint strong {
+  color: var(--color-text-label);
+  font-weight: 600;
+}
+
 .watermark {
   padding-top: 32px;
   font-family: var(--font-script), "Caveat", cursive;

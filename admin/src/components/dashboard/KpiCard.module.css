@@ -1,0 +1,102 @@
+.card {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  min-width: 0;
+  padding: 21px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.iconBox[data-bg="purple"] {
+  background: #5b32e6;
+  filter: drop-shadow(0 1px 1px rgba(168, 85, 247, 0.2));
+}
+
+.iconBox[data-bg="orange"] {
+  background: #f95721;
+  filter: drop-shadow(0 1px 1px rgba(249, 115, 22, 0.2));
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  color: #64748b;
+}
+
+.value {
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deltaRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+.delta {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: 700;
+  font-size: 12px;
+  line-height: 16px;
+  color: #059669;
+  white-space: nowrap;
+}
+
+.deltaIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.deltaCaption {
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 16.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1100px) {
+  .card {
+    flex: 1 1 calc(50% - 10px);
+  }
+}

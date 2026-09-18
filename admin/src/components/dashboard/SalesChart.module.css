@@ -1,0 +1,164 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  grid-column: span 2;
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0f172a;
+}
+
+.subtitle {
+  padding-top: 2px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #64748b;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 10px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.dot[data-color="purple"] {
+  background: #5b32e6;
+}
+
+.dot[data-color="orange"] {
+  background: #f95721;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f1f5f9;
+}
+
+.toggle button {
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-weight: 600;
+  font-size: 12px;
+  color: #475569;
+}
+
+.toggle button[data-active="true"] {
+  background: #5b32e6;
+  color: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.chartArea {
+  width: 100%;
+  height: 224px;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: #f1f5f9;
+  stroke-width: 1;
+}
+
+.axisLabelSales {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #5b32e6;
+}
+
+.axisLabelRevenue {
+  font-size: 11px;
+  font-weight: 600;
+  fill: #f95721;
+}
+
+.lineSales {
+  fill: none;
+  stroke: #5b32e6;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.lineRevenue {
+  fill: none;
+  stroke: #f95721;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.xAxis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 44px;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 16.5px;
+  color: #94a3b8;
+}
+
+@media (max-width: 1100px) {
+  .card {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 640px) {
+  .xAxis span:nth-child(even) {
+    display: none;
+  }
+}

@@ -1,10 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { login } from "@/lib/auth";
 import styles from "./AdminLoginForm.module.css";
 
 export default function AdminLoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (login(email, password)) {
+      setError("");
+      router.push("/inicio/");
+    } else {
+      setError("Correo o contraseña incorrectos.");
+    }
+  };
 
   return (
     <div className={styles.cardWrapper}>
@@ -34,7 +50,7 @@ export default function AdminLoginForm() {
           </p>
         </div>
 
-        <form className={styles.form}>
+        <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
             <label htmlFor="admin-email" className={styles.label}>
               Correo corporativo
@@ -55,6 +71,8 @@ export default function AdminLoginForm() {
                 name="email"
                 placeholder="admin@aforiq.com"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -80,6 +98,8 @@ export default function AdminLoginForm() {
                 name="password"
                 placeholder="••••••••••••"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
               <button
@@ -108,6 +128,8 @@ export default function AdminLoginForm() {
             </div>
           </div>
 
+          {error && <p className={styles.error}>{error}</p>}
+
           <button type="submit" className={styles.submit}>
             <span>Ingresar al Panel Admin</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -122,6 +144,10 @@ export default function AdminLoginForm() {
           </button>
 
           <div className={styles.divider} />
+
+          <p className={styles.demoHint}>
+            Acceso de prueba: <strong>admin@uxoraestudio.com</strong> / <strong>Uxora2026</strong>
+          </p>
         </form>
       </div>
 
