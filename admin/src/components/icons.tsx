@@ -357,3 +357,123 @@ export function SparkleIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function PaletteIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M4.66667 14C3.19489 14 2 12.8051 2 11.3333V3.33333C2 2.59745 2.59745 2 3.33333 2H6C6.73589 2 7.33333 2.59745 7.33333 3.33333V11.3333C7.33333 12.8051 6.13844 14 4.66667 14ZM4.66667 14H12.6667C13.4026 14 14 13.4026 14 12.6667V10C14 9.26411 13.4026 8.66667 12.6667 8.66667H11.1047M7.33333 4.89533L8.438 3.79067C8.95867 3.27016 9.80267 3.27016 10.3233 3.79067L12.2093 5.67667C12.7298 6.19733 12.7298 7.04133 12.2093 7.562L6.552 13.2187M4.66667 11.3333H4.67333"
+        stroke="currentColor"
+        strokeWidth="1.46667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function RestoreIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M2.33333 2.33333V5.25H2.67283M11.6305 6.41667C11.3652 4.30858 9.70949 2.64574 7.60257 2.37133C5.49564 2.09692 3.46927 3.2802 2.67283 5.25M2.67283 5.25H5.25M11.6667 11.6667V8.75H11.3277M11.3277 8.75C10.5302 10.7186 8.50429 11.9006 6.39806 11.6263C4.29183 11.352 2.63626 9.69053 2.3695 7.58333M11.3277 8.75H8.75"
+        stroke="currentColor"
+        strokeWidth="1.28333"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PublishIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M7 11.0833L12.25 12.25L7 1.75L1.75 12.25L7 11.0833V6.41667"
+        stroke="currentColor"
+        strokeWidth="1.28333"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TrashIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M11.0833 4.08333L10.5776 11.1662C10.5341 11.7768 10.026 12.25 9.41383 12.25H4.58617C3.97397 12.25 3.46588 11.7768 3.42242 11.1662L2.91667 4.08333M5.83333 6.41667V9.91667M8.16667 6.41667V9.91667M8.75 4.08333V2.33333C8.75 2.01138 8.48862 1.75 8.16667 1.75H5.83333C5.51138 1.75 5.25 2.01138 5.25 2.33333V4.08333M2.33333 4.08333H11.6667"
+        stroke="currentColor"
+        strokeWidth="1.16667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function EyedropperIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M12.952 10.2853C12.7659 10.0992 12.5288 9.9723 12.2707 9.92067L10.6793 9.60267C9.80709 9.42823 8.90159 9.54951 8.106 9.94733L7.894 10.0527C7.09841 10.4505 6.19291 10.5718 5.32067 10.3973L4.03333 10.14C3.59628 10.0527 3.14449 10.1895 2.82933 10.5047M5.33333 2.66667H10.6667L10 3.33333V6.78133C10.0001 7.13493 10.1406 7.47401 10.3907 7.724L13.724 11.0573C14.564 11.8973 13.9687 13.3333 12.7807 13.3333H3.21867C2.03067 13.3333 1.436 11.8973 2.276 11.0573L5.60933 7.724C5.8594 7.47401 5.99992 7.13493 6 6.78133V3.33333L5.33333 2.66667Z"
+        stroke="currentColor"
+        strokeWidth="1.33333"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ResetSmallIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M2.66667 2.66667V6H3.05467M13.292 7.33333C12.9888 4.92409 11.0966 3.02371 8.68865 2.71009C6.28073 2.39648 3.96488 3.7488 3.05467 6M3.05467 6H6M13.3333 13.3333V10H12.946M12.946 10C12.0345 12.2498 9.71918 13.6007 7.31207 13.2873C4.90495 12.9738 3.01287 11.0749 2.708 8.66667M12.946 10H10"
+        stroke="currentColor"
+        strokeWidth="1.33333"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function DesktopIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M5.6875 9.91667L5.25 11.6667L4.66667 12.25H9.33333L8.75 11.6667L8.3125 9.91667M1.75 7.58333H12.25M2.91667 9.91667H11.0833C11.7272 9.91667 12.25 9.3939 12.25 8.75V2.91667C12.25 2.27277 11.7272 1.75 11.0833 1.75H2.91667C2.27277 1.75 1.75 2.27277 1.75 2.91667V8.75C1.75 9.3939 2.27277 9.91667 2.91667 9.91667H5.6875"
+        stroke="currentColor"
+        strokeWidth="1.16667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function MobileIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M7 10.5H7.00583M4.66667 12.25H9.33333C9.97723 12.25 10.5 11.7272 10.5 11.0833V2.91667C10.5 2.27277 9.97723 1.75 9.33333 1.75H4.66667C4.02277 1.75 3.5 2.27277 3.5 2.91667V11.0833C3.5 11.7272 4.02277 12.25 4.66667 12.25Z"
+        stroke="currentColor"
+        strokeWidth="1.16667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CheckSmallIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path d="M2.9 7.22L5 9.32L11.1 3.22" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}

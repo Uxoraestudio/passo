@@ -1,0 +1,253 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1600px;
+  padding: 24px 32px 112px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.6px;
+  color: #110d29;
+}
+
+.subtitle {
+  padding-top: 2px;
+  font-weight: 500;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.restoreButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 17px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  font-weight: 700;
+  font-size: 12px;
+  color: #334155;
+}
+
+.restoreButton:disabled {
+  opacity: 0.4;
+}
+
+.publishButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-orange);
+  box-shadow: 0 1px 1px rgba(255, 87, 34, 0.3);
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.publishButton:disabled {
+  opacity: 0.5;
+}
+
+.actionIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+.leftColumn {
+  grid-column: span 7;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.rightColumn {
+  grid-column: span 5;
+  min-width: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  color: #0f172a;
+}
+
+.sectionSubtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: #64748b;
+}
+
+.logoGrid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.infoBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 15px;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  background: #eff4ff;
+  font-weight: 500;
+  font-size: 11px;
+  color: #1e40af;
+}
+
+.infoDot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 700;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.contrastBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 19px 15px 15px;
+  border-radius: 12px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: #fafbfe;
+}
+
+.contrastIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--color-success, #22b573);
+  flex-shrink: 0;
+}
+
+.contrastCheck {
+  width: 14px;
+  height: 14px;
+  color: #fff;
+}
+
+.contrastHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contrastHeading > span:first-child {
+  font-weight: 700;
+  font-size: 12px;
+  color: #1e293b;
+}
+
+.contrastBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #22b573;
+  color: #fff;
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.contrastBadgeIcon {
+  width: 8px;
+  height: 8px;
+}
+
+.contrastText {
+  padding-top: 1px;
+  font-size: 11px;
+  line-height: 16.5px;
+  color: #64748b;
+}
+
+@media (max-width: 1100px) {
+  .leftColumn,
+  .rightColumn {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 20px 96px;
+  }
+
+  .colorGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .logoGrid {
+    justify-content: center;
+  }
+}

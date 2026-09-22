@@ -8,6 +8,7 @@ import {
   ClockIcon,
   GearIcon,
   HomeIcon,
+  PaletteIcon,
   ScanIcon,
   TeamIcon,
   TicketIcon,
@@ -24,6 +25,7 @@ const navItems = [
   { href: "#", label: "Clientes", icon: UsersIcon },
   { href: "#", label: "Reportes", icon: ClockIcon },
   { href: "#", label: "Equipo", icon: TeamIcon },
+  { href: "/apariencia/", label: "Apariencia", icon: PaletteIcon },
   { href: "#", label: "Configuración", icon: GearIcon },
 ];
 
@@ -44,7 +46,7 @@ export default function AppSidebar() {
       <nav className={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = item.href === "/inicio/" && pathname === "/inicio/";
+          const active = item.href !== "#" && pathname === item.href;
           return (
             <Link
               key={item.label}
