@@ -1,7 +1,12 @@
 import Link from "next/link";
 import styles from "./Header.module.css";
 
-const navLinks = ["Eventos", "Ciudades", "Categorías", "Ayuda"];
+const navLinks = [
+  { label: "Eventos", href: "/eventos" },
+  { label: "Ciudades", href: "#" },
+  { label: "Categorías", href: "#" },
+  { label: "Ayuda", href: "#" },
+];
 
 export default function Header() {
   return (
@@ -13,9 +18,9 @@ export default function Header() {
           </Link>
           <nav className={styles.nav}>
             {navLinks.map((link) => (
-              <a key={link} href="#" className={styles.navLink}>
-                {link}
-              </a>
+              <Link key={link.label} href={link.href} className={styles.navLink}>
+                {link.label}
+              </Link>
             ))}
           </nav>
         </div>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import EventCard from "./EventCard";
 import { nearYouEvents } from "@/lib/events";
 import styles from "./EventsGrid.module.css";
@@ -33,7 +34,7 @@ export default function NearYou() {
                 />
               </svg>
             </button>
-            <a href="#" className={styles.link}>
+            <Link href="/eventos" className={styles.link}>
               <span>Ver todos</span>
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path
@@ -44,7 +45,7 @@ export default function NearYou() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </Link>
           </div>
         </div>
         <div className={styles.grid}>

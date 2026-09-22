@@ -1,3 +1,4 @@
+import Link from "next/link";
 import EventCard from "./EventCard";
 import { featuredEvents } from "@/lib/events";
 import styles from "./EventsGrid.module.css";
@@ -11,7 +12,7 @@ export default function FeaturedEvents() {
             <h2 className={styles.title}>Eventos destacados</h2>
             <p className={styles.subtitle}>Grandes experiencias te están esperando.</p>
           </div>
-          <a href="#" className={styles.link}>
+          <Link href="/eventos" className={styles.link}>
             <span>Ver todos los eventos</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
@@ -22,7 +23,7 @@ export default function FeaturedEvents() {
                 strokeLinejoin="round"
               />
             </svg>
-          </a>
+          </Link>
         </div>
         <div className={styles.grid}>
           {featuredEvents.map((event) => (

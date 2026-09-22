@@ -1,8 +1,11 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { EventCardData } from "@/lib/events";
 import styles from "./EventCard.module.css";
 
 export default function EventCard({ event }: { event: EventCardData }) {
+  const href = event.slug ? `/eventos/${event.slug}` : undefined;
+
   return (
     <article className={styles.card}>
       <div className={styles.thumb}>
@@ -31,7 +34,9 @@ export default function EventCard({ event }: { event: EventCardData }) {
       </div>
       <div className={styles.body}>
         <div>
-          <h3 className={styles.title}>{event.title}</h3>
+          <h3 className={styles.title}>
+            {href ? <Link href={href}>{event.title}</Link> : event.title}
+          </h3>
           <p className={styles.subtitle}>{event.subtitle}</p>
           <div className={styles.location}>
             <div className={styles.locationRow}>
@@ -55,7 +60,7 @@ export default function EventCard({ event }: { event: EventCardData }) {
               <span className={styles.priceLabel}>Desde</span>
               <span className={styles.priceValue}>{event.price}</span>
             </div>
-            <a href="#" className={styles.buyButton} aria-label="Ver entradas">
+            <Link href={href ?? "#"} className={styles.buyButton} aria-label="Ver entradas">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path
                   d="M6 3.33333L10.6667 8L6 12.6667"
@@ -65,7 +70,7 @@ export default function EventCard({ event }: { event: EventCardData }) {
                   strokeLinejoin="round"
                 />
               </svg>
-            </a>
+            </Link>
           </div>
           <div className={styles.tags}>
             {event.tags.map((tag) => (

@@ -1,0 +1,237 @@
+.card {
+  min-width: 0;
+  background: #fff;
+  border-radius: 20px;
+  border: 2px solid rgba(101, 52, 245, 0.25);
+  box-shadow: 0 20px 40px -20px rgba(101, 52, 245, 0.25);
+  padding: 20px;
+  scroll-margin-top: 90px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: var(--color-orange);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.bracket {
+  color: var(--color-orange);
+  font-weight: 800;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 19px;
+  color: var(--color-gray-900);
+}
+
+.tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.tier {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-gray-200);
+  cursor: pointer;
+}
+
+.tier input {
+  margin-top: 3px;
+  accent-color: var(--color-purple);
+  flex-shrink: 0;
+}
+
+.tierSelected {
+  border-color: var(--color-purple);
+  background: #f2edfe;
+}
+
+.tierBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tierTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tierName {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--color-gray-900);
+}
+
+.badgeOk,
+.badgeLow {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.badgeOk {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.badgeLow {
+  background: #ffe4d3;
+  color: var(--color-orange);
+}
+
+.tierDescription {
+  font-size: 12px;
+  color: var(--color-gray-500);
+}
+
+.tierPrice {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tierPrice span {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--color-gray-900);
+}
+
+.tierPrice small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gray-400);
+}
+
+.qtyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-100);
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-gray-700);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stepper button {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-gray-700);
+}
+
+.stepper span {
+  min-width: 18px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-gray-100);
+  border-bottom: 1px solid var(--color-gray-100);
+  margin-bottom: 18px;
+}
+
+.breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-gray-500);
+  font-weight: 500;
+}
+
+.breakdown > div span:last-child {
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.free {
+  color: var(--color-orange) !important;
+}
+
+.total {
+  padding-top: 10px;
+  border-top: 1px solid var(--color-gray-100);
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: var(--color-gray-900) !important;
+}
+
+.total span:last-child {
+  font-size: 19px !important;
+  color: var(--color-purple) !important;
+}
+
+.cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-orange);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 12px 20px -8px rgba(255, 120, 45, 0.5);
+}
+
+.cta svg {
+  width: 18px;
+  height: 18px;
+}
+
+.paymentNote {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--color-gray-400);
+  text-align: center;
+}

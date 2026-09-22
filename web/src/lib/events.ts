@@ -1,5 +1,6 @@
 export type EventCardData = {
   id: string;
+  slug?: string;
   image: string;
   alt: string;
   day: string;
@@ -114,6 +115,7 @@ export const nearYouEvents: EventCardData[] = [
   },
   {
     id: "lollapalooza",
+    slug: "lollapalooza-chile-2026",
     image: "/images/event-lollapalooza.jpg",
     alt: "Lollapalooza Chile 2025 - Mucho más que música",
     day: "22",
@@ -145,3 +147,5 @@ export const nearYouEvents: EventCardData[] = [
     ],
   },
 ];
+
+export const allEvents: EventCardData[] = [...featuredEvents, ...nearYouEvents];
