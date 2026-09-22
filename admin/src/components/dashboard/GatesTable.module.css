@@ -1,0 +1,175 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  color: #1c1a2a;
+}
+
+.link {
+  border: none;
+  background: none;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--color-purple);
+  white-space: nowrap;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.subtitle {
+  margin-top: 2px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #484456;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 8px 12px;
+  text-align: left;
+  background: #f7f1ff;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+  white-space: nowrap;
+}
+
+.table th:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.table th:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.table td {
+  padding: 12px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1ebff;
+}
+
+.table tr:hover td {
+  background: rgba(247, 241, 255, 0.4);
+}
+
+.gateCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.gateName {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  color: #1c1a2a;
+}
+
+.gateLocation {
+  font-size: 12px;
+  color: #797488;
+}
+
+.strong {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1c1a2a;
+  white-space: nowrap;
+}
+
+.capacityCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+}
+
+.percentLabel {
+  font-weight: 700;
+  font-size: 12px;
+  color: #1c1a2a;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: #ebe5fd;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-purple);
+  transition: width 700ms ease;
+}
+
+.progressFill[data-warning="true"] {
+  background: var(--color-orange);
+}
+
+.capacityMax {
+  font-size: 11px;
+  color: #797488;
+}
+
+.muted {
+  font-size: 13px;
+  color: #484456;
+  white-space: nowrap;
+}
+
+.statusPill {
+  display: inline-flex;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  background: rgba(78, 222, 163, 0.3);
+  color: #005438;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.statusPill[data-warning="true"] {
+  background: #ffe3d1;
+  color: var(--color-orange-dark);
+}

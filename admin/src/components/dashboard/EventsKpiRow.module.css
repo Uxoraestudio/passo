@@ -1,0 +1,155 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ebeef2;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04), 0 4px 12px rgba(12, 10, 26, 0.02);
+  transition: box-shadow 200ms ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 10px rgba(12, 10, 26, 0.08);
+}
+
+.blob {
+  position: absolute;
+  right: -24px;
+  bottom: -24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.blob[data-tone="purple"] {
+  background: var(--color-purple-light);
+}
+
+.blob[data-tone="teal"] {
+  background: #6ffbbe;
+}
+
+.blob[data-tone="orange"] {
+  background: #ffdbd1;
+}
+
+.blob[data-tone="neutral"] {
+  background: #ebe5fd;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.iconBox[data-tone="purple"] {
+  background: var(--color-purple-light);
+  color: var(--color-purple);
+}
+
+.iconBox[data-tone="teal"] {
+  background: #d3fbe9;
+  color: #005438;
+}
+
+.iconBox[data-tone="orange"] {
+  background: #ffdbd1;
+  color: var(--color-orange-dark);
+}
+
+.iconBox[data-tone="neutral"] {
+  background: #ebe5fd;
+  color: var(--color-purple);
+}
+
+.icon {
+  font-size: 20px;
+}
+
+.value {
+  position: relative;
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 36px;
+  letter-spacing: -0.02em;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.delta {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.delta[data-tone="purple"] {
+  background: var(--color-purple-light);
+  color: var(--color-purple);
+}
+
+.delta[data-tone="success"] {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.delta[data-tone="orange"] {
+  background: #ffdad6;
+  color: var(--color-orange-dark);
+}
+
+.caption {
+  font-weight: 500;
+  font-size: 12px;
+  color: #797488;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -18,10 +18,10 @@ import styles from "./AppSidebar.module.css";
 
 const navItems = [
   { href: "/inicio/", label: "Resumen", icon: HomeIcon },
-  { href: "#", label: "Eventos", icon: CalendarIcon },
+  { href: "/eventos/", label: "Eventos", icon: CalendarIcon },
   { href: "#", label: "Ventas", icon: BarsIcon },
-  { href: "#", label: "Entradas", icon: TicketIcon },
-  { href: "#", label: "Validación", icon: ScanIcon },
+  { href: "/entradas/", label: "Entradas", icon: TicketIcon },
+  { href: "/validar-ticket/", label: "Validación", icon: ScanIcon },
   { href: "#", label: "Clientes", icon: UsersIcon },
   { href: "#", label: "Reportes", icon: ClockIcon },
   { href: "#", label: "Equipo", icon: TeamIcon },

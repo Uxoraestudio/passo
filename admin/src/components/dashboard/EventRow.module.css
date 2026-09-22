@@ -1,0 +1,367 @@
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+  padding: 20px 20px 20px 24px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ebeef2;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+  transition: box-shadow 200ms ease;
+}
+
+.row:hover {
+  box-shadow: 0 4px 10px rgba(12, 10, 26, 0.08);
+}
+
+.leftBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+}
+
+.mainInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.thumb {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #ebe5fd;
+}
+
+.thumbImage {
+  object-fit: cover;
+}
+
+.thumbFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  color: #fff;
+}
+
+.thumbIcon {
+  font-size: 34px;
+}
+
+.badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.badge[data-tone="dark"] {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.badge[data-tone="secondary"] {
+  background: var(--color-orange);
+}
+
+.badge[data-tone="tertiary"] {
+  background: #006f4b;
+}
+
+.badge[data-tone="outline"] {
+  background: var(--color-icon-muted);
+}
+
+.info {
+  min-width: 0;
+  flex: 1;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.statusPill {
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.statusPill[data-tone="success"] {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.statusPill[data-tone="secondary"] {
+  background: #ffdad6;
+  color: var(--color-orange-dark);
+}
+
+.statusPill[data-tone="info"] {
+  background: var(--color-info-bg);
+  color: var(--color-info-dark);
+}
+
+.statusPill[data-tone="neutral"] {
+  background: #f1ebff;
+  color: #484456;
+}
+
+.meta {
+  font-size: 12px;
+  color: #797488;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.3;
+  color: #1c1a2a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  font-size: 14px;
+  color: #484456;
+}
+
+.subMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subMetaIcon {
+  font-size: 18px;
+}
+
+.subMetaIconDate {
+  color: var(--color-purple);
+}
+
+.subMetaIconVenue {
+  color: var(--color-orange);
+}
+
+.sideInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progressBlock {
+  width: 100%;
+}
+
+.progressLabels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.progressLabel {
+  color: #797488;
+}
+
+.progressValue {
+  font-weight: 700;
+  color: #1c1a2a;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  background: #f1ebff;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.progressFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #797488;
+}
+
+.progressFootRight {
+  font-weight: 600;
+}
+
+.metricBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.metricLabel {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.metricValue {
+  font-weight: 800;
+  font-size: 18px;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricCaption {
+  font-size: 12px;
+  color: #797488;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.actionButton[data-tone="neutral"] {
+  background: #ebe5fd;
+  color: #1c1a2a;
+}
+
+.actionButton[data-tone="neutral"]:hover {
+  background: #e5dff7;
+}
+
+.actionButton[data-tone="primary"] {
+  background: var(--color-purple);
+  color: #fff;
+}
+
+.actionButton[data-tone="primary"]:hover {
+  background: #4c00da;
+}
+
+.actionButton[data-tone="secondary"] {
+  background: var(--color-orange);
+  color: #fff;
+}
+
+.actionButton[data-tone="secondary"]:hover {
+  background: var(--color-orange-dark);
+}
+
+.actionButton[data-tone="info"] {
+  background: var(--color-info-dark);
+  color: #fff;
+}
+
+.actionButton[data-tone="info"]:hover {
+  background: #1e3a8a;
+}
+
+.actionIcon {
+  font-size: 16px;
+}
+
+.trailingButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #f1ebff;
+  color: #797488;
+  flex-shrink: 0;
+}
+
+.trailingButton:hover {
+  background: #e5dff7;
+  color: #1c1a2a;
+}
+
+.trailingButton[data-danger="true"]:hover {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.trailingIcon {
+  font-size: 18px;
+}
+
+@media (min-width: 1280px) {
+  .row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mainInfo {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sideInfo {
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    flex-shrink: 0;
+  }
+
+  .progressBlock {
+    width: 176px;
+  }
+
+  .metricBlock {
+    min-width: 140px;
+    text-align: right;
+  }
+}

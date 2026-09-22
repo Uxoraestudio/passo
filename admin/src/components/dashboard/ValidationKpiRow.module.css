@@ -1,0 +1,218 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.blob {
+  position: absolute;
+  right: -24px;
+  top: -24px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.blob[data-tone="purple"] {
+  background: rgba(101, 52, 245, 0.05);
+}
+
+.blob[data-tone="orange"] {
+  background: rgba(255, 87, 34, 0.05);
+}
+
+.blob[data-tone="teal"] {
+  background: rgba(0, 84, 56, 0.05);
+}
+
+.blob[data-tone="danger"] {
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.iconBox[data-tone="purple"] {
+  background: rgba(101, 52, 245, 0.1);
+  color: var(--color-purple);
+}
+
+.iconBox[data-tone="orange"] {
+  background: rgba(255, 87, 34, 0.1);
+  color: var(--color-orange);
+}
+
+.iconBox[data-tone="teal"] {
+  background: rgba(0, 84, 56, 0.1);
+  color: #005438;
+}
+
+.iconBox[data-tone="danger"] {
+  background: rgba(220, 38, 38, 0.1);
+  color: #ba1a1a;
+}
+
+.icon {
+  font-size: 20px;
+}
+
+.valueRow {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.value {
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.value[data-tone="danger"] {
+  color: #ba1a1a;
+}
+
+.valueSuffix {
+  font-size: 14px;
+  color: #797488;
+}
+
+.deltaPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.deltaPill[data-tone="teal"] {
+  background: rgba(78, 222, 163, 0.3);
+  color: #005438;
+}
+
+.deltaPill[data-tone="danger"] {
+  background: #ffdad6;
+  color: #ba1a1a;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 9999px;
+  background: #ebe5fd;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 700ms ease;
+}
+
+.progressFill[data-tone="purple"] {
+  background: var(--color-purple);
+}
+
+.captionText {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #484456;
+}
+
+.footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+}
+
+.footerLabel {
+  font-size: 12px;
+  color: #797488;
+}
+
+.footerValue {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.footerValue[data-tone="purple"] {
+  color: var(--color-purple);
+}
+
+.footerValue[data-tone="danger"] {
+  color: #ba1a1a;
+}
+
+.trendFooter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  color: #005438;
+}
+
+.trendFooter[data-tone="orange"] {
+  color: var(--color-orange-dark);
+}
+
+.trendIcon {
+  font-size: 16px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

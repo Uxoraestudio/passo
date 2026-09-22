@@ -1,0 +1,41 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 1600px;
+  padding: 24px 32px 112px;
+  background: #f8f9fa;
+}
+
+.consoleGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+
+.consoleCol {
+  grid-column: span 12;
+}
+
+.gatesCol {
+  grid-column: span 12;
+}
+
+@media (min-width: 1024px) {
+  .consoleCol {
+    grid-column: span 5;
+  }
+
+  .gatesCol {
+    grid-column: span 7;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 20px 96px;
+    gap: 20px;
+  }
+}

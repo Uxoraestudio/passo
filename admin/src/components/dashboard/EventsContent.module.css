@@ -1,0 +1,213 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1600px;
+  padding: 24px 32px 112px;
+  background: #f8f9fa;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #797488;
+  margin-bottom: 4px;
+}
+
+.eyebrowAccent {
+  color: var(--color-orange);
+}
+
+.title {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  max-width: 640px;
+  margin-top: 4px;
+  font-size: 15px;
+  color: #484456;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.exportGroup {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.06);
+}
+
+.exportButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: none;
+  font-weight: 600;
+  font-size: 13px;
+  color: #484456;
+}
+
+.exportButton:hover {
+  color: var(--color-purple);
+}
+
+.exportIcon {
+  font-size: 18px;
+}
+
+.createButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-orange);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.25);
+}
+
+.createButton:hover {
+  background: var(--color-orange-dark);
+}
+
+.createIcon {
+  font-size: 20px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.empty {
+  padding: 48px 24px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ebeef2;
+  text-align: center;
+  font-size: 14px;
+  color: #797488;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #ebeef2;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.paginationInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #484456;
+}
+
+.paginationInfo strong {
+  color: #1c1a2a;
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pageArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: #797488;
+}
+
+.pageArrow:hover:not(:disabled) {
+  background: #ebe5fd;
+}
+
+.pageArrow:disabled {
+  opacity: 0.4;
+}
+
+.pageArrowIcon {
+  font-size: 18px;
+}
+
+.pageNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-weight: 600;
+  font-size: 12px;
+  color: #484456;
+}
+
+.pageNumber:hover {
+  background: #ebe5fd;
+}
+
+.pageNumber[data-active="true"] {
+  background: var(--color-purple);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 20px 20px 96px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+}

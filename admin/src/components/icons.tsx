@@ -2,6 +2,10 @@ export type IconProps = {
   className?: string;
 };
 
+export function MaterialIcon({ name, className }: { name: string; className?: string }) {
+  return <span className={`material-symbols-outlined${className ? ` ${className}` : ""}`}>{name}</span>;
+}
+
 export function HomeIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>

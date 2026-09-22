@@ -3,6 +3,12 @@
   --color-purple-light: #cbbeff;
   --color-orange: #ff782d;
   --color-orange-dark: #ec6a1e;
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #065f46;
+  --color-info: #3b82f6;
+  --color-info-dark: #1e40af;
+  --color-info-bg: #eff6ff;
 
   --color-bg: #0c0e12;
   --color-surface: rgba(22, 24, 31, 0.9);
@@ -62,4 +68,19 @@ img {
 button {
   font: inherit;
   cursor: pointer;
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
 }
