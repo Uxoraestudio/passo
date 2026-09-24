@@ -25,6 +25,9 @@
 
   --background: var(--color-bg);
   --foreground: var(--color-text);
+
+  --font-sans: "Plus Jakarta Sans";
+  --font-script: "Caveat";
 }
 
 html {
