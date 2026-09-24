@@ -10,7 +10,7 @@ import {
   HomeIcon,
   PaletteIcon,
   ScanIcon,
-  TeamIcon,
+  ShieldPersonIcon,
   TicketIcon,
   UsersIcon,
 } from "@/components/icons";
@@ -19,14 +19,14 @@ import styles from "./AppSidebar.module.css";
 const navItems = [
   { href: "/inicio/", label: "Resumen", icon: HomeIcon },
   { href: "/eventos/", label: "Eventos", icon: CalendarIcon },
-  { href: "#", label: "Ventas", icon: BarsIcon },
+  { href: "/ventas/", label: "Ventas", icon: BarsIcon },
   { href: "/entradas/", label: "Entradas", icon: TicketIcon },
   { href: "/validar-ticket/", label: "Validación", icon: ScanIcon },
-  { href: "#", label: "Clientes", icon: UsersIcon },
-  { href: "#", label: "Reportes", icon: ClockIcon },
-  { href: "#", label: "Equipo", icon: TeamIcon },
+  { href: "/clientes/", label: "Clientes", icon: UsersIcon },
+  { href: "/reportes/", label: "Reportes", icon: ClockIcon },
+  { href: "/roles/", label: "Roles", icon: ShieldPersonIcon },
   { href: "/apariencia/", label: "Apariencia", icon: PaletteIcon },
-  { href: "#", label: "Configuración", icon: GearIcon },
+  { href: "/configuracion/", label: "Configuración", icon: GearIcon },
 ];
 
 export default function AppSidebar() {

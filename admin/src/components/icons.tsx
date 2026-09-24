@@ -1,9 +1,23 @@
+import type { CSSProperties } from "react";
+
 export type IconProps = {
   className?: string;
 };
 
-export function MaterialIcon({ name, className }: { name: string; className?: string }) {
-  return <span className={`material-symbols-outlined${className ? ` ${className}` : ""}`}>{name}</span>;
+export function MaterialIcon({
+  name,
+  className,
+  style,
+}: {
+  name: string;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <span className={`material-symbols-outlined${className ? ` ${className}` : ""}`} style={style}>
+      {name}
+    </span>
+  );
 }
 
 export function HomeIcon({ className }: IconProps) {
@@ -467,6 +481,34 @@ export function MobileIcon({ className }: IconProps) {
         d="M7 10.5H7.00583M4.66667 12.25H9.33333C9.97723 12.25 10.5 11.7272 10.5 11.0833V2.91667C10.5 2.27277 9.97723 1.75 9.33333 1.75H4.66667C4.02277 1.75 3.5 2.27277 3.5 2.91667V11.0833C3.5 11.7272 4.02277 12.25 4.66667 12.25Z"
         stroke="currentColor"
         strokeWidth="1.16667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ShieldPersonIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M10 2.5L16.6667 5V9.58333C16.6667 13.5417 13.8333 17.1417 10 18.3333C6.16667 17.1417 3.33333 13.5417 3.33333 9.58333V5L10 2.5Z"
+        stroke="currentColor"
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 11.25C11.1506 11.25 12.0833 10.3173 12.0833 9.16667C12.0833 8.01608 11.1506 7.08333 10 7.08333C8.84942 7.08333 7.91667 8.01608 7.91667 9.16667C7.91667 10.3173 8.84942 11.25 10 11.25Z"
+        stroke="currentColor"
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M6.875 14.375C7.30833 13.125 8.55 12.5 10 12.5C11.45 12.5 12.6917 13.125 13.125 14.375"
+        stroke="currentColor"
+        strokeWidth="1.66667"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

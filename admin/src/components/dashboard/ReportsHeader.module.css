@@ -1,0 +1,141 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #ebe5fd;
+  color: var(--color-purple);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.eyebrowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-orange);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.versionCaption {
+  font-size: 12px;
+  color: #797488;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 15px;
+  color: #484456;
+  max-width: 680px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.secondaryButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: #fff;
+  color: #1c1a2a;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.06);
+  white-space: nowrap;
+}
+
+.secondaryButton:hover {
+  background: #f7f1ff;
+}
+
+.secondaryIcon {
+  font-size: 18px;
+  color: #005438;
+}
+
+.primaryButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(101, 52, 245, 0.25);
+  white-space: nowrap;
+}
+
+.primaryButton:hover {
+  background: #4c00da;
+}
+
+.primaryIcon {
+  font-size: 18px;
+}
+
+.spinIcon {
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 1280px) {
+  .section {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}

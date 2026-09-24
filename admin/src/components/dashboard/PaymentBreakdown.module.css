@@ -1,0 +1,146 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: #1c1a2a;
+}
+
+.headerIcon {
+  font-size: 20px;
+  color: #797488;
+}
+
+.subtitle {
+  margin-top: 2px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: #797488;
+}
+
+.donutWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.donut {
+  width: 144px;
+  height: 144px;
+  transform: rotate(-90deg);
+}
+
+.donutCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.donutValue {
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  color: #1c1a2a;
+}
+
+.donutLabel {
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.listLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.listDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.listLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c1a2a;
+}
+
+.listRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.listPercent {
+  font-weight: 700;
+  font-size: 13px;
+  color: #1c1a2a;
+}
+
+.listAmount {
+  font-size: 11px;
+  color: #797488;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8f9fa;
+  font-size: 12px;
+  color: #484456;
+}
+
+.footerValue {
+  font-weight: 700;
+  color: #005438;
+}

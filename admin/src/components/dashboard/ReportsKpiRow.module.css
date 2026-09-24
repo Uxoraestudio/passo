@@ -1,0 +1,150 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.iconBox[data-tone="purple"] {
+  background: rgba(101, 52, 245, 0.1);
+  color: var(--color-purple);
+}
+
+.iconBox[data-tone="orange"] {
+  background: rgba(255, 87, 34, 0.1);
+  color: var(--color-orange);
+}
+
+.iconBox[data-tone="teal"] {
+  background: rgba(0, 84, 56, 0.1);
+  color: #005438;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.value {
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueSuffix {
+  font-size: 12px;
+  font-weight: 600;
+  color: #797488;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(78, 222, 163, 0.3);
+  color: #005438;
+  font-weight: 700;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.pillIcon {
+  font-size: 13px;
+}
+
+.captionText {
+  font-size: 11px;
+  color: #797488;
+}
+
+.progressFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 8px;
+  border-radius: 9999px;
+  background: #ebe5fd;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--color-orange);
+  transition: width 700ms ease;
+}
+
+.progressLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #484456;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

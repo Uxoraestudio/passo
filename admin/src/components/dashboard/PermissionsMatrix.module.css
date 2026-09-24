@@ -1,0 +1,269 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.headerIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(101, 52, 245, 0.1);
+  color: var(--color-purple);
+  flex-shrink: 0;
+}
+
+.headerIcon {
+  font-size: 20px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #797488;
+  max-width: 520px;
+}
+
+.roleSelectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 32px 0 12px;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.roleSelectLabel {
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+  white-space: nowrap;
+}
+
+.roleSelect {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1c1a2a;
+  appearance: none;
+  cursor: pointer;
+}
+
+.roleSelect:focus {
+  outline: none;
+}
+
+.roleSelectIcon {
+  position: absolute;
+  right: 10px;
+  font-size: 18px;
+  color: #797488;
+  pointer-events: none;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 10px 16px;
+  text-align: left;
+  background: #f8f9fa;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+  white-space: nowrap;
+}
+
+.center {
+  text-align: center !important;
+}
+
+.table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1ebff;
+}
+
+.table tr:hover td {
+  background: rgba(247, 241, 255, 0.4);
+}
+
+.moduleCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.moduleIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.moduleIconBox[data-tone="purple"] {
+  background: rgba(101, 52, 245, 0.1);
+  color: var(--color-purple);
+}
+
+.moduleIconBox[data-tone="orange"] {
+  background: rgba(255, 87, 34, 0.1);
+  color: var(--color-orange);
+}
+
+.moduleIconBox[data-tone="teal"] {
+  background: rgba(0, 84, 56, 0.1);
+  color: #005438;
+}
+
+.moduleIcon {
+  font-size: 18px;
+}
+
+.moduleName {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1c1a2a;
+  white-space: nowrap;
+}
+
+.moduleDescription {
+  font-size: 11px;
+  color: #797488;
+  white-space: nowrap;
+}
+
+.permissionCell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.permissionCell[data-level="granted"] {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.permissionCell[data-level="restricted"] {
+  background: #f1ebff;
+  color: #cac3d9;
+}
+
+.permissionIcon {
+  font-size: 18px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f1ebff;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #797488;
+}
+
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+}
+
+.legendDot[data-tone="granted"] {
+  background: var(--color-success);
+}
+
+.legendDot[data-tone="restricted"] {
+  background: #cac3d9;
+}
+
+.customizeLink {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--color-purple);
+}
+
+.customizeLink:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

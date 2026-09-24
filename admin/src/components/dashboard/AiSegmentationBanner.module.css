@@ -1,0 +1,71 @@
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.iconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(101, 52, 245, 0.12);
+  color: var(--color-purple);
+  flex-shrink: 0;
+}
+
+.icon {
+  font-size: 26px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #484456;
+}
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(101, 52, 245, 0.25);
+  white-space: nowrap;
+}
+
+.ctaButton:hover {
+  background: #4c00da;
+}
+
+.ctaIcon {
+  font-size: 18px;
+}

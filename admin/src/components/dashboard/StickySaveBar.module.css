@@ -1,0 +1,112 @@
+.bar {
+  position: sticky;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 30;
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #484456;
+  text-align: center;
+}
+
+.noteIcon {
+  font-size: 18px;
+  color: var(--color-orange);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+
+.discardButton {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: #ebe5fd;
+  color: #1c1a2a;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.discardButton:hover {
+  background: #e0d7ff;
+}
+
+.saveButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 24px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(101, 52, 245, 0.25);
+  white-space: nowrap;
+}
+
+.saveButton:hover {
+  background: #4c00da;
+}
+
+.saveButton:disabled {
+  opacity: 0.8;
+}
+
+.saveIcon {
+  font-size: 18px;
+}
+
+.spinIcon {
+  font-size: 18px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .bar {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 16px 24px;
+  }
+
+  .note {
+    text-align: left;
+  }
+
+  .actions {
+    width: auto;
+    justify-content: flex-end;
+  }
+}

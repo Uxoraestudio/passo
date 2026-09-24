@@ -1,0 +1,42 @@
+.card {
+  padding: 6px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+  overflow-x: auto;
+}
+
+.tabRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: max-content;
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #484456;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  background: #f7f1ff;
+}
+
+.tabButton[data-active="true"] {
+  background: var(--color-purple);
+  color: #fff;
+}
+
+.tabIcon {
+  font-size: 18px;
+}

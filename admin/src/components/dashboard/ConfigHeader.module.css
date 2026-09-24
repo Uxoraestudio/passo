@@ -1,0 +1,92 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.eyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eyebrow {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--color-orange);
+}
+
+.eyebrowAccent {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-purple);
+}
+
+.title {
+  margin-top: 4px;
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #484456;
+}
+
+.verificationBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.06);
+  white-space: nowrap;
+}
+
+.verificationLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #005438;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.verificationIcon {
+  font-size: 18px;
+}
+
+.verificationDivider {
+  color: #cac3d9;
+}
+
+.verificationId {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #1c1a2a;
+}
+
+@media (min-width: 900px) {
+  .section {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}

@@ -1,0 +1,158 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.tabButton {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #797488;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  color: #1c1a2a;
+}
+
+.tabButton[data-active="true"] {
+  background: #fff;
+  color: var(--color-purple);
+  box-shadow: 0 1px 2px rgba(12, 10, 26, 0.08);
+}
+
+.selectWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 260px;
+  flex: 1;
+  height: 40px;
+  padding: 0 32px 0 34px;
+  border-radius: 10px;
+  background: #f8f9fa;
+}
+
+.selectWrap:hover {
+  background: #f1ebff;
+}
+
+.selectIcon {
+  position: absolute;
+  left: 10px;
+  font-size: 18px;
+  color: #797488;
+}
+
+.select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c1a2a;
+  appearance: none;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.chevronIcon {
+  position: absolute;
+  right: 10px;
+  font-size: 18px;
+  color: #797488;
+  pointer-events: none;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.reconciliationNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #797488;
+  white-space: nowrap;
+}
+
+.reconciliationIcon {
+  font-size: 16px;
+  color: #005438;
+}
+
+.divider {
+  display: none;
+  width: 1px;
+  height: 16px;
+  background: #ebe5fd;
+}
+
+.filtersButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: none;
+  background: #f1ebff;
+  color: #1c1a2a;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.filtersButton:hover {
+  background: #e5dff7;
+}
+
+.filtersIcon {
+  font-size: 16px;
+}
+
+@media (min-width: 1024px) {
+  .card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .divider {
+    display: block;
+  }
+}
