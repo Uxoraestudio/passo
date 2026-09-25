@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./EstasDentroBanner.module.css";
 
 export default function EstasDentroBanner() {
@@ -25,7 +26,7 @@ export default function EstasDentroBanner() {
             <br />
             Más experiencias. Más personas. Más historias.
           </p>
-          <a href="#" className={styles.cta}>
+          <Link href="/eventos" className={styles.cta}>
             <span>Descubrir eventos</span>
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -36,7 +37,7 @@ export default function EstasDentroBanner() {
                 strokeLinejoin="round"
               />
             </svg>
-          </a>
+          </Link>
         </div>
         <div className={styles.graphicColumn}>
           <div className={styles.bracketBox}>

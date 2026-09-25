@@ -2,10 +2,28 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
-import { allEvents } from "@/lib/events";
+import { allEvents, cities, searchEvents } from "@/lib/events";
 import styles from "./page.module.css";
 
-export default function EventosPage() {
+const categoryOptions = ["Música", "Deportes", "Teatro", "Comedia", "Festivales", "Danza", "Fútbol"];
+
+export default async function EventosPage({ searchParams }: PageProps<"/eventos">) {
+  const params = await searchParams;
+  const q = typeof params?.q === "string" ? params.q : "";
+  const category = typeof params?.category === "string" ? params.category : "";
+  const city = typeof params?.city === "string" ? params.city : "Santiago";
+
+  let results = allEvents;
+  if (q) results = searchEvents(q, results);
+  if (category) {
+    results = results.filter((event) =>
+      event.tags.some((tag) => tag.label.toLowerCase() === category.toLowerCase())
+    );
+  }
+  if (city && city !== "Santiago") {
+    results = results.filter((event) => event.city === city);
+  }
+
   return (
     <>
       <Header />
@@ -20,7 +38,7 @@ export default function EventosPage() {
             Encuentra tu próxima <span className={styles.titleAccent}>experiencia</span>
           </h1>
           <p className={styles.subtitle}>Conciertos, deportes, teatro y mucho más, en un solo lugar.</p>
-          <form className={styles.searchForm}>
+          <form className={styles.searchForm} action="/eventos" method="get">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
                 d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
@@ -30,7 +48,7 @@ export default function EventosPage() {
                 strokeLinejoin="round"
               />
             </svg>
-            <input type="text" placeholder="Busca artistas, eventos o ciudades" />
+            <input type="text" name="q" defaultValue={q} placeholder="Busca artistas, eventos o ciudades" />
             <button type="submit">Buscar</button>
           </form>
         </section>
@@ -39,11 +57,15 @@ export default function EventosPage() {
           <div className={styles.resultsHeader}>
             <div>
               <h2 className={styles.resultsTitle}>
-                Eventos en <span className={styles.resultsCity}>Santiago</span>
+                Eventos en <span className={styles.resultsCity}>{city}</span>
               </h2>
-              <p className={styles.resultsCount}>Se encontraron {allEvents.length} eventos</p>
+              <p className={styles.resultsCount}>
+                {q
+                  ? `${results.length} resultados para "${q}"`
+                  : `Se encontraron ${results.length} eventos`}
+              </p>
             </div>
-            <details className={styles.filtersDetails}>
+            <details className={styles.filtersDetails} open={Boolean(category || (city && city !== "Santiago"))}>
               <summary className={styles.filtersToggle}>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
@@ -56,10 +78,11 @@ export default function EventosPage() {
                 </svg>
                 Filtros
               </summary>
-              <div className={styles.filtersPanel}>
+              <form className={styles.filtersPanel} action="/eventos" method="get">
+                {q && <input type="hidden" name="q" value={q} />}
                 <label className={styles.filterField}>
                   <span>Fecha</span>
-                  <select defaultValue="todas">
+                  <select name="date" defaultValue="todas">
                     <option value="todas">Todas las fechas</option>
                     <option value="hoy">Hoy</option>
                     <option value="finde">Este fin de semana</option>
@@ -68,50 +91,57 @@ export default function EventosPage() {
                 </label>
                 <label className={styles.filterField}>
                   <span>Ciudad</span>
-                  <select defaultValue="santiago">
-                    <option value="santiago">Santiago</option>
-                    <option value="vina">Viña del Mar</option>
-                    <option value="concepcion">Concepción</option>
-                    <option value="valparaiso">Valparaíso</option>
+                  <select name="city" defaultValue={city}>
+                    {cities.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label className={styles.filterField}>
                   <span>Categoría</span>
-                  <select defaultValue="todas">
+                  <select name="category" defaultValue={category || "todas"}>
                     <option value="todas">Todas las categorías</option>
-                    <option value="musica">Música</option>
-                    <option value="deportes">Deportes</option>
-                    <option value="teatro">Teatro</option>
-                    <option value="comedia">Comedia</option>
-                    <option value="festivales">Festivales</option>
+                    {categoryOptions.map((option) => (
+                      <option key={option} value={option.toLowerCase()}>
+                        {option}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label className={styles.filterToggleRow}>
                   <input type="checkbox" defaultChecked />
                   <span>Solo disponibles</span>
                 </label>
-              </div>
+                <button type="submit" className={styles.filterApply}>
+                  Aplicar filtros
+                </button>
+              </form>
             </details>
           </div>
 
-          <div className={styles.grid}>
-            {allEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          {results.length > 0 ? (
+            <div className={styles.grid}>
+              {results.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyState} role="status" aria-live="polite">
+              No encontramos eventos que coincidan con tu búsqueda. Prueba con otro término o
+              revisa <Link href="/eventos">todos los eventos</Link>.
+            </p>
+          )}
 
           <nav className={styles.pagination} aria-label="Paginación">
-            <button type="button" className={styles.pageArrow} aria-label="Página anterior">
+            <button type="button" className={styles.pageArrow} aria-label="Página anterior" disabled>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M15.75 19.5 8.25 12l7.5-7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <button type="button" className={`${styles.pageNumber} ${styles.pageNumberActive}`}>1</button>
-            <button type="button" className={styles.pageNumber}>2</button>
-            <button type="button" className={styles.pageNumber}>3</button>
-            <span className={styles.pageEllipsis}>...</span>
-            <button type="button" className={styles.pageNumber}>22</button>
-            <button type="button" className={styles.pageArrow} aria-label="Página siguiente">
+            <button type="button" className={styles.pageArrow} aria-label="Página siguiente" disabled>
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="m8.25 4.5 7.5 7.5-7.5 7.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

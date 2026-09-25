@@ -7,6 +7,7 @@ import styles from "./Hero.module.css";
 
 type Slide = {
   id: string;
+  slug?: string;
   image: string;
   alt: string;
   eyebrow: string;
@@ -54,6 +55,7 @@ export default function Hero() {
 
   const effectivePlaying = playing && !hovering;
   const active = slides[current];
+  const activeHref = active.slug ? `/eventos/${active.slug}` : "/eventos";
 
   const goTo = (index: number) => setCurrent((index + slides.length) % slides.length);
   const goPrev = () => goTo(current - 1);
@@ -149,42 +151,44 @@ export default function Hero() {
       </button>
 
       <div className={styles.content} key={current}>
-        <span className={styles.eyebrow}>{active.eyebrow}</span>
-        <h2 className={styles.title}>{active.title}</h2>
-        <p className={styles.subtitle}>{active.subtitle}</p>
-        <div className={styles.meta}>
-          <span className={styles.metaItem}>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M5 1.5V3.5M11 1.5V3.5M2.5 6.16667H13.5M3.83333 3H12.1667C12.9583 3 13.5833 3.625 13.5833 4.41667V12.75C13.5833 13.5417 12.9583 14.1667 12.1667 14.1667H3.83333C3.04167 14.1667 2.41667 13.5417 2.41667 12.75V4.41667C2.41667 3.625 3.04167 3 3.83333 3Z"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {active.date}
-          </span>
-          <span className={styles.metaDot} aria-hidden="true" />
-          <span className={styles.metaItem}>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M13.5 6.66667C13.5 10.6667 8 14.1667 8 14.1667C8 14.1667 2.5 10.6667 2.5 6.66667C2.5 3.72111 4.98858 1.5 8 1.5C11.0114 1.5 13.5 3.72111 13.5 6.66667Z"
-                stroke="currentColor"
-                strokeWidth="1.3"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8 8.5C9.10457 8.5 10 7.60457 10 6.5C10 5.39543 9.10457 4.5 8 4.5C6.89543 4.5 6 5.39543 6 6.5C6 7.60457 6.89543 8.5 8 8.5Z"
-                stroke="currentColor"
-                strokeWidth="1.3"
-              />
-            </svg>
-            {active.venue}
-          </span>
-        </div>
+        <Link href={activeHref} className={styles.infoLink} aria-label={`Ver detalle de ${active.title}`}>
+          <span className={styles.eyebrow}>{active.eyebrow}</span>
+          <h2 className={styles.title}>{active.title}</h2>
+          <p className={styles.subtitle}>{active.subtitle}</p>
+          <div className={styles.meta}>
+            <span className={styles.metaItem}>
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M5 1.5V3.5M11 1.5V3.5M2.5 6.16667H13.5M3.83333 3H12.1667C12.9583 3 13.5833 3.625 13.5833 4.41667V12.75C13.5833 13.5417 12.9583 14.1667 12.1667 14.1667H3.83333C3.04167 14.1667 2.41667 13.5417 2.41667 12.75V4.41667C2.41667 3.625 3.04167 3 3.83333 3Z"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {active.date}
+            </span>
+            <span className={styles.metaDot} aria-hidden="true" />
+            <span className={styles.metaItem}>
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M13.5 6.66667C13.5 10.6667 8 14.1667 8 14.1667C8 14.1667 2.5 10.6667 2.5 6.66667C2.5 3.72111 4.98858 1.5 8 1.5C11.0114 1.5 13.5 3.72111 13.5 6.66667Z"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 8.5C9.10457 8.5 10 7.60457 10 6.5C10 5.39543 9.10457 4.5 8 4.5C6.89543 4.5 6 5.39543 6 6.5C6 7.60457 6.89543 8.5 8 8.5Z"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                />
+              </svg>
+              {active.venue}
+            </span>
+          </div>
+        </Link>
         <div className={styles.ctaRow}>
-          <Link href="#eventos-destacados" className={styles.cta}>
+          <Link href={activeHref} className={styles.cta}>
             <span>Comprar entradas</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path

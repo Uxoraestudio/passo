@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./OrganizersBanner.module.css";
 
 const keywords = ["EVENTOS", "PERSONAS", "CULTURA", "COMUNIDAD"];
@@ -29,7 +30,7 @@ export default function OrganizersBanner() {
             <br />
             Nosotros nos encargamos de la tecnología, tú de la magia.
           </p>
-          <a href="#" className={styles.cta}>
+          <Link href="/organizadores" className={styles.cta}>
             <span>Publica tu evento</span>
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -40,7 +41,7 @@ export default function OrganizersBanner() {
                 strokeLinejoin="round"
               />
             </svg>
-          </a>
+          </Link>
         </div>
         <div className={styles.graphicColumn}>
           <div className={styles.hoodieBox}>

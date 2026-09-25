@@ -149,3 +149,26 @@ export const nearYouEvents: EventCardData[] = [
 ];
 
 export const allEvents: EventCardData[] = [...featuredEvents, ...nearYouEvents];
+
+export const cities = ["Santiago", "Viña del Mar", "Valparaíso", "Concepción", "Antofagasta"];
+
+export function eventHref(event: EventCardData): string {
+  return event.slug ? `/eventos/${event.slug}` : "/eventos";
+}
+
+export function searchEvents(query: string, source: EventCardData[] = allEvents): EventCardData[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return source.filter((event) => {
+    const haystack = [
+      event.title,
+      event.subtitle,
+      event.venue,
+      event.city,
+      ...event.tags.map((tag) => tag.label),
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
+  });
+}

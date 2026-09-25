@@ -109,7 +109,6 @@
 .content {
   position: absolute;
   z-index: 1;
-  user-select: none;
   left: 0;
   right: 0;
   bottom: 68px;
@@ -120,6 +119,27 @@
   align-items: flex-start;
   gap: 14px;
   animation: content-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.infoLink {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  color: inherit;
+  user-select: none;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: opacity 180ms ease;
+}
+
+.infoLink:hover {
+  opacity: 0.92;
+}
+
+.infoLink:focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 6px;
 }
 
 @keyframes content-in {
@@ -224,6 +244,20 @@
 .cta svg {
   width: 16px;
   height: 16px;
+  transition: transform 150ms ease;
+}
+
+.cta:hover svg {
+  transform: translateX(2px);
+}
+
+.cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .price {

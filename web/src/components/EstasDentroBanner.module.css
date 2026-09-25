@@ -80,14 +80,37 @@
   color: #fff;
   font-weight: 700;
   font-size: 16px;
+  cursor: pointer;
   box-shadow:
     0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 20px -4px rgba(0, 0, 0, 0.25),
+    0 4px 6px -4px rgba(0, 0, 0, 0.15);
+}
+
+.cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .cta svg {
   width: 20px;
   height: 20px;
+  transition: transform 150ms ease;
+}
+
+.cta:hover svg {
+  transform: translateX(2px);
 }
 
 .graphicColumn {

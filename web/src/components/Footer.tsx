@@ -1,10 +1,26 @@
 import Link from "next/link";
 import { getSiteSettings } from "@/lib/site-settings";
+import NewsletterForm from "./NewsletterForm";
 import styles from "./Footer.module.css";
 
-const exploreLinks = ["Eventos", "Ciudades", "Categorías", "Ayuda"];
-const aboutLinks = ["Nosotros", "Para organizadores", "Trabaja con nosotros", "Prensa"];
-const legalLinks = ["Términos y condiciones", "Política de privacidad", "Política de cookies", "Centro de ayuda"];
+const exploreLinks = [
+  { label: "Eventos", href: "/eventos" },
+  { label: "Ciudades", href: "/eventos" },
+  { label: "Categorías", href: "/eventos" },
+  { label: "Ayuda", href: "/proximamente?title=Ayuda" },
+];
+const aboutLinks = [
+  { label: "Nosotros", href: "/proximamente?title=Nosotros" },
+  { label: "Para organizadores", href: "/organizadores" },
+  { label: "Trabaja con nosotros", href: "/proximamente?title=Trabaja%20con%20nosotros" },
+  { label: "Prensa", href: "/proximamente?title=Prensa" },
+];
+const legalLinks = [
+  { label: "Términos y condiciones", href: "/proximamente?title=Términos%20y%20condiciones" },
+  { label: "Política de privacidad", href: "/proximamente?title=Política%20de%20privacidad" },
+  { label: "Política de cookies", href: "/proximamente?title=Política%20de%20cookies" },
+  { label: "Centro de ayuda", href: "/proximamente?title=Centro%20de%20ayuda" },
+];
 
 const socials = [
   {
@@ -49,7 +65,15 @@ export default async function Footer() {
             </p>
             <div className={styles.socials}>
               {socials.map((social) => (
-                <a key={social.name} href="#" aria-label={social.name} className={styles.socialLink}>
+                <a
+                  key={social.name}
+                  href="#"
+                  aria-label={social.name}
+                  title={social.name}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.socialLink}
+                >
                   <svg viewBox="0 0 20 20" fill="white" aria-hidden="true">
                     <path d={social.path} />
                   </svg>
@@ -61,8 +85,8 @@ export default async function Footer() {
             <h4>Explora</h4>
             <ul>
               {exploreLinks.map((link) => (
-                <li key={link}>
-                  <a href="#">{link}</a>
+                <li key={link.label}>
+                  <Link href={link.href}>{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -71,8 +95,8 @@ export default async function Footer() {
             <h4>Sobre AFORIQ</h4>
             <ul>
               {aboutLinks.map((link) => (
-                <li key={link}>
-                  <a href="#">{link}</a>
+                <li key={link.label}>
+                  <Link href={link.href}>{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -81,8 +105,8 @@ export default async function Footer() {
             <h4>Legal</h4>
             <ul>
               {legalLinks.map((link) => (
-                <li key={link}>
-                  <a href="#">{link}</a>
+                <li key={link.label}>
+                  <Link href={link.href}>{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -94,14 +118,7 @@ export default async function Footer() {
               <br />
               exclusivas en tu correo.
             </p>
-            <form className={styles.newsletterForm}>
-              <input type="email" placeholder="Tu correo electrónico" aria-label="Tu correo electrónico" />
-              <button type="submit" aria-label="Suscribirse al newsletter">
-                <svg viewBox="0 0 20 20" fill="white" aria-hidden="true">
-                  <path d="M19.5817 5.155C19.3517 4.28884 18.678 3.61064 17.8133 3.375C16.2542 2.95417 10 2.95417 10 2.95417C10 2.95417 3.74583 2.95417 2.18583 3.375C1.32161 3.61105 0.648284 4.28913 0.418333 5.155C0 6.725 0 10 0 10C0 10 0 13.275 0.418333 14.845C0.64828 15.7112 1.32203 16.3894 2.18667 16.625C3.74583 17.0458 10 17.0458 10 17.0458C10 17.0458 16.2542 17.0458 17.8142 16.625C18.6789 16.3895 19.3527 15.7113 19.5825 14.845C20 13.275 20 10 20 10C20 10 20 6.725 19.5817 5.155V5.155M7.95417 12.9733V7.02667L13.1817 10L7.95417 12.9733V12.9733" />
-                </svg>
-              </button>
-            </form>
+            <NewsletterForm />
           </div>
         </div>
         <div className={styles.bottom}>

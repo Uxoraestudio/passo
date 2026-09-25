@@ -1,13 +1,44 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import type { EventCardData } from "@/lib/events";
+import type { KeyboardEvent, MouseEvent } from "react";
+import { eventHref, type EventCardData } from "@/lib/events";
+import { useFavorites } from "@/lib/favorites";
 import styles from "./EventCard.module.css";
 
 export default function EventCard({ event }: { event: EventCardData }) {
-  const href = event.slug ? `/eventos/${event.slug}` : undefined;
+  const router = useRouter();
+  const href = eventHref(event);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(event.id);
+
+  const navigate = () => router.push(href);
+
+  const onCardClick = (clickEvent: MouseEvent<HTMLDivElement>) => {
+    const target = clickEvent.target as HTMLElement;
+    if (target.closest(`.${styles.favoriteButton}`)) return;
+    navigate();
+  };
+
+  const onCardKeyDown = (keyEvent: KeyboardEvent<HTMLDivElement>) => {
+    if (keyEvent.target !== keyEvent.currentTarget) return;
+    if (keyEvent.key === "Enter" || keyEvent.key === " ") {
+      keyEvent.preventDefault();
+      navigate();
+    }
+  };
 
   return (
-    <article className={styles.card}>
+    <div
+      className={styles.card}
+      role="link"
+      tabIndex={0}
+      aria-label={`${event.title} — ${event.subtitle}`}
+      onClick={onCardClick}
+      onKeyDown={onCardKeyDown}
+    >
       <div className={styles.thumb}>
         <Image
           src={event.image}
@@ -20,8 +51,18 @@ export default function EventCard({ event }: { event: EventCardData }) {
           <span className={styles.dateDay}>{event.day}</span>
           <span className={styles.dateMonth}>{event.month}</span>
         </div>
-        <button type="button" className={styles.favoriteButton} aria-label="Añadir a favoritos">
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <button
+          type="button"
+          className={styles.favoriteButton}
+          aria-label={favorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+          aria-pressed={favorite}
+          data-active={favorite}
+          onClick={(clickEvent) => {
+            clickEvent.stopPropagation();
+            toggleFavorite(event.id);
+          }}
+        >
+          <svg viewBox="0 0 16 16" fill={favorite ? "currentColor" : "none"} aria-hidden="true">
             <path
               d="M2.87867 4.212C2.31605 4.77461 1.99997 5.53768 1.99997 6.33333C1.99997 7.12899 2.31605 7.89206 2.87867 8.45467L8 13.576L13.1213 8.45467C14.2921 7.28387 14.2921 5.3828 13.1213 4.212C11.9505 3.0412 10.0495 3.0412 8.87867 4.212L8 5.09067L7.12133 4.212C6.55872 3.64938 5.79566 3.33331 5 3.33331C4.20434 3.33331 3.44128 3.64938 2.87867 4.212V4.212"
               stroke="white"
@@ -34,9 +75,7 @@ export default function EventCard({ event }: { event: EventCardData }) {
       </div>
       <div className={styles.body}>
         <div>
-          <h3 className={styles.title}>
-            {href ? <Link href={href}>{event.title}</Link> : event.title}
-          </h3>
+          <h3 className={styles.title}>{event.title}</h3>
           <p className={styles.subtitle}>{event.subtitle}</p>
           <div className={styles.location}>
             <div className={styles.locationRow}>
@@ -60,7 +99,7 @@ export default function EventCard({ event }: { event: EventCardData }) {
               <span className={styles.priceLabel}>Desde</span>
               <span className={styles.priceValue}>{event.price}</span>
             </div>
-            <Link href={href ?? "#"} className={styles.buyButton} aria-label="Ver entradas">
+            <span className={styles.buyButton} aria-hidden="true">
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path
                   d="M6 3.33333L10.6667 8L6 12.6667"
@@ -70,12 +109,13 @@ export default function EventCard({ event }: { event: EventCardData }) {
                   strokeLinejoin="round"
                 />
               </svg>
-            </Link>
+            </span>
           </div>
           <div className={styles.tags}>
             {event.tags.map((tag) => (
-              <span
+              <Link
                 key={tag.label}
+                href={`/eventos?category=${encodeURIComponent(tag.label.toLowerCase())}`}
                 className={`${styles.tag} ${
                   tag.variant === "primary"
                     ? styles.tagPrimary
@@ -83,13 +123,14 @@ export default function EventCard({ event }: { event: EventCardData }) {
                       ? styles.tagOrange
                       : styles.tagSecondary
                 }`}
+                onClick={(clickEvent) => clickEvent.stopPropagation()}
               >
                 {tag.label}
-              </span>
+              </Link>
             ))}
           </div>
         </div>
       </div>
-    </article>
+    </div>
   );
 }
