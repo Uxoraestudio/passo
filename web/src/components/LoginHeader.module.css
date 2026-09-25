@@ -22,6 +22,12 @@
   color: var(--color-gray-900);
 }
 
+.logoImage {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
 .signupHint {
   font-size: 14px;
   color: var(--color-gray-500);

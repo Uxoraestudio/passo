@@ -33,6 +33,12 @@
   color: #fff;
 }
 
+.logoImage {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
 .tagline {
   padding-top: 8px;
   font-weight: 800;

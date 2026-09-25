@@ -32,6 +32,12 @@
   color: #150b24;
 }
 
+.logoImage {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
 .nav {
   display: flex;
   align-items: center;

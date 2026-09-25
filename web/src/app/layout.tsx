@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Caveat } from "next/font/google";
+import { getSiteSettings } from "@/lib/site-settings";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -19,9 +20,22 @@ export const metadata: Metadata = {
   description: "Tu lugar en lo extraordinario. Entradas digitales, seguras y al instante.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const settings = await getSiteSettings();
+
+  const overrides = Object.entries({
+    "--color-purple": settings.colorPrimary,
+    "--color-orange": settings.colorSecondary,
+    "--background": settings.colorBgLight,
+    "--foreground": settings.colorTextPrimary,
+  })
+    .filter(([, value]) => value)
+    .map(([token, value]) => `${token}: ${value};`)
+    .join(" ");
+
   return (
     <html lang="es" className={`${plusJakartaSans.variable} ${caveat.variable}`}>
+      <head>{overrides && <style>{`:root { ${overrides} }`}</style>}</head>
       <body>{children}</body>
     </html>
   );

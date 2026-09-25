@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSiteSettings } from "@/lib/site-settings";
 import styles from "./Header.module.css";
 
 const navLinks = [
@@ -8,13 +9,20 @@ const navLinks = [
   { label: "Ayuda", href: "#" },
 ];
 
-export default function Header() {
+export default async function Header() {
+  const settings = await getSiteSettings();
+
   return (
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.left}>
           <Link href="/" className={styles.logo}>
-            passo
+            {settings.logoPrimaryUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={settings.logoPrimaryUrl} alt="Passo" className={styles.logoImage} />
+            ) : (
+              "passo"
+            )}
           </Link>
           <nav className={styles.nav}>
             {navLinks.map((link) => (

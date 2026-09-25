@@ -1,18 +1,45 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckSmallIcon, PublishIcon, RestoreIcon } from "@/components/icons";
-import { colorFields, defaultColors, logoSlots, type ColorFieldId } from "@/lib/appearance-data";
+import { colorFields, defaultColors, logoSlots, type ColorFieldId, type LogoSlotId } from "@/lib/appearance-data";
+import { getSiteSettings, saveSiteSettings } from "@/lib/site-settings";
 import ColorField from "./ColorField";
 import LogoCard from "./LogoCard";
 import AppearancePreview from "./AppearancePreview";
 import styles from "./AppearanceContent.module.css";
 
 type Colors = Record<ColorFieldId, string>;
+type Logos = Partial<Record<LogoSlotId, string>>;
 
 export default function AppearanceContent() {
   const [colors, setColors] = useState<Colors>(defaultColors);
+  const [logos, setLogos] = useState<Logos>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [published, setPublished] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      try {
+        const settings = await getSiteSettings();
+        if (!active) return;
+        setColors({ ...defaultColors, ...settings.colors });
+        setLogos(settings.logos);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const isDirty = useMemo(
     () => colorFields.some((field) => colors[field.id].toUpperCase() !== field.default.toUpperCase()),
@@ -24,13 +51,31 @@ export default function AppearanceContent() {
     setPublished(false);
   };
 
+  const setLogo = (id: LogoSlotId, url: string | null) => {
+    setLogos((prev) => {
+      const next = { ...prev };
+      if (url) next[id] = url;
+      else delete next[id];
+      return next;
+    });
+    setPublished(false);
+  };
+
   const handleRestore = () => {
     setColors(defaultColors);
     setPublished(false);
   };
 
-  const handlePublish = () => {
-    setPublished(true);
+  const handlePublish = async () => {
+    setSaving(true);
+    try {
+      await saveSiteSettings(colors, logos);
+      setPublished(true);
+    } catch {
+      window.alert("No pudimos publicar los cambios. Intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -45,9 +90,14 @@ export default function AppearanceContent() {
             <RestoreIcon className={styles.actionIcon} />
             Restaurar
           </button>
-          <button type="button" className={styles.publishButton} onClick={handlePublish} disabled={!isDirty && !published}>
+          <button
+            type="button"
+            className={styles.publishButton}
+            onClick={handlePublish}
+            disabled={loading || saving || (!isDirty && published)}
+          >
             {published ? <CheckSmallIcon className={styles.actionIcon} /> : <PublishIcon className={styles.actionIcon} />}
-            {published ? "Cambios publicados" : "Publicar cambios"}
+            {saving ? "Publicando..." : published ? "Cambios publicados" : "Publicar cambios"}
           </button>
         </div>
       </div>
@@ -61,7 +111,7 @@ export default function AppearanceContent() {
             </div>
             <div className={styles.logoGrid}>
               {logoSlots.map((slot) => (
-                <LogoCard key={slot.id} slot={slot} />
+                <LogoCard key={slot.id} slot={slot} value={logos[slot.id] ?? null} onChange={(url) => setLogo(slot.id, url)} />
               ))}
             </div>
             <div className={styles.infoBanner}>

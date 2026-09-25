@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getSiteSettings } from "@/lib/site-settings";
 import styles from "./Footer.module.css";
 
 const exploreLinks = ["Eventos", "Ciudades", "Categorías", "Ayuda"];
@@ -24,14 +25,22 @@ const socials = [
   },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  const settings = await getSiteSettings();
+  const darkLogo = settings.logoDarkUrl ?? settings.logoPrimaryUrl;
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.top}>
           <div className={styles.brandCol}>
             <Link href="/" className={styles.logo}>
-              passo
+              {darkLogo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={darkLogo} alt="Passo" className={styles.logoImage} />
+              ) : (
+                "passo"
+              )}
             </Link>
             <p className={styles.tagline}>
               TU LUGAR EN LO
