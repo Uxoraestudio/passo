@@ -1,11 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import styles from "./LoginForm.module.css";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError("");
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+    setSubmitting(false);
+    if (signInError) {
+      setError("Correo o contraseña incorrectos.");
+      return;
+    }
+
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <div className={styles.column}>
@@ -18,7 +43,7 @@ export default function LoginForm() {
         <p className={styles.subtitle}>Tu próxima gran experiencia te está esperando.</p>
       </div>
 
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <label className={styles.field}>
           <span className={styles.srOnly}>Correo electrónico</span>
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={styles.fieldIcon}>
@@ -30,7 +55,15 @@ export default function LoginForm() {
               strokeLinejoin="round"
             />
           </svg>
-          <input type="email" name="email" placeholder="tu@correo.com" autoComplete="email" required />
+          <input
+            type="email"
+            name="email"
+            placeholder="tu@correo.com"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
         </label>
 
         <label className={styles.field}>
@@ -49,6 +82,8 @@ export default function LoginForm() {
             name="password"
             placeholder="Contraseña"
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
           <button
@@ -102,8 +137,10 @@ export default function LoginForm() {
           </a>
         </div>
 
-        <button type="submit" className={styles.submit}>
-          <span>Iniciar sesión</span>
+        {error && <p className={styles.error}>{error}</p>}
+
+        <button type="submit" className={styles.submit} disabled={submitting}>
+          <span>{submitting ? "Ingresando..." : "Iniciar sesión"}</span>
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path
               d="M9.33333 3.33333L14 8M14 8L9.33333 12.6667M14 8H2"
@@ -162,7 +199,7 @@ export default function LoginForm() {
       </form>
 
       <p className={styles.signupHint}>
-        ¿No tienes cuenta? <a href="#">Crear cuenta</a>
+        ¿No tienes cuenta? <a href="/registro/">Crear cuenta</a>
       </p>
     </div>
   );

@@ -1,24 +1,26 @@
-const SESSION_KEY = "passo_admin_session";
+import { createClient } from "@/lib/supabase/client";
 
-// Credenciales de prueba temporales para enlazar login -> inicio mientras no hay backend.
-const DEMO_EMAIL = "admin@uxoraestudio.com";
-const DEMO_PASSWORD = "Uxora2026";
+export type LoginResult = { ok: true } | { ok: false; error: string };
 
-export function login(email: string, password: string): boolean {
-  const ok = email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
-  if (ok && typeof window !== "undefined") {
-    sessionStorage.setItem(SESSION_KEY, "1");
+export async function login(email: string, password: string): Promise<LoginResult> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.session) {
+    return { ok: false, error: "Correo o contraseña incorrectos." };
   }
-  return ok;
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.session.user.id).single();
+
+  if (!profile || (profile.role !== "admin" && profile.role !== "staff")) {
+    await supabase.auth.signOut();
+    return { ok: false, error: "Esta cuenta no tiene permisos de administrador." };
+  }
+
+  return { ok: true };
 }
 
-export function isAuthenticated(): boolean {
-  if (typeof window === "undefined") return false;
-  return sessionStorage.getItem(SESSION_KEY) === "1";
-}
-
-export function logout() {
-  if (typeof window !== "undefined") {
-    sessionStorage.removeItem(SESSION_KEY);
-  }
+export async function logout() {
+  const supabase = createClient();
+  await supabase.auth.signOut();
 }

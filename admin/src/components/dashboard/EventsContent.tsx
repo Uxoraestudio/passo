@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
-import { managedEvents, type EventStatus } from "@/lib/events-management-data";
+import { createEvent, deleteEvent, listEvents, updateEvent, type EventInput, type EventRecord, type EventStatus } from "@/lib/events-data";
 import EventsKpiRow from "./EventsKpiRow";
 import EventsFilterBar, { type FilterTab } from "./EventsFilterBar";
 import EventRow from "./EventRow";
+import EventFormDrawer from "./EventFormDrawer";
 import styles from "./EventsContent.module.css";
 
 const PAGE_SIZE = 5;
@@ -17,23 +18,60 @@ const statusesByTab: Record<Exclude<FilterTab, "todos">, EventStatus[]> = {
 };
 
 export default function EventsContent() {
+  const [events, setEvents] = useState<EventRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
   const [tab, setTab] = useState<FilterTab>("todos");
   const [venue, setVenue] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const [reloadToken, setReloadToken] = useState(0);
+  const refresh = useCallback(() => setReloadToken((t) => t + 1), []);
+
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const data = await listEvents();
+        if (active) setEvents(data);
+      } catch {
+        if (active) setLoadError("No pudimos cargar los eventos. Intenta recargar la página.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [reloadToken]);
+
+  const venues = useMemo(() => Array.from(new Set(events.map((e) => e.venue))).sort(), [events]);
+
   const counts = useMemo(
     () => ({
-      todos: managedEvents.length,
-      activos: managedEvents.filter((e) => statusesByTab.activos.includes(e.status)).length,
-      borradores: managedEvents.filter((e) => statusesByTab.borradores.includes(e.status)).length,
-      finalizados: managedEvents.filter((e) => statusesByTab.finalizados.includes(e.status)).length,
+      todos: events.length,
+      activos: events.filter((e) => statusesByTab.activos.includes(e.status)).length,
+      borradores: events.filter((e) => statusesByTab.borradores.includes(e.status)).length,
+      finalizados: events.filter((e) => statusesByTab.finalizados.includes(e.status)).length,
     }),
-    []
+    [events]
   );
 
   const filtered = useMemo(() => {
-    return managedEvents.filter((event) => {
+    return events.filter((event) => {
       if (tab !== "todos" && !statusesByTab[tab].includes(event.status)) return false;
       if (venue && event.venue !== venue) return false;
       if (search.trim()) {
@@ -42,7 +80,7 @@ export default function EventsContent() {
       }
       return true;
     });
-  }, [tab, venue, search]);
+  }, [events, tab, venue, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -61,6 +99,51 @@ export default function EventsContent() {
   const updateSearch = (next: string) => {
     setSearch(next);
     setPage(1);
+  };
+
+  const openCreate = () => {
+    setEditingEvent(null);
+    setFormError("");
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (event: EventRecord) => {
+    setEditingEvent(event);
+    setFormError("");
+    setDrawerOpen(true);
+  };
+
+  const closeDrawer = () => {
+    if (saving) return;
+    setDrawerOpen(false);
+  };
+
+  const handleSubmit = async (input: EventInput) => {
+    setSaving(true);
+    setFormError("");
+    try {
+      if (editingEvent) {
+        await updateEvent(editingEvent.id, input);
+      } else {
+        await createEvent(input);
+      }
+      setDrawerOpen(false);
+      refresh();
+    } catch {
+      setFormError("No pudimos guardar el evento. Revisa los datos e intenta de nuevo.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (event: EventRecord) => {
+    if (!window.confirm(`¿Eliminar "${event.title}"? Esta acción no se puede deshacer.`)) return;
+    try {
+      await deleteEvent(event.id);
+      refresh();
+    } catch {
+      window.alert("No pudimos eliminar el evento. Intenta de nuevo.");
+    }
   };
 
   return (
@@ -88,7 +171,7 @@ export default function EventsContent() {
               <span>PDF</span>
             </button>
           </div>
-          <button type="button" className={styles.createButton}>
+          <button type="button" className={styles.createButton} onClick={openCreate}>
             <MaterialIcon name="add_circle" className={styles.createIcon} />
             <span>Nuevo evento</span>
           </button>
@@ -105,60 +188,80 @@ export default function EventsContent() {
         onVenueChange={updateVenue}
         search={search}
         onSearchChange={updateSearch}
+        venues={venues}
       />
 
       <div className={styles.list}>
-        {pageItems.length > 0 ? (
-          pageItems.map((event) => <EventRow key={event.id} event={event} />)
+        {loading ? (
+          <div className={styles.empty}>Cargando eventos...</div>
+        ) : loadError ? (
+          <div className={styles.empty}>{loadError}</div>
+        ) : pageItems.length > 0 ? (
+          pageItems.map((event) => <EventRow key={event.id} event={event} onEdit={openEdit} onDelete={handleDelete} />)
         ) : (
-          <div className={styles.empty}>No se encontraron eventos con estos filtros.</div>
+          <div className={styles.empty}>
+            {events.length === 0 ? "Aún no tienes eventos. Crea el primero." : "No se encontraron eventos con estos filtros."}
+          </div>
         )}
       </div>
 
-      <div className={styles.pagination}>
-        <div className={styles.paginationInfo}>
-          <span>
-            Mostrando <strong>{filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}</strong> -{" "}
-            <strong>{Math.min(currentPage * PAGE_SIZE, filtered.length)}</strong> de{" "}
-            <strong>{filtered.length}</strong> eventos
-          </span>
-          <span>•</span>
-          <span>
-            Página {currentPage} de {totalPages}
-          </span>
-        </div>
-        <div className={styles.paginationButtons}>
-          <button
-            type="button"
-            className={styles.pageArrow}
-            disabled={currentPage === 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            aria-label="Página anterior"
-          >
-            <MaterialIcon name="chevron_left" className={styles.pageArrowIcon} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+      {filtered.length > 0 && (
+        <div className={styles.pagination}>
+          <div className={styles.paginationInfo}>
+            <span>
+              Mostrando <strong>{filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}</strong> -{" "}
+              <strong>{Math.min(currentPage * PAGE_SIZE, filtered.length)}</strong> de{" "}
+              <strong>{filtered.length}</strong> eventos
+            </span>
+            <span>•</span>
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+          </div>
+          <div className={styles.paginationButtons}>
             <button
-              key={p}
               type="button"
-              className={styles.pageNumber}
-              data-active={p === currentPage}
-              onClick={() => setPage(p)}
+              className={styles.pageArrow}
+              disabled={currentPage === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              aria-label="Página anterior"
             >
-              {p}
+              <MaterialIcon name="chevron_left" className={styles.pageArrowIcon} />
             </button>
-          ))}
-          <button
-            type="button"
-            className={styles.pageArrow}
-            disabled={currentPage === totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            aria-label="Página siguiente"
-          >
-            <MaterialIcon name="chevron_right" className={styles.pageArrowIcon} />
-          </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                type="button"
+                className={styles.pageNumber}
+                data-active={p === currentPage}
+                onClick={() => setPage(p)}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              type="button"
+              className={styles.pageArrow}
+              disabled={currentPage === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              aria-label="Página siguiente"
+            >
+              <MaterialIcon name="chevron_right" className={styles.pageArrowIcon} />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
+
+      {drawerOpen && (
+        <EventFormDrawer
+          key={editingEvent?.id ?? "new"}
+          event={editingEvent}
+          saving={saving}
+          error={formError}
+          onClose={closeDrawer}
+          onSubmit={handleSubmit}
+        />
+      )}
     </div>
   );
 }

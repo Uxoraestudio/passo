@@ -147,6 +147,15 @@
   color: var(--color-purple);
 }
 
+.error {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.06);
+  color: #b91c1c;
+  font-size: 13px;
+}
+
 .submit {
   display: flex;
   align-items: center;
@@ -166,6 +175,11 @@
 .submit svg {
   width: 16px;
   height: 16px;
+}
+
+.submit:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .divider {

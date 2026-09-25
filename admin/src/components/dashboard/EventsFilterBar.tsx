@@ -1,5 +1,4 @@
 import { MaterialIcon } from "@/components/icons";
-import { eventVenues } from "@/lib/events-management-data";
 import styles from "./EventsFilterBar.module.css";
 
 export type FilterTab = "todos" | "activos" | "borradores" | "finalizados";
@@ -12,6 +11,7 @@ export default function EventsFilterBar({
   onVenueChange,
   search,
   onSearchChange,
+  venues,
 }: {
   tab: FilterTab;
   onTabChange: (tab: FilterTab) => void;
@@ -20,6 +20,7 @@ export default function EventsFilterBar({
   onVenueChange: (venue: string) => void;
   search: string;
   onSearchChange: (search: string) => void;
+  venues: string[];
 }) {
   const tabs: { id: FilterTab; label: string; dot?: string }[] = [
     { id: "todos", label: `Todos (${counts.todos})` },
@@ -50,7 +51,7 @@ export default function EventsFilterBar({
           <MaterialIcon name="location_on" className={styles.selectIcon} />
           <select className={styles.select} value={venue} onChange={(e) => onVenueChange(e.target.value)}>
             <option value="">Todos los recintos</option>
-            {eventVenues.map((v) => (
+            {venues.map((v) => (
               <option key={v} value={v}>
                 {v}
               </option>

@@ -8,8 +8,8 @@ import styles from "./DashboardTopbar.module.css";
 export default function DashboardTopbar() {
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push("/login-admin/");
   };
 

@@ -1,28 +1,56 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/client";
 
-function subscribe() {
-  return () => {};
-}
-
-function getServerSnapshot() {
-  return false;
-}
+type Status = "checking" | "authorized" | "unauthorized";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const authed = useSyncExternalStore(subscribe, isAuthenticated, getServerSnapshot);
+  const [status, setStatus] = useState<Status>("checking");
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    const supabase = createClient();
+    let active = true;
+
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        if (active) setStatus("unauthorized");
+        return;
+      }
+
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single();
+
+      const authorized = profile?.role === "admin" || profile?.role === "staff";
+      if (active) setStatus(authorized ? "authorized" : "unauthorized");
+    };
+
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      checkSession();
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (status === "unauthorized") {
       router.replace("/login-admin/");
     }
-  }, [authed, router]);
+  }, [status, router]);
 
-  if (!authed) return null;
+  if (status !== "authorized") return null;
 
   return <>{children}</>;
 }

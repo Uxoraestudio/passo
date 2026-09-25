@@ -1,0 +1,162 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(12, 10, 26, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -8px 0 24px rgba(12, 10, 26, 0.15);
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1ebff;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1c1a2a;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #f8f9fa;
+  color: #484456;
+}
+
+.closeButton:hover {
+  background: #f1ebff;
+}
+
+.closeIcon {
+  font-size: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5dff7;
+  border-radius: 10px;
+  background: #f8f9fa;
+  font-size: 13px;
+  color: #1c1a2a;
+  font-family: inherit;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-purple);
+  background: #fff;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ffdad6;
+  color: #ba1a1a;
+  font-size: 13px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f1ebff;
+}
+
+.cancelButton {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: #f1ebff;
+  color: #1c1a2a;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.cancelButton:hover {
+  background: #e5dff7;
+}
+
+.saveButton {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--color-purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.saveButton:hover {
+  background: #4c00da;
+}
+
+.saveButton:disabled {
+  opacity: 0.7;
+}

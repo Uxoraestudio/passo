@@ -11,14 +11,18 @@ export default function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (login(email, password)) {
+    setSubmitting(true);
+    const result = await login(email, password);
+    setSubmitting(false);
+    if (result.ok) {
       setError("");
       router.push("/inicio/");
     } else {
-      setError("Correo o contraseña incorrectos.");
+      setError(result.error);
     }
   };
 
@@ -130,8 +134,8 @@ export default function AdminLoginForm() {
 
           {error && <p className={styles.error}>{error}</p>}
 
-          <button type="submit" className={styles.submit}>
-            <span>Ingresar al Panel Admin</span>
+          <button type="submit" className={styles.submit} disabled={submitting}>
+            <span>{submitting ? "Ingresando..." : "Ingresar al Panel Admin"}</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M9.33333 3.33333L14 8M14 8L9.33333 12.6667M14 8H2"
@@ -142,12 +146,6 @@ export default function AdminLoginForm() {
               />
             </svg>
           </button>
-
-          <div className={styles.divider} />
-
-          <p className={styles.demoHint}>
-            Acceso de prueba: <strong>admin@uxoraestudio.com</strong> / <strong>Uxora2026</strong>
-          </p>
         </form>
       </div>
 
