@@ -21,8 +21,8 @@ type Slide = {
 const slides: Slide[] = [
   {
     id: "dua-lipa",
-    image: "/images/hero-concierto.jpg",
-    alt: "Multitud viviendo un concierto en vivo",
+    image: "/images/hero-dua-lipa.jpg",
+    alt: "Multitud viviendo un concierto de pop en vivo con luces rosadas y moradas",
     eyebrow: "Evento destacado",
     title: "Dua Lipa",
     subtitle: "Radical Optimism Tour",
@@ -32,8 +32,8 @@ const slides: Slide[] = [
   },
   {
     id: "imagine-dragons",
-    image: "/images/hero-festival-luces.jpg",
-    alt: "Multitud con las manos arriba en un festival con luces moradas",
+    image: "/images/hero-imagine-dragons.jpg",
+    alt: "Banda de rock tocando en vivo entre humo y luces rojas, con el público haciendo el gesto de cuernos",
     eyebrow: "Próximamente",
     title: "Imagine Dragons",
     subtitle: "LOOM World Tour",
@@ -43,8 +43,8 @@ const slides: Slide[] = [
   },
   {
     id: "clasico-pacifico",
-    image: "/images/event-clasico-pacifico.jpg",
-    alt: "Clásico del Pacífico, Chile vs Perú, en el Estadio Nacional",
+    image: "/images/hero-clasico-pacifico.jpg",
+    alt: "Estadio de fútbol repleto y iluminado durante un partido nocturno",
     eyebrow: "Deporte en vivo",
     title: "Clásico del Pacífico",
     subtitle: "Chile vs Perú",
