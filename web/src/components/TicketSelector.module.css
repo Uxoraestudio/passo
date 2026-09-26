@@ -83,6 +83,13 @@
   flex-wrap: wrap;
 }
 
+.tierColorDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .tierName {
   font-weight: 800;
   font-size: 13.5px;
@@ -221,7 +228,15 @@
   color: #fff;
   font-weight: 800;
   font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
   box-shadow: 0 12px 20px -8px rgba(255, 120, 45, 0.5);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 24px -8px rgba(255, 120, 45, 0.6);
 }
 
 .cta svg {

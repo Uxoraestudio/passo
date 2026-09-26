@@ -1,26 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import type { TicketTier } from "@/lib/eventDetails";
 import styles from "./TicketSelector.module.css";
-
-type Tier = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  status: "disponible" | "pocas";
-};
-
-const tiers: Tier[] = [
-  { id: "general-3d", name: "Pase General 3 Días", description: "Acceso total Viernes, Sábado y Domingo", price: 168000, status: "disponible" },
-  { id: "vip", name: "Pase Lolla Lounge VIP", description: "Bar abierto, tarimas elevadas y sombra", price: 340000, status: "pocas" },
-  { id: "viernes", name: "Pase Diario Viernes", description: "Acceso único 20 de Marzo", price: 68000, status: "disponible" },
-  { id: "sabado", name: "Pase Diario Sábado", description: "Acceso único 21 de Marzo", price: 78000, status: "pocas" },
-];
 
 const currency = (value: number) => `$${value.toLocaleString("es-CL")} CLP`;
 
-export default function TicketSelector() {
+export default function TicketSelector({ tiers, slug }: { tiers: TicketTier[]; slug: string }) {
   const [selectedId, setSelectedId] = useState(tiers[0].id);
   const [qty, setQty] = useState(1);
 
@@ -59,6 +46,7 @@ export default function TicketSelector() {
             />
             <div className={styles.tierBody}>
               <div className={styles.tierTop}>
+                <span className={styles.tierColorDot} style={{ background: tier.color }} aria-hidden="true" />
                 <span className={styles.tierName}>{tier.name}</span>
                 <span className={tier.status === "pocas" ? styles.badgeLow : styles.badgeOk}>
                   {tier.status === "pocas" ? "Pocas un." : "Disponible"}
@@ -106,7 +94,7 @@ export default function TicketSelector() {
         </div>
       </div>
 
-      <button type="button" className={styles.cta}>
+      <Link href={`/eventos/${slug}/entradas?tier=${selected.id}&qty=${qty}`} className={styles.cta}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path
             d="M5 9V6.5a5 5 0 0110 0V9m-11 0h12a1 1 0 011 1v7a1 1 0 01-1 1H4a1 1 0 01-1-1v-7a1 1 0 011-1z"
@@ -120,7 +108,7 @@ export default function TicketSelector() {
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M11.6667 4.16667L17.5 10M17.5 10L11.6667 15.8333M17.5 10H2.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </button>
+      </Link>
 
       <p className={styles.paymentNote}>
         Aceptamos Webpay Plus, Redcompra, Débito y Crédito en hasta 6 cuotas sin interés.

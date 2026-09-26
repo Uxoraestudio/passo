@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./Hero.module.css";
@@ -41,26 +41,94 @@ const slides: Slide[] = [
     venue: "Estadio Nacional, Santiago",
     price: "Desde $ 52.000",
   },
+  {
+    id: "clasico-pacifico",
+    image: "/images/event-clasico-pacifico.jpg",
+    alt: "Clásico del Pacífico, Chile vs Perú, en el Estadio Nacional",
+    eyebrow: "Deporte en vivo",
+    title: "Clásico del Pacífico",
+    subtitle: "Chile vs Perú",
+    date: "05 DIC",
+    venue: "Estadio Nacional, Santiago",
+    price: "Desde $ 28.000",
+  },
 ];
 
 const AUTOPLAY_MS = 7000;
 const SWIPE_THRESHOLD = 48;
+const RING_RADIUS = 15;
+const RING_GAP_DEG = 10;
+
+function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
+  const rad = (angleDeg * Math.PI) / 180;
+  return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+}
+
+function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+  const start = polarPoint(cx, cy, r, startAngle);
+  const end = polarPoint(cx, cy, r, endAngle);
+  const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
+}
 
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [hovering, setHovering] = useState(false);
+  const [progress, setProgress] = useState(0);
   const dragStartX = useRef<number | null>(null);
   const dragDeltaX = useRef(0);
+  const progressRef = useRef(0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
 
-  const effectivePlaying = playing && !hovering;
+  const effectivePlaying = playing;
   const active = slides[current];
   const activeHref = active.slug ? `/eventos/${active.slug}` : "/eventos";
 
-  const goTo = (index: number) => setCurrent((index + slides.length) % slides.length);
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
+  // Single JS-driven timer for both the segment bars and the pause-button
+  // ring, instead of a CSS animation — avoids it getting stuck when paused
+  // mid-transition and re-resumed (CSS animation-play-state was unreliable
+  // across pause/resume/navigate combinations).
+  useEffect(() => {
+    if (!effectivePlaying) {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      startRef.current = null;
+      return;
+    }
+
+    startRef.current = performance.now() - progressRef.current * AUTOPLAY_MS;
+
+    const tick = (now: number) => {
+      if (startRef.current === null) return;
+      const elapsed = now - startRef.current;
+      const pct = Math.min(elapsed / AUTOPLAY_MS, 1);
+      setProgress(pct);
+      if (pct >= 1) {
+        setCurrent((prev) => (prev + 1) % slides.length);
+        setProgress(0);
+        startRef.current = now;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [effectivePlaying, current]);
+
+  const goTo = (index: number) => {
+    setCurrent((index + slides.length) % slides.length);
+    setProgress(0);
+  };
   const goPrev = () => goTo(current - 1);
   const goNext = () => goTo(current + 1);
-  const handleTimerEnd = () => setCurrent((prev) => (prev + 1) % slides.length);
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     dragStartX.current = event.clientX;
@@ -97,8 +165,6 @@ export default function Hero() {
       aria-roledescription="carousel"
       aria-label="Eventos destacados"
       tabIndex={0}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
       onKeyDown={onKeyDown}
     >
       <div
@@ -128,27 +194,6 @@ export default function Hero() {
         ))}
         <div className={styles.gradient} />
       </div>
-
-      <button
-        type="button"
-        className={`${styles.arrow} ${styles.arrowPrev}`}
-        onClick={goPrev}
-        aria-label="Diapositiva anterior"
-      >
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        className={`${styles.arrow} ${styles.arrowNext}`}
-        onClick={goNext}
-        aria-label="Siguiente diapositiva"
-      >
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
 
       <div className={styles.content} key={current}>
         <Link href={activeHref} className={styles.infoLink} aria-label={`Ver detalle de ${active.title}`}>
@@ -204,7 +249,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className={styles.progressRow}>
+      <div className={styles.bottomBar}>
         <div className={styles.segments} role="tablist" aria-label="Diapositivas del banner">
           {slides.map((slide, index) => (
             <button
@@ -220,34 +265,70 @@ export default function Hero() {
                 {index < current && <span className={styles.segmentFill} data-complete="true" />}
                 {index === current && (
                   <span
-                    key={current}
                     className={styles.segmentFill}
                     data-playing={effectivePlaying}
-                    style={{ animationDuration: `${AUTOPLAY_MS}ms` }}
-                    onAnimationEnd={handleTimerEnd}
+                    style={{ transform: `scaleX(${progress})` }}
                   />
                 )}
               </span>
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          className={styles.playButton}
-          onClick={() => setPlaying((v) => !v)}
-          aria-label={playing ? "Pausar transición" : "Reanudar transición"}
-        >
-          {playing ? (
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <rect x="3" y="2.5" width="3.2" height="11" rx="1" />
-              <rect x="9.8" y="2.5" width="3.2" height="11" rx="1" />
+
+        <div className={styles.controls}>
+          <button type="button" className={styles.navButton} onClick={goPrev} aria-label="Diapositiva anterior">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          ) : (
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-              <path d="M4 2.6a1 1 0 0 1 1.53-.85l8 5.4a1 1 0 0 1 0 1.7l-8 5.4A1 1 0 0 1 4 13.4V2.6Z" />
+          </button>
+
+          <button
+            type="button"
+            className={styles.playButton}
+            onClick={() => setPlaying((v) => !v)}
+            aria-label={playing ? "Pausar transición" : "Reanudar transición"}
+          >
+            <svg className={styles.playButtonRing} viewBox="0 0 36 36" aria-hidden="true">
+              {slides.map((slide, index) => {
+                const segmentSweep = 360 / slides.length - RING_GAP_DEG;
+                const segStart = index * (segmentSweep + RING_GAP_DEG);
+                const segEnd = segStart + segmentSweep;
+                const fillFraction = index < current ? 1 : index === current ? progress : 0;
+                const fillEnd = segStart + segmentSweep * fillFraction;
+                return (
+                  <g key={slide.id}>
+                    <path
+                      className={styles.playButtonRingTrack}
+                      d={describeArc(18, 18, RING_RADIUS, segStart, segEnd)}
+                    />
+                    {fillFraction > 0 && (
+                      <path
+                        className={styles.playButtonRingFill}
+                        d={describeArc(18, 18, RING_RADIUS, segStart, fillEnd)}
+                      />
+                    )}
+                  </g>
+                );
+              })}
             </svg>
-          )}
-        </button>
+            {playing ? (
+              <svg className={styles.playButtonIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <rect x="3" y="2.5" width="3.2" height="11" rx="1" />
+                <rect x="9.8" y="2.5" width="3.2" height="11" rx="1" />
+              </svg>
+            ) : (
+              <svg className={styles.playButtonIcon} viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                <path d="M4 2.6a1 1 0 0 1 1.53-.85l8 5.4a1 1 0 0 1 0 1.7l-8 5.4A1 1 0 0 1 4 13.4V2.6Z" />
+              </svg>
+            )}
+          </button>
+
+          <button type="button" className={styles.navButton} onClick={goNext} aria-label="Siguiente diapositiva">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   );

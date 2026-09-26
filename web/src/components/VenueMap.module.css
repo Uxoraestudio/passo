@@ -1,0 +1,56 @@
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.stage {
+  fill: #150b24;
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+}
+
+.stageLabel {
+  fill: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.band {
+  cursor: pointer;
+  outline: none;
+}
+
+.polygon {
+  transition: fill-opacity 180ms ease, stroke-width 180ms ease, transform 180ms ease;
+  transform-origin: center;
+}
+
+.band:hover .polygon {
+  fill-opacity: 0.85;
+}
+
+.band[data-active="true"] .polygon {
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+.band:focus-visible .polygon {
+  stroke: var(--color-purple);
+  stroke-width: 3;
+}
+
+.bandLabel {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.bandPrice {
+  fill: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}

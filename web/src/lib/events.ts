@@ -16,6 +16,7 @@ export type EventCardData = {
 export const featuredEvents: EventCardData[] = [
   {
     id: "dua-lipa",
+    slug: "dua-lipa",
     image: "/images/event-dua-lipa.jpg",
     alt: "Dua Lipa - Radical Optimism Tour",
     day: "24",
@@ -32,6 +33,7 @@ export const featuredEvents: EventCardData[] = [
   },
   {
     id: "imagine-dragons",
+    slug: "imagine-dragons",
     image: "/images/event-imagine-dragons.jpg",
     alt: "Imagine Dragons - LOOM World Tour",
     day: "14",
@@ -48,6 +50,7 @@ export const featuredEvents: EventCardData[] = [
   },
   {
     id: "clasico-pacifico",
+    slug: "clasico-pacifico",
     image: "/images/event-clasico-pacifico.jpg",
     alt: "Clásico del Pacífico - Chile vs Perú",
     day: "05",
@@ -58,12 +61,13 @@ export const featuredEvents: EventCardData[] = [
     city: "Santiago",
     price: "$ 28.000",
     tags: [
-      { label: "DEPORTE", variant: "orange" },
+      { label: "DEPORTES", variant: "orange" },
       { label: "FÚTBOL", variant: "secondary" },
     ],
   },
   {
     id: "rey-leon",
+    slug: "rey-leon",
     image: "/images/event-rey-leon.jpg",
     alt: "El Rey León - El musical que emociona",
     day: "18",
@@ -83,6 +87,7 @@ export const featuredEvents: EventCardData[] = [
 export const nearYouEvents: EventCardData[] = [
   {
     id: "los-bunkers",
+    slug: "los-bunkers",
     image: "/images/event-los-bunkers.jpg",
     alt: "Los Bunkers - Gira Ven Aquí",
     day: "28",
@@ -99,7 +104,8 @@ export const nearYouEvents: EventCardData[] = [
   },
   {
     id: "pedro-ruminot",
-    image: "/images/event-pedro-ruminot.jpg",
+    slug: "pedro-ruminot",
+    image: "/images/event-lollapalooza.jpg",
     alt: "Pedro Ruminot - Regreso al humor",
     day: "09",
     month: "NOV",
@@ -116,22 +122,23 @@ export const nearYouEvents: EventCardData[] = [
   {
     id: "lollapalooza",
     slug: "lollapalooza-chile-2026",
-    image: "/images/event-lollapalooza.jpg",
-    alt: "Lollapalooza Chile 2025 - Mucho más que música",
-    day: "22",
-    month: "NOV",
-    title: "Lollapalooza Chile 2025",
+    image: "/images/event-pedro-ruminot.jpg",
+    alt: "Lollapalooza Chile 2026 - Mucho más que música",
+    day: "20",
+    month: "MAR",
+    title: "Lollapalooza Chile 2026",
     subtitle: "Mucho más que música",
-    venue: "Parque O'Higgins",
+    venue: "Parque Bicentenario de Cerrillos",
     city: "Santiago",
     price: "$ 68.000",
     tags: [
-      { label: "FESTIVAL", variant: "primary" },
+      { label: "FESTIVALES", variant: "primary" },
       { label: "VARIOS GÉNEROS", variant: "secondary" },
     ],
   },
   {
     id: "ballet-nacional",
+    slug: "ballet-nacional",
     image: "/images/event-ballet-nacional.jpg",
     alt: "Ballet Nacional - El Lago de los Cisnes",
     day: "13",
@@ -154,6 +161,10 @@ export const cities = ["Santiago", "Viña del Mar", "Valparaíso", "Concepción"
 
 export function eventHref(event: EventCardData): string {
   return event.slug ? `/eventos/${event.slug}` : "/eventos";
+}
+
+export function eventBySlug(slug: string): EventCardData | undefined {
+  return allEvents.find((event) => event.slug === slug);
 }
 
 export function searchEvents(query: string, source: EventCardData[] = allEvents): EventCardData[] {

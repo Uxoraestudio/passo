@@ -1,5 +1,9 @@
 .hero {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
   background: linear-gradient(120deg, #17092c 0%, #350b5e 55%, #200735 100%);
   color: #fff;
   padding: 24px 16px 28px;
@@ -16,8 +20,13 @@
   pointer-events: none;
 }
 
-.breadcrumb {
+.heroContent {
   position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -32,7 +41,6 @@
 }
 
 .title {
-  position: relative;
   font-weight: 800;
   font-size: 28px;
   line-height: 1.15;
@@ -48,17 +56,16 @@
 }
 
 .subtitle {
-  position: relative;
   font-size: 14px;
   color: var(--color-gray-300);
   margin-bottom: 20px;
 }
 
 .searchForm {
-  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  max-width: 520px;
   background: #fff;
   border-radius: 16px;
   padding: 6px 6px 6px 14px;
@@ -109,10 +116,234 @@
   box-shadow: 0 0 0 3px rgba(255, 120, 45, 0.3), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 
+.heroBadge {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.heroBracket {
+  position: absolute;
+  top: -8px;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 72px;
+  color: var(--color-orange);
+  line-height: 1;
+}
+
+.heroBadge .heroBracket:first-child {
+  left: -6px;
+}
+
+.heroBadge .heroBracket:nth-child(3) {
+  right: -6px;
+}
+
+.heroHeart {
+  width: 88px;
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.heroHeart svg {
+  width: 34px;
+  height: 34px;
+  color: #fff;
+}
+
+.heroTagline {
+  margin-top: 10px;
+  font-family: var(--font-script);
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  transform: rotate(-3deg);
+}
+
 .resultsSection {
   padding: 24px 16px 48px;
   max-width: 1280px;
   margin: 0 auto;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar {
+  align-self: flex-start;
+  width: 100%;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid var(--color-gray-100);
+  background: #fff;
+  box-shadow: 0 4px 16px -8px rgba(17, 24, 39, 0.08);
+}
+
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sidebarHeader h2 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
+.clearFilters {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-purple);
+  cursor: pointer;
+}
+
+.clearFilters:hover {
+  text-decoration: underline;
+}
+
+.filterForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.filterField select,
+.filterField input {
+  border-radius: 10px;
+  border: 1px solid var(--color-gray-200);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--color-gray-700);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+  width: 100%;
+}
+
+.filterField select:hover,
+.filterField select:focus-visible,
+.filterField input:hover,
+.filterField input:focus-visible {
+  border-color: var(--color-purple);
+  outline: none;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.priceRow input {
+  cursor: text;
+  min-width: 0;
+}
+
+.priceDash {
+  color: var(--color-gray-400);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.filterToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-gray-900);
+  cursor: pointer;
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.toggleSwitch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.toggleTrack {
+  display: block;
+  width: 40px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--color-gray-200);
+  transition: background 180ms ease;
+}
+
+.toggleThumb {
+  display: block;
+  width: 18px;
+  height: 18px;
+  margin: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 180ms ease;
+}
+
+.toggleSwitch input:checked ~ .toggleTrack {
+  background: var(--color-purple);
+}
+
+.toggleSwitch input:checked ~ .toggleTrack .toggleThumb {
+  transform: translateX(18px);
+}
+
+.toggleSwitch input:focus-visible ~ .toggleTrack {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 2px;
+}
+
+.filterApply {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-purple);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 150ms ease;
+}
+
+.filterApply:hover {
+  transform: translateY(-1px);
+}
+
+.content {
+  min-width: 0;
 }
 
 .resultsHeader {
@@ -142,112 +373,41 @@
   margin-top: 2px;
 }
 
-.filtersDetails {
+.sortSelectWrap {
+  position: relative;
   align-self: flex-start;
 }
 
-.filtersToggle {
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+.sortSelectWrap select {
+  appearance: none;
   border-radius: 12px;
   border: 1px solid var(--color-gray-200);
   background: #fff;
-  font-weight: 700;
+  padding: 10px 36px 10px 14px;
   font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
   color: var(--color-gray-700);
   cursor: pointer;
   transition: border-color 150ms ease, color 150ms ease;
 }
 
-.filtersToggle:hover {
+.sortSelectWrap select:hover,
+.sortSelectWrap select:focus-visible {
   border-color: var(--color-purple);
   color: var(--color-purple);
+  outline: none;
 }
 
-.filtersToggle:focus-visible {
-  outline: 2px solid var(--color-purple);
-  outline-offset: 2px;
-}
-
-.filtersToggle::-webkit-details-marker {
-  display: none;
-}
-
-.filtersToggle svg {
+.sortSelectWrap svg {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 16px;
   height: 16px;
-}
-
-.filtersPanel {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px;
-  margin-top: 10px;
-  border-radius: 16px;
-  background: var(--color-gray-50);
-  border: 1px solid var(--color-gray-100);
-}
-
-.filterField {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--color-gray-900);
-}
-
-.filterField select {
-  border-radius: 10px;
-  border: 1px solid var(--color-gray-200);
-  padding: 8px 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-gray-700);
-  background: #fff;
-  cursor: pointer;
-  transition: border-color 150ms ease;
-}
-
-.filterField select:hover,
-.filterField select:focus-visible {
-  border-color: var(--color-purple);
-}
-
-.filterToggleRow {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-gray-700);
-}
-
-.filterToggleRow input {
-  cursor: pointer;
-  accent-color: var(--color-purple);
-}
-
-.filterApply {
-  grid-column: 1 / -1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background: var(--color-purple);
-  color: #fff;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: transform 150ms ease;
-}
-
-.filterApply:hover {
-  transform: translateY(-1px);
+  color: var(--color-gray-500);
+  pointer-events: none;
 }
 
 .grid {
@@ -362,6 +522,12 @@
   }
 }
 
+@media (min-width: 860px) {
+  .heroBadge {
+    display: flex;
+  }
+}
+
 @media (min-width: 1024px) {
   .hero {
     padding: 56px 48px;
@@ -369,6 +535,22 @@
 
   .title {
     font-size: 44px;
+  }
+
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 96px;
+  }
+
+  .content {
+    flex: 1;
   }
 
   .grid {
