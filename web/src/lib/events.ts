@@ -17,8 +17,8 @@ export const featuredEvents: EventCardData[] = [
   {
     id: "dua-lipa",
     slug: "dua-lipa",
-    image: "/images/event-dua-lipa.jpg",
-    alt: "Dua Lipa - Radical Optimism Tour",
+    image: "/images/hero-dua-lipa-v2.jpg",
+    alt: "Dua Lipa cantando en vivo sobre el escenario bajo luces azules",
     day: "24",
     month: "OCT",
     title: "Dua Lipa",
@@ -34,8 +34,8 @@ export const featuredEvents: EventCardData[] = [
   {
     id: "imagine-dragons",
     slug: "imagine-dragons",
-    image: "/images/event-imagine-dragons.jpg",
-    alt: "Imagine Dragons - LOOM World Tour",
+    image: "/images/hero-imagine-dragons-v2.jpg",
+    alt: "Vocalista de Imagine Dragons en vivo entre una explosión de confeti azul y turquesa",
     day: "14",
     month: "NOV",
     title: "Imagine Dragons",
@@ -51,7 +51,7 @@ export const featuredEvents: EventCardData[] = [
   {
     id: "clasico-pacifico",
     slug: "clasico-pacifico",
-    image: "/images/event-clasico-pacifico.jpg",
+    image: "/images/hero-clasico-pacifico-v3.jpg",
     alt: "Clásico del Pacífico - Chile vs Perú",
     day: "05",
     month: "DIC",

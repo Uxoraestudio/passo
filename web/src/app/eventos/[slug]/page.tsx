@@ -93,8 +93,6 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
   const heroImage = isLollapalooza ? "/images/lollapalooza-hero.jpg" : event.image;
   const prices = detail.tiers.map((tier) => tier.price);
   const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-  const priceRange = minPrice === maxPrice ? currency(minPrice) : `${currency(minPrice)} - ${currency(maxPrice)}`;
   const policies = isLollapalooza ? lollapaloozaPolicies : genericPolicies;
   const faqs = isLollapalooza ? lollapaloozaFaqs : genericFaqs;
   const relatedEvents = allEvents.filter((e) => e.id !== event.id).slice(0, 4);
@@ -103,21 +101,13 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
     <>
       <Header />
       <main className={styles.main}>
-        <div className={styles.breadcrumbRow}>
-          <nav className={styles.breadcrumb} aria-label="Migas de pan">
-            <span>Inicio</span>
-            <span>/</span>
-            <span>{detail.breadcrumbCategory}</span>
-            <span>/</span>
-            <span className={styles.breadcrumbCurrent}>{event.title}</span>
-          </nav>
-          <span className={styles.confirmedBadge}>
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M16.667 5 7.5 14.167 3.333 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Evento Oficial Confirmado
-          </span>
-        </div>
+        <nav className={styles.breadcrumb} aria-label="Migas de pan">
+          <span>Inicio</span>
+          <span>/</span>
+          <span>{detail.breadcrumbCategory}</span>
+          <span>/</span>
+          <span className={styles.breadcrumbCurrent}>{event.title}</span>
+        </nav>
 
         <section className={styles.hero}>
           <div className={styles.heroImageWrap}>
@@ -130,21 +120,10 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
                 <span className={styles.pulseDot} />
                 {detail.primaryBadge}
               </span>
-              {detail.badges.map((badge) => (
-                <span key={badge} className={styles.badgeGhost}>
-                  {badge}
-                </span>
-              ))}
             </div>
             <h1 className={styles.title}>{event.title}</h1>
             <p className={styles.description}>{event.subtitle}</p>
             <div className={styles.heroActions}>
-              <Link href={`/eventos/${slug}/entradas`} className={styles.primaryAction}>
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M5 9V6.5a5 5 0 0110 0V9m-11 0h12a1 1 0 011 1v7a1 1 0 01-1 1H4a1 1 0 01-1-1v-7a1 1 0 011-1z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Comprar Entradas
-              </Link>
               <button type="button" className={styles.ghostAction} aria-label="Guardar en favoritos">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -188,16 +167,6 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
               <p className={styles.infoLabel}>APERTURA DE PUERTAS</p>
               <p className={styles.infoValue}>{detail.doorsOpen}</p>
               <p className={styles.infoSub}>Cierre estimado: {detail.doorsClose}</p>
-            </div>
-          </div>
-          <div className={styles.infoItem}>
-            <div className={`${styles.infoIcon} ${styles.infoIconGreen}`}>
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V6m0 2v8m0 0v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" /></svg>
-            </div>
-            <div>
-              <p className={styles.infoLabel}>RANGO DE PRECIOS</p>
-              <p className={`${styles.infoValue} ${styles.infoValuePurple}`}>{priceRange}</p>
-              <p className={styles.infoSub}>+ Cargo oficial por servicio</p>
             </div>
           </div>
         </section>

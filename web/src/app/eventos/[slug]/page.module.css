@@ -7,14 +7,6 @@
   box-sizing: border-box;
 }
 
-.breadcrumbRow {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding-bottom: 10px;
-}
-
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -24,30 +16,12 @@
   color: var(--color-gray-500);
   overflow-x: auto;
   white-space: nowrap;
+  padding-bottom: 10px;
 }
 
 .breadcrumbCurrent {
   color: var(--color-gray-900);
   font-weight: 700;
-}
-
-.confirmedBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 11px;
-  border-radius: 9999px;
-  background: #ecfdf5;
-  color: #059669;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.confirmedBadge svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
 }
 
 .hero {
@@ -66,6 +40,7 @@
 
 .heroImage {
   object-fit: cover;
+  object-position: center 30%;
 }
 
 .heroGradient {
@@ -844,7 +819,7 @@
   }
 
   .infoRibbon {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .legend {
@@ -870,12 +845,6 @@
 
   .relatedGrid {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .breadcrumbRow {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
   }
 }
 
