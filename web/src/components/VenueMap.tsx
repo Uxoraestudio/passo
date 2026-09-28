@@ -29,12 +29,14 @@ function bandPoints(index: number) {
 
 export default function VenueMap({
   tiers,
-  activeIds,
+  activeIds = [],
   onSelect,
+  interactive = true,
 }: {
   tiers: TicketTier[];
-  activeIds: string[];
-  onSelect: (id: string) => void;
+  activeIds?: string[];
+  onSelect?: (id: string) => void;
+  interactive?: boolean;
 }) {
   const viewHeight = STAGE_Y + STAGE_H + 26 + tiers.length * (BAND_H + BAND_GAP) + 20;
 
@@ -43,7 +45,7 @@ export default function VenueMap({
       viewBox={`0 0 400 ${viewHeight}`}
       className={styles.svg}
       role="img"
-      aria-label="Mapa interactivo del recinto"
+      aria-label={interactive ? "Mapa interactivo del recinto" : "Mapa referencial del recinto"}
     >
       <rect
         x={CX - STAGE_W / 2}
@@ -59,28 +61,33 @@ export default function VenueMap({
 
       {tiers.map((tier, index) => {
         const { points, labelY } = bandPoints(index);
-        const active = activeIds.includes(tier.id);
+        const active = interactive && activeIds.includes(tier.id);
         return (
           <g
             key={tier.id}
             className={styles.band}
             data-active={active}
-            onClick={() => onSelect(tier.id)}
-            role="button"
-            tabIndex={0}
-            aria-pressed={active}
+            data-interactive={interactive}
+            onClick={interactive ? () => onSelect?.(tier.id) : undefined}
+            role={interactive ? "button" : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            aria-pressed={interactive ? active : undefined}
             aria-label={`${tier.name}, $${tier.price.toLocaleString("es-CL")}`}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onSelect(tier.id);
-              }
-            }}
+            onKeyDown={
+              interactive
+                ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelect?.(tier.id);
+                    }
+                  }
+                : undefined
+            }
           >
             <polygon
               points={points}
               fill={tier.color}
-              fillOpacity={active ? 0.92 : 0.5}
+              fillOpacity={!interactive ? 0.85 : active ? 0.92 : 0.5}
               stroke={active ? "#fff" : "transparent"}
               strokeWidth={active ? 3 : 0}
               className={styles.polygon}

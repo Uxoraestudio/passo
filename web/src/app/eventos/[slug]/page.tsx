@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import TicketSelector from "@/components/TicketSelector";
+import EventSectorPanel from "@/components/EventSectorPanel";
 import EventCard from "@/components/EventCard";
 import { pickImage, toEventCardData } from "@/lib/events";
 import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
@@ -145,18 +145,6 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
             </div>
             <h1 className={styles.title}>{event.title}</h1>
             <p className={styles.description}>{event.subtitle}</p>
-            <div className={styles.heroActions}>
-              <button type="button" className={styles.ghostAction} aria-label="Guardar en favoritos">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-              <button type="button" className={styles.ghostAction} aria-label="Compartir evento">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M8.684 13.342a4.5 4.5 0 100-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 0a4.5 4.5 0 108.98-.492 4.5 4.5 0 00-8.98.492zm8.98 8.492a4.5 4.5 0 10-8.98.492 4.5 4.5 0 008.98-.492z" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
           </div>
         </section>
 
@@ -193,22 +181,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
           </div>
         </section>
 
-        <div className={styles.layout}>
-          <div className={styles.content}>
-          <section className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <div className={styles.sectionEyebrow}>
-                <span className={styles.bracket}>[</span> Sobre el evento <span className={styles.bracket}>]</span>
-              </div>
-              <h2 className={styles.sectionTitle}>{detail.aboutLead}</h2>
-            </div>
-            {detail.aboutText.map((paragraph) => (
-              <p key={paragraph.slice(0, 24)} className={styles.aboutText}>
-                {paragraph}
-              </p>
-            ))}
-          </section>
-
+        <EventSectorPanel tiers={detail.tiers} slug={slug} aboutLead={detail.aboutLead} aboutText={detail.aboutText}>
           {isLollapalooza && (
             <section className={styles.sectionCard}>
               <div className={styles.sectionHeader}>
@@ -346,29 +319,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
               </div>
             </section>
           )}
-          </div>
-
-          <aside className={styles.sidebar}>
-            <TicketSelector key={slug} tiers={detail.tiers} slug={slug} />
-            <div className={styles.assistCard}>
-              <div className={styles.assistIcon}>
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M8.5 12.5a3.5 3.5 0 117 0M12 3a9 9 0 00-9 9v3a2 2 0 002 2h1v-6H5a7 7 0 0114 0h-1v6h1a2 2 0 002-2v-3a9 9 0 00-9-9z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className={styles.assistTitle}>¿Necesitas asistencia?</p>
-                <p className={styles.assistText}>Atención telefónica y WhatsApp 24/7 de nuestro Concierge de Eventos.</p>
-              </div>
-            </div>
-          </aside>
-        </div>
+        </EventSectorPanel>
 
         <section className={styles.relatedSection}>
           <div className={styles.relatedHeader}>
