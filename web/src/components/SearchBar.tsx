@@ -2,10 +2,10 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { eventHref, searchEvents } from "@/lib/events";
+import { eventHref, searchEvents, type EventCardData } from "@/lib/events";
 import styles from "./SearchBar.module.css";
 
-export default function SearchBar({ compact = false }: { compact?: boolean }) {
+export default function SearchBar({ compact = false, events }: { compact?: boolean; events: EventCardData[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -15,7 +15,7 @@ export default function SearchBar({ compact = false }: { compact?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
-  const results = useMemo(() => searchEvents(query).slice(0, 5), [query]);
+  const results = useMemo(() => searchEvents(query, events).slice(0, 5), [query, events]);
 
   if (query !== queryForActiveIndex) {
     setQueryForActiveIndex(query);

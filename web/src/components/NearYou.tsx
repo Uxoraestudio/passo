@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import EventCard from "./EventCard";
-import { cities, nearYouEvents } from "@/lib/events";
+import { cities, type EventCardData } from "@/lib/events";
 import styles from "./EventsGrid.module.css";
 
-export default function NearYou() {
+export default function NearYou({ events }: { events: EventCardData[] }) {
   const [city, setCity] = useState(cities[0]);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,7 +36,7 @@ export default function NearYou() {
     }
   };
 
-  const eventsForCity = city === "Santiago" ? nearYouEvents : [];
+  const eventsForCity = events.filter((event) => event.city === city);
 
   return (
     <section className={styles.section}>

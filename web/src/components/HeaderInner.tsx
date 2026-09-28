@@ -5,11 +5,12 @@ import Link from "next/link";
 import SearchBar from "./SearchBar";
 import LanguageSwitcher from "./LanguageSwitcher";
 import CategoriesMenu from "./CategoriesMenu";
+import type { EventCardData } from "@/lib/events";
 import styles from "./Header.module.css";
 
 const SCROLL_THRESHOLD = 24;
 
-export default function HeaderInner({ logoUrl }: { logoUrl: string | null }) {
+export default function HeaderInner({ logoUrl, events }: { logoUrl: string | null; events: EventCardData[] }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export default function HeaderInner({ logoUrl }: { logoUrl: string | null }) {
             <div className={styles.categoriesMobile}>
               <CategoriesMenu compact />
             </div>
-            <SearchBar compact={scrolled} />
+            <SearchBar compact={scrolled} events={events} />
             <LanguageSwitcher />
             <Link href="/login-usuario/" className={styles.accountButton} aria-label="Iniciar sesión">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">

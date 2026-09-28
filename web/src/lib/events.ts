@@ -1,3 +1,5 @@
+import type { Slide } from "@/components/Hero";
+
 export type EventCardData = {
   id: string;
   slug?: string;
@@ -13,149 +15,87 @@ export type EventCardData = {
   tags: { label: string; variant: "primary" | "secondary" | "orange" }[];
 };
 
-export const featuredEvents: EventCardData[] = [
-  {
-    id: "dua-lipa",
-    slug: "dua-lipa",
-    image: "/images/hero-dua-lipa-v2.jpg",
-    alt: "Dua Lipa cantando en vivo sobre el escenario bajo luces azules",
-    day: "24",
-    month: "OCT",
-    title: "Dua Lipa",
-    subtitle: "Radical Optimism Tour",
-    venue: "Movistar Arena",
-    city: "Santiago",
-    price: "$ 48.000",
-    tags: [
-      { label: "MÚSICA", variant: "primary" },
-      { label: "POP", variant: "secondary" },
-    ],
-  },
-  {
-    id: "imagine-dragons",
-    slug: "imagine-dragons",
-    image: "/images/hero-imagine-dragons-v2.jpg",
-    alt: "Vocalista de Imagine Dragons en vivo entre una explosión de confeti azul y turquesa",
-    day: "14",
-    month: "NOV",
-    title: "Imagine Dragons",
-    subtitle: "LOOM World Tour",
-    venue: "Estadio Nacional",
-    city: "Santiago",
-    price: "$ 52.000",
-    tags: [
-      { label: "MÚSICA", variant: "primary" },
-      { label: "ROCK", variant: "secondary" },
-    ],
-  },
-  {
-    id: "clasico-pacifico",
-    slug: "clasico-pacifico",
-    image: "/images/hero-clasico-pacifico-v3.jpg",
-    alt: "Clásico del Pacífico - Chile vs Perú",
-    day: "05",
-    month: "DIC",
-    title: "Clásico del Pacífico",
-    subtitle: "Chile vs Perú",
-    venue: "Estadio Nacional",
-    city: "Santiago",
-    price: "$ 28.000",
-    tags: [
-      { label: "DEPORTES", variant: "orange" },
-      { label: "FÚTBOL", variant: "secondary" },
-    ],
-  },
-  {
-    id: "rey-leon",
-    slug: "rey-leon",
-    image: "/images/event-rey-leon.jpg",
-    alt: "El Rey León - El musical que emociona",
-    day: "18",
-    month: "ENE",
-    title: "El Rey León",
-    subtitle: "El musical que emociona",
-    venue: "Teatro Municipal",
-    city: "Santiago",
-    price: "$ 32.000",
-    tags: [
-      { label: "TEATRO", variant: "primary" },
-      { label: "MUSICAL", variant: "secondary" },
-    ],
-  },
-];
+export type EventStatus = "borrador" | "en-venta" | "casi-agotado" | "proximamente" | "finalizado";
 
-export const nearYouEvents: EventCardData[] = [
-  {
-    id: "los-bunkers",
-    slug: "los-bunkers",
-    image: "/images/event-los-bunkers.jpg",
-    alt: "Los Bunkers - Gira Ven Aquí",
-    day: "28",
-    month: "OCT",
-    title: "Los Bunkers",
-    subtitle: "Gira Ven Aquí",
-    venue: "Movistar Arena",
-    city: "Santiago",
-    price: "$ 42.000",
-    tags: [
-      { label: "MÚSICA", variant: "primary" },
-      { label: "ROCK CHILENO", variant: "secondary" },
-    ],
-  },
-  {
-    id: "pedro-ruminot",
-    slug: "pedro-ruminot",
-    image: "/images/event-lollapalooza.jpg",
-    alt: "Pedro Ruminot - Regreso al humor",
-    day: "09",
-    month: "NOV",
-    title: "Pedro Ruminot",
-    subtitle: "Regreso al humor",
-    venue: "Teatro Caupolicán",
-    city: "Santiago",
-    price: "$ 26.000",
-    tags: [
-      { label: "COMEDIA", variant: "orange" },
-      { label: "STAND UP", variant: "secondary" },
-    ],
-  },
-  {
-    id: "lollapalooza",
-    slug: "lollapalooza-chile-2026",
-    image: "/images/event-pedro-ruminot.jpg",
-    alt: "Lollapalooza Chile 2026 - Mucho más que música",
-    day: "20",
-    month: "MAR",
-    title: "Lollapalooza Chile 2026",
-    subtitle: "Mucho más que música",
-    venue: "Parque Bicentenario de Cerrillos",
-    city: "Santiago",
-    price: "$ 68.000",
-    tags: [
-      { label: "FESTIVALES", variant: "primary" },
-      { label: "VARIOS GÉNEROS", variant: "secondary" },
-    ],
-  },
-  {
-    id: "ballet-nacional",
-    slug: "ballet-nacional",
-    image: "/images/event-ballet-nacional.jpg",
-    alt: "Ballet Nacional - El Lago de los Cisnes",
-    day: "13",
-    month: "DIC",
-    title: "Ballet Nacional",
-    subtitle: "El Lago de los Cisnes",
-    venue: "Teatro Municipal",
-    city: "Santiago",
-    price: "$ 24.000",
-    tags: [
-      { label: "TEATRO", variant: "primary" },
-      { label: "DANZA", variant: "secondary" },
-    ],
-  },
-];
+export type EventRow = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  venue: string;
+  city: string;
+  event_date: string;
+  image_url: string | null;
+  price_base: number;
+  capacity: number;
+  sold: number;
+  status: EventStatus;
+  show_in_hero: boolean;
+};
 
-export const allEvents: EventCardData[] = [...featuredEvents, ...nearYouEvents];
+export const FALLBACK_IMAGE = "/images/banner-crowd.jpg";
+const MONTHS_SHORT = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+export function formatPrice(priceBase: number): string {
+  return `$ ${priceBase.toLocaleString("es-CL")}`;
+}
+
+export function formatDay(isoDate: string): string {
+  const date = new Date(isoDate);
+  return String(date.getDate()).padStart(2, "0");
+}
+
+export function formatMonth(isoDate: string): string {
+  const date = new Date(isoDate);
+  return MONTHS_SHORT[date.getMonth()];
+}
+
+function statusTag(status: EventStatus): EventCardData["tags"] {
+  if (status === "casi-agotado") return [{ label: "CASI AGOTADO", variant: "orange" }];
+  if (status === "proximamente") return [{ label: "PRÓXIMAMENTE", variant: "secondary" }];
+  if (status === "finalizado") return [{ label: "FINALIZADO", variant: "secondary" }];
+  return [];
+}
+
+function statusEyebrow(status: EventStatus): string {
+  if (status === "casi-agotado") return "Últimas entradas";
+  if (status === "proximamente") return "Próximamente";
+  if (status === "finalizado") return "Evento finalizado";
+  return "Entradas disponibles";
+}
+
+export function toEventCardData(row: EventRow): EventCardData {
+  return {
+    id: row.id,
+    slug: row.slug,
+    image: row.image_url || FALLBACK_IMAGE,
+    alt: row.title,
+    day: formatDay(row.event_date),
+    month: formatMonth(row.event_date),
+    title: row.title,
+    subtitle: row.subtitle ?? "",
+    venue: row.venue,
+    city: row.city,
+    price: formatPrice(row.price_base),
+    tags: statusTag(row.status),
+  };
+}
+
+export function toHeroSlide(row: EventRow): Slide {
+  return {
+    id: row.id,
+    slug: row.slug,
+    image: row.image_url || FALLBACK_IMAGE,
+    alt: row.title,
+    eyebrow: statusEyebrow(row.status),
+    title: row.title,
+    subtitle: row.subtitle ?? "",
+    date: `${formatDay(row.event_date)} ${formatMonth(row.event_date)}`,
+    venue: `${row.venue}, ${row.city}`,
+    price: `Desde ${formatPrice(row.price_base)}`,
+  };
+}
 
 export const cities = ["Santiago", "Viña del Mar", "Valparaíso", "Concepción", "Antofagasta"];
 
@@ -163,11 +103,7 @@ export function eventHref(event: EventCardData): string {
   return event.slug ? `/eventos/${event.slug}` : "/eventos";
 }
 
-export function eventBySlug(slug: string): EventCardData | undefined {
-  return allEvents.find((event) => event.slug === slug);
-}
-
-export function searchEvents(query: string, source: EventCardData[] = allEvents): EventCardData[] {
+export function searchEvents(query: string, source: EventCardData[]): EventCardData[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   return source.filter((event) => {

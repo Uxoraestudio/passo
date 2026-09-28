@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,9 +6,32 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TicketSelector from "@/components/TicketSelector";
 import EventCard from "@/components/EventCard";
-import { allEvents, eventBySlug } from "@/lib/events";
-import { eventDetails, genericFaqs, genericPolicies } from "@/lib/eventDetails";
+import { toEventCardData } from "@/lib/events";
+import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
+import { defaultEventDetail, eventDetails, genericFaqs, genericPolicies } from "@/lib/eventDetails";
+import { getSeoPage } from "@/lib/seo-settings";
 import styles from "./page.module.css";
+
+export async function generateMetadata({ params }: PageProps<"/eventos/[slug]">): Promise<Metadata> {
+  const { slug } = await params;
+  const row = await getEventRowBySlug(slug);
+  if (!row) return {};
+
+  const template = await getSeoPage("evento_detalle");
+  const title = `${row.title} | Passo`;
+  const description = row.subtitle || row.description || template.metaDescription || "Compra tus entradas en Passo.";
+  const image = row.image_url || template.ogImageUrl;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description: template.ogDescription || description,
+      images: image ? [image] : [],
+    },
+  };
+}
 
 const headliners = [
   { stage: "ESCENARIO BANCO DE CHILE", name: "Arctic Monkeys", tag: "Rock Alternativo · Headliner Viernes", note: "Set Especial 90 min" },
@@ -76,26 +100,24 @@ const lollapaloozaFaqs = [
 
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 
-export function generateStaticParams() {
-  return allEvents.filter((event) => event.slug).map((event) => ({ slug: event.slug as string }));
-}
-
 export default async function EventDetailPage({ params }: PageProps<"/eventos/[slug]">) {
   const { slug } = await params;
-  const event = eventBySlug(slug);
-  const detail = event ? eventDetails[event.id] : undefined;
+  const row = await getEventRowBySlug(slug);
 
-  if (!event || !detail) {
+  if (!row) {
     notFound();
   }
 
-  const isLollapalooza = event.id === "lollapalooza";
+  const event = toEventCardData(row);
+  const detail = eventDetails[row.id] ?? defaultEventDetail(row);
+
+  const isLollapalooza = row.id === "lollapalooza";
   const heroImage = isLollapalooza ? "/images/lollapalooza-hero.jpg" : event.image;
   const prices = detail.tiers.map((tier) => tier.price);
   const minPrice = Math.min(...prices);
   const policies = isLollapalooza ? lollapaloozaPolicies : genericPolicies;
   const faqs = isLollapalooza ? lollapaloozaFaqs : genericFaqs;
-  const relatedEvents = allEvents.filter((e) => e.id !== event.id).slice(0, 4);
+  const relatedEvents = (await getAllEvents()).filter((e) => e.id !== event.id).slice(0, 4);
 
   return (
     <>

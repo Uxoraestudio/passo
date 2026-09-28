@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./Hero.module.css";
 
-type Slide = {
+export type Slide = {
   id: string;
   slug?: string;
   image: string;
@@ -17,42 +17,6 @@ type Slide = {
   venue: string;
   price: string;
 };
-
-const slides: Slide[] = [
-  {
-    id: "dua-lipa",
-    image: "/images/hero-dua-lipa-v2.jpg",
-    alt: "Dua Lipa cantando en vivo sobre el escenario bajo luces azules",
-    eyebrow: "Evento destacado",
-    title: "Dua Lipa",
-    subtitle: "Radical Optimism Tour",
-    date: "24 OCT",
-    venue: "Movistar Arena, Santiago",
-    price: "Desde $ 48.000",
-  },
-  {
-    id: "imagine-dragons",
-    image: "/images/hero-imagine-dragons-v2.jpg",
-    alt: "Vocalista de Imagine Dragons en vivo entre una explosión de confeti azul y turquesa junto al público",
-    eyebrow: "Próximamente",
-    title: "Imagine Dragons",
-    subtitle: "LOOM World Tour",
-    date: "14 NOV",
-    venue: "Estadio Nacional, Santiago",
-    price: "Desde $ 52.000",
-  },
-  {
-    id: "clasico-pacifico",
-    image: "/images/hero-clasico-pacifico-v3.jpg",
-    alt: "Jugadores de las selecciones de Chile y Perú disputando el balón durante un partido",
-    eyebrow: "Deporte en vivo",
-    title: "Clásico del Pacífico",
-    subtitle: "Chile vs Perú",
-    date: "05 DIC",
-    venue: "Estadio Nacional, Santiago",
-    price: "Desde $ 28.000",
-  },
-];
 
 const AUTOPLAY_MS = 7000;
 const SWIPE_THRESHOLD = 48;
@@ -71,7 +35,7 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y}`;
 }
 
-export default function Hero() {
+export default function Hero({ slides }: { slides: Slide[] }) {
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -83,7 +47,7 @@ export default function Hero() {
 
   const effectivePlaying = playing;
   const active = slides[current];
-  const activeHref = active.slug ? `/eventos/${active.slug}` : "/eventos";
+  const activeHref = active?.slug ? `/eventos/${active.slug}` : "/eventos";
 
   useEffect(() => {
     progressRef.current = progress;
@@ -94,7 +58,7 @@ export default function Hero() {
   // mid-transition and re-resumed (CSS animation-play-state was unreliable
   // across pause/resume/navigate combinations).
   useEffect(() => {
-    if (!effectivePlaying) {
+    if (!effectivePlaying || slides.length === 0) {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
       startRef.current = null;
@@ -121,9 +85,10 @@ export default function Hero() {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     };
-  }, [effectivePlaying, current]);
+  }, [effectivePlaying, current, slides.length]);
 
   const goTo = (index: number) => {
+    if (slides.length === 0) return;
     setCurrent((index + slides.length) % slides.length);
     setProgress(0);
   };
@@ -157,6 +122,8 @@ export default function Hero() {
       setPlaying((v) => !v);
     }
   };
+
+  if (slides.length === 0 || !active) return null;
 
   return (
     <section

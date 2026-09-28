@@ -1,15 +1,34 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
 import SortSelect from "@/components/SortSelect";
-import { allEvents, cities, searchEvents } from "@/lib/events";
+import { cities, searchEvents } from "@/lib/events";
+import { getAllEvents } from "@/lib/events-data";
+import { getSeoPage } from "@/lib/seo-settings";
 import styles from "./page.module.css";
 
 const categoryOptions = ["Música", "Deportes", "Teatro", "Comedia", "Festivales", "Danza", "Fútbol"];
 
 function parsePrice(price: string): number {
   return Number(price.replace(/[^0-9]/g, "")) || 0;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoPage("eventos");
+  const title = seo.metaTitle || "Eventos | Passo";
+  const description = seo.metaDescription || "Conciertos, deportes, teatro y mucho más, en un solo lugar.";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: seo.ogTitle || title,
+      description: seo.ogDescription || description,
+      images: seo.ogImageUrl ? [seo.ogImageUrl] : [],
+    },
+  };
 }
 
 export default async function EventosPage({ searchParams }: PageProps<"/eventos">) {
@@ -23,6 +42,7 @@ export default async function EventosPage({ searchParams }: PageProps<"/eventos"
   const maxPrice = typeof params?.maxPrice === "string" ? Number(params.maxPrice) : undefined;
   const onlyAvailable = params?.available !== "false";
 
+  const allEvents = await getAllEvents();
   let results = allEvents;
   if (q) results = searchEvents(q, results);
   if (category) {

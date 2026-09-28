@@ -10,6 +10,7 @@ import {
   HomeIcon,
   PaletteIcon,
   ScanIcon,
+  SeoIcon,
   ShieldPersonIcon,
   TicketIcon,
   UsersIcon,
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/reportes/", label: "Reportes", icon: ClockIcon },
   { href: "/roles/", label: "Roles", icon: ShieldPersonIcon },
   { href: "/apariencia/", label: "Apariencia", icon: PaletteIcon },
+  { href: "/seo/", label: "SEO", icon: SeoIcon },
   { href: "/configuracion/", label: "Configuración", icon: GearIcon },
 ];
 

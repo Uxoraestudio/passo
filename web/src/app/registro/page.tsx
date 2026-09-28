@@ -3,12 +3,24 @@ import LoginHeader from "@/components/LoginHeader";
 import RegisterForm from "@/components/RegisterForm";
 import LoginBrandPanel from "@/components/LoginBrandPanel";
 import Footer from "@/components/Footer";
+import { getSeoPage } from "@/lib/seo-settings";
 import styles from "../login-usuario/page.module.css";
 
-export const metadata: Metadata = {
-  title: "Crea tu cuenta | Passo",
-  description: "Regístrate en Passo para comprar entradas a tu próxima gran experiencia.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoPage("registro");
+  const title = seo.metaTitle || "Crea tu cuenta | Passo";
+  const description = seo.metaDescription || "Regístrate en Passo para comprar entradas a tu próxima gran experiencia.";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: seo.ogTitle || title,
+      description: seo.ogDescription || description,
+      images: seo.ogImageUrl ? [seo.ogImageUrl] : [],
+    },
+  };
+}
 
 export default function RegistroPage() {
   return (

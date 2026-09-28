@@ -1,9 +1,12 @@
 import Link from "next/link";
 import EventCard from "./EventCard";
-import { featuredEvents } from "@/lib/events";
+import { getAllEvents } from "@/lib/events-data";
 import styles from "./EventsGrid.module.css";
 
-export default function FeaturedEvents() {
+export default async function FeaturedEvents() {
+  const events = (await getAllEvents()).slice(0, 4);
+  if (events.length === 0) return null;
+
   return (
     <section id="eventos-destacados" className={styles.section}>
       <div className={styles.container}>
@@ -26,7 +29,7 @@ export default function FeaturedEvents() {
           </Link>
         </div>
         <div className={styles.grid}>
-          {featuredEvents.map((event) => (
+          {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>

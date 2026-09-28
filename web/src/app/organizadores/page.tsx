@@ -1,7 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getSeoPage } from "@/lib/seo-settings";
 import styles from "./page.module.css";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoPage("organizadores");
+  const title = seo.metaTitle || "Organizadores | Passo";
+  const description = seo.metaDescription || "Publica tu evento en Passo y llega a más personas.";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title: seo.ogTitle || title,
+      description: seo.ogDescription || description,
+      images: seo.ogImageUrl ? [seo.ogImageUrl] : [],
+    },
+  };
+}
 
 export default function OrganizadoresPage() {
   return (

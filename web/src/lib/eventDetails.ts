@@ -23,6 +23,58 @@ export type EventDetail = {
   tiers: TicketTier[];
 };
 
+type DefaultDetailSource = {
+  subtitle: string | null;
+  description: string | null;
+  event_date: string;
+  price_base: number;
+  capacity: number;
+  sold: number;
+  status: "borrador" | "en-venta" | "casi-agotado" | "proximamente" | "finalizado";
+};
+
+const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const MONTHS = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+const primaryBadgeByStatus: Record<DefaultDetailSource["status"], string> = {
+  borrador: "Evento no publicado",
+  "en-venta": "Venta General Abierta",
+  "casi-agotado": "Últimas Entradas Disponibles",
+  proximamente: "Preventa Próximamente",
+  finalizado: "Evento Finalizado",
+};
+
+export function defaultEventDetail(event: DefaultDetailSource): EventDetail {
+  const date = new Date(event.event_date);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const available = event.capacity - event.sold;
+  const tierStatus = event.status === "casi-agotado" || available <= event.capacity * 0.1 ? "pocas" : "disponible";
+
+  return {
+    category: "Eventos",
+    breadcrumbCategory: "Eventos",
+    primaryBadge: primaryBadgeByStatus[event.status],
+    badges: [],
+    dateLabel: `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`,
+    dateSub: WEEKDAYS[date.getDay()],
+    doorsOpen: `${pad(date.getHours())}:${pad(date.getMinutes())} hrs`,
+    doorsClose: "Por confirmar",
+    aboutLead: event.subtitle || "Sobre este evento",
+    aboutText: [event.description || "Pronto compartiremos más detalles sobre este evento."],
+    tiers: [
+      {
+        id: "general",
+        name: "Entrada General",
+        description: "Acceso general al evento",
+        price: event.price_base,
+        status: tierStatus,
+        color: "#6534f5",
+        numbered: false,
+      },
+    ],
+  };
+}
+
 export const eventDetails: Record<string, EventDetail> = {
   "dua-lipa": {
     category: "Conciertos",

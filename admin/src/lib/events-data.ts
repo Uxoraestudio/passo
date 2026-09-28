@@ -16,6 +16,7 @@ export type EventRecord = {
   capacity: number;
   sold: number;
   status: EventStatus;
+  show_in_hero: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -32,6 +33,7 @@ export type EventInput = {
   capacity: number;
   sold: number;
   status: EventStatus;
+  show_in_hero: boolean;
 };
 
 function slugify(title: string) {
@@ -70,6 +72,7 @@ export async function createEvent(input: EventInput): Promise<void> {
     capacity: input.capacity,
     sold: input.sold,
     status: input.status,
+    show_in_hero: input.show_in_hero,
     slug,
     producer_id: user?.id ?? null,
   });
@@ -92,6 +95,7 @@ export async function updateEvent(id: string, input: EventInput): Promise<void> 
       capacity: input.capacity,
       sold: input.sold,
       status: input.status,
+      show_in_hero: input.show_in_hero,
     })
     .eq("id", id);
   if (error) throw error;
@@ -101,4 +105,16 @@ export async function deleteEvent(id: string): Promise<void> {
   const supabase = createClient();
   const { error } = await supabase.from("events").delete().eq("id", id);
   if (error) throw error;
+}
+
+export async function uploadEventImage(file: File): Promise<string> {
+  const supabase = createClient();
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `event-${crypto.randomUUID()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage.from("events").upload(path, file, { upsert: true });
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from("events").getPublicUrl(path);
+  return `${data.publicUrl}?v=${Date.now()}`;
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import Image from "next/image";
 import { MaterialIcon } from "@/components/icons";
-import type { EventInput, EventRecord, EventStatus } from "@/lib/events-data";
+import { uploadEventImage, type EventInput, type EventRecord, type EventStatus } from "@/lib/events-data";
 import styles from "./EventFormDrawer.module.css";
 
 const statusOptions: { value: EventStatus; label: string }[] = [
@@ -34,6 +35,7 @@ function emptyForm(): EventInput {
     capacity: 0,
     sold: 0,
     status: "borrador",
+    show_in_hero: false,
   };
 }
 
@@ -51,6 +53,7 @@ function formFromEvent(event: EventRecord | null): EventInput {
     capacity: event.capacity,
     sold: event.sold,
     status: event.status,
+    show_in_hero: event.show_in_hero,
   };
 }
 
@@ -68,6 +71,9 @@ export default function EventFormDrawer({
   onSubmit: (input: EventInput) => void;
 }) {
   const [form, setForm] = useState<EventInput>(() => formFromEvent(event));
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -76,6 +82,22 @@ export default function EventFormDrawer({
 
   const update = <K extends keyof EventInput>(key: K, value: EventInput[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleImageFile = async (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const file = evt.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const url = await uploadEventImage(file);
+      update("image_url", url);
+    } catch {
+      setUploadError("No pudimos subir la imagen. Intenta de nuevo.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -115,15 +137,37 @@ export default function EventFormDrawer({
             <input type="datetime-local" value={form.event_date} onChange={(e) => update("event_date", e.target.value)} required />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.label}>URL de imagen</span>
-            <input
-              type="url"
-              value={form.image_url}
-              onChange={(e) => update("image_url", e.target.value)}
-              placeholder="https://..."
-            />
-          </label>
+          <div className={styles.field}>
+            <span className={styles.label}>Imagen del evento</span>
+            <div className={styles.imageUpload}>
+              <div className={styles.imagePreview}>
+                {form.image_url ? (
+                  <Image src={form.image_url} alt="Vista previa del evento" fill sizes="88px" className={styles.imagePreviewImage} unoptimized />
+                ) : (
+                  <div className={styles.imagePlaceholder}>
+                    <MaterialIcon name="image" />
+                  </div>
+                )}
+              </div>
+              <div className={styles.imageActions}>
+                <button
+                  type="button"
+                  className={styles.uploadButton}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  {uploading ? "Subiendo..." : form.image_url ? "Cambiar imagen" : "Subir imagen"}
+                </button>
+                {form.image_url && (
+                  <button type="button" className={styles.removeImageButton} onClick={() => update("image_url", "")} disabled={uploading}>
+                    Quitar imagen
+                  </button>
+                )}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageFile} />
+            </div>
+            {uploadError && <p className={styles.error}>{uploadError}</p>}
+          </div>
 
           <div className={styles.fieldGrid}>
             <label className={styles.field}>
@@ -169,6 +213,24 @@ export default function EventFormDrawer({
             <span className={styles.label}>Descripción</span>
             <textarea rows={3} value={form.description} onChange={(e) => update("description", e.target.value)} />
           </label>
+
+          <div className={styles.switchField}>
+            <div className={styles.switchText}>
+              <span className={styles.label}>Mostrar en banner Hero del home</span>
+              <span className={styles.switchHint}>El evento aparecerá en el carrusel principal de la portada.</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.show_in_hero}
+              aria-label="Mostrar en banner Hero del home"
+              className={styles.switch}
+              data-checked={form.show_in_hero}
+              onClick={() => update("show_in_hero", !form.show_in_hero)}
+            >
+              <span className={styles.switchThumb} />
+            </button>
+          </div>
 
           {error && <p className={styles.error}>{error}</p>}
 
