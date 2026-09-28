@@ -19,8 +19,11 @@
 }
 
 .band {
-  cursor: pointer;
   outline: none;
+}
+
+.band[data-interactive="true"] {
+  cursor: pointer;
 }
 
 .polygon {
@@ -28,7 +31,7 @@
   transform-origin: center;
 }
 
-.band:hover .polygon {
+.band[data-interactive="true"]:hover .polygon {
   fill-opacity: 0.85;
 }
 
