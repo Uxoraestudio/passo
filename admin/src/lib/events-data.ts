@@ -12,6 +12,8 @@ export type EventRecord = {
   city: string;
   event_date: string;
   image_url: string | null;
+  hero_image_url: string | null;
+  banner_image_url: string | null;
   price_base: number;
   capacity: number;
   sold: number;
@@ -29,6 +31,8 @@ export type EventInput = {
   city: string;
   event_date: string;
   image_url: string;
+  hero_image_url: string;
+  banner_image_url: string;
   price_base: number;
   capacity: number;
   sold: number;
@@ -68,6 +72,8 @@ export async function createEvent(input: EventInput): Promise<void> {
     city: input.city,
     event_date: input.event_date,
     image_url: input.image_url || null,
+    hero_image_url: input.hero_image_url || null,
+    banner_image_url: input.banner_image_url || null,
     price_base: input.price_base,
     capacity: input.capacity,
     sold: input.sold,
@@ -91,6 +97,8 @@ export async function updateEvent(id: string, input: EventInput): Promise<void> 
       city: input.city,
       event_date: input.event_date,
       image_url: input.image_url || null,
+      hero_image_url: input.hero_image_url || null,
+      banner_image_url: input.banner_image_url || null,
       price_base: input.price_base,
       capacity: input.capacity,
       sold: input.sold,

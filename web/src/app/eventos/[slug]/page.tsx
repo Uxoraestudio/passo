@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import TicketSelector from "@/components/TicketSelector";
 import EventCard from "@/components/EventCard";
-import { toEventCardData } from "@/lib/events";
+import { pickImage, toEventCardData } from "@/lib/events";
 import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
 import { defaultEventDetail, eventDetails, genericFaqs, genericPolicies } from "@/lib/eventDetails";
 import { getSeoPage } from "@/lib/seo-settings";
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps<"/eventos/[slug]">)
   const template = await getSeoPage("evento_detalle");
   const title = `${row.title} | Passo`;
   const description = row.subtitle || row.description || template.metaDescription || "Compra tus entradas en Passo.";
-  const image = row.image_url || template.ogImageUrl;
+  const image = row.banner_image_url || row.image_url || template.ogImageUrl;
 
   return {
     title,
@@ -112,7 +112,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
   const detail = eventDetails[row.id] ?? defaultEventDetail(row);
 
   const isLollapalooza = row.id === "lollapalooza";
-  const heroImage = isLollapalooza ? "/images/lollapalooza-hero.jpg" : event.image;
+  const heroImage = isLollapalooza ? "/images/lollapalooza-hero.jpg" : pickImage(row.banner_image_url, row.image_url);
   const prices = detail.tiers.map((tier) => tier.price);
   const minPrice = Math.min(...prices);
   const policies = isLollapalooza ? lollapaloozaPolicies : genericPolicies;

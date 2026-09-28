@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
-import Image from "next/image";
+import { useState, type FormEvent } from "react";
 import { MaterialIcon } from "@/components/icons";
-import { uploadEventImage, type EventInput, type EventRecord, type EventStatus } from "@/lib/events-data";
+import type { EventInput, EventRecord, EventStatus } from "@/lib/events-data";
+import EventImageField from "./EventImageField";
 import styles from "./EventFormDrawer.module.css";
 
 const statusOptions: { value: EventStatus; label: string }[] = [
@@ -31,6 +31,8 @@ function emptyForm(): EventInput {
     city: "Santiago",
     event_date: "",
     image_url: "",
+    hero_image_url: "",
+    banner_image_url: "",
     price_base: 0,
     capacity: 0,
     sold: 0,
@@ -49,6 +51,8 @@ function formFromEvent(event: EventRecord | null): EventInput {
     city: event.city,
     event_date: toDateTimeLocal(event.event_date),
     image_url: event.image_url ?? "",
+    hero_image_url: event.hero_image_url ?? "",
+    banner_image_url: event.banner_image_url ?? "",
     price_base: event.price_base,
     capacity: event.capacity,
     sold: event.sold,
@@ -71,9 +75,6 @@ export default function EventFormDrawer({
   onSubmit: (input: EventInput) => void;
 }) {
   const [form, setForm] = useState<EventInput>(() => formFromEvent(event));
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
@@ -82,22 +83,6 @@ export default function EventFormDrawer({
 
   const update = <K extends keyof EventInput>(key: K, value: EventInput[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
-
-  const handleImageFile = async (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const file = evt.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError("");
-    try {
-      const url = await uploadEventImage(file);
-      update("image_url", url);
-    } catch {
-      setUploadError("No pudimos subir la imagen. Intenta de nuevo.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
   };
 
   return (
@@ -137,36 +122,34 @@ export default function EventFormDrawer({
             <input type="datetime-local" value={form.event_date} onChange={(e) => update("event_date", e.target.value)} required />
           </label>
 
-          <div className={styles.field}>
-            <span className={styles.label}>Imagen del evento</span>
-            <div className={styles.imageUpload}>
-              <div className={styles.imagePreview}>
-                {form.image_url ? (
-                  <Image src={form.image_url} alt="Vista previa del evento" fill sizes="88px" className={styles.imagePreviewImage} unoptimized />
-                ) : (
-                  <div className={styles.imagePlaceholder}>
-                    <MaterialIcon name="image" />
-                  </div>
-                )}
-              </div>
-              <div className={styles.imageActions}>
-                <button
-                  type="button"
-                  className={styles.uploadButton}
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? "Subiendo..." : form.image_url ? "Cambiar imagen" : "Subir imagen"}
-                </button>
-                {form.image_url && (
-                  <button type="button" className={styles.removeImageButton} onClick={() => update("image_url", "")} disabled={uploading}>
-                    Quitar imagen
-                  </button>
-                )}
-              </div>
-              <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageFile} />
-            </div>
-            {uploadError && <p className={styles.error}>{uploadError}</p>}
+          <div className={styles.imageGroup}>
+            <span className={styles.imageGroupTitle}>Imágenes del evento</span>
+            <p className={styles.imageGroupHint}>
+              Sube una imagen distinta para cada lugar. En cada una, mantén el elemento principal
+              centrado — es el área segura que se conserva al recortar; evita textos o rostros cerca
+              de los bordes.
+            </p>
+
+            <EventImageField
+              label="Banner Hero del home"
+              hint="Recomendado: 1600 × 900 px (16:9). Se usa en el carrusel principal de la portada."
+              value={form.hero_image_url}
+              onChange={(url) => update("hero_image_url", url)}
+            />
+
+            <EventImageField
+              label="Tarjeta destacada / listado"
+              hint="Recomendado: 800 × 560 px (4:3). Se usa en Eventos destacados, Cerca de ti y el listado de eventos."
+              value={form.image_url}
+              onChange={(url) => update("image_url", url)}
+            />
+
+            <EventImageField
+              label="Banner interno del evento"
+              hint="Recomendado: 1280 × 500 px (~2.5:1). Se usa en la página de detalle del evento."
+              value={form.banner_image_url}
+              onChange={(url) => update("banner_image_url", url)}
+            />
           </div>
 
           <div className={styles.fieldGrid}>

@@ -109,10 +109,42 @@
   background: #fff;
 }
 
+.imageGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e5dff7;
+  background: #fafafc;
+}
+
+.imageGroupTitle {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #797488;
+}
+
+.imageGroupHint {
+  margin-top: -8px;
+  font-size: 11px;
+  line-height: 16px;
+  color: #6b7280;
+}
+
 .imageUpload {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.imageSpecsNote {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 16px;
+  color: #6b7280;
 }
 
 .imagePreview {

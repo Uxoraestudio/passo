@@ -27,6 +27,8 @@ export type EventRow = {
   city: string;
   event_date: string;
   image_url: string | null;
+  hero_image_url: string | null;
+  banner_image_url: string | null;
   price_base: number;
   capacity: number;
   sold: number;
@@ -36,6 +38,10 @@ export type EventRow = {
 
 export const FALLBACK_IMAGE = "/images/banner-crowd.jpg";
 const MONTHS_SHORT = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+
+export function pickImage(...urls: (string | null | undefined)[]): string {
+  return urls.find((url) => url) || FALLBACK_IMAGE;
+}
 
 export function formatPrice(priceBase: number): string {
   return `$ ${priceBase.toLocaleString("es-CL")}`;
@@ -69,7 +75,7 @@ export function toEventCardData(row: EventRow): EventCardData {
   return {
     id: row.id,
     slug: row.slug,
-    image: row.image_url || FALLBACK_IMAGE,
+    image: pickImage(row.image_url),
     alt: row.title,
     day: formatDay(row.event_date),
     month: formatMonth(row.event_date),
@@ -86,7 +92,7 @@ export function toHeroSlide(row: EventRow): Slide {
   return {
     id: row.id,
     slug: row.slug,
-    image: row.image_url || FALLBACK_IMAGE,
+    image: pickImage(row.hero_image_url, row.image_url),
     alt: row.title,
     eyebrow: statusEyebrow(row.status),
     title: row.title,
