@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { MaterialIcon } from "@/components/icons";
 import { uploadEventImage } from "@/lib/events-data";
-import styles from "./EventFormDrawer.module.css";
+import styles from "./EventFormPage.module.css";
 
 export default function EventImageField({
   label,

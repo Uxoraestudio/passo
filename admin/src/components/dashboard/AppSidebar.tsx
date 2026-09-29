@@ -48,7 +48,7 @@ export default function AppSidebar() {
       <nav className={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = item.href !== "#" && pathname === item.href;
+          const active = item.href !== "#" && (pathname === item.href || pathname.startsWith(item.href));
           return (
             <Link
               key={item.label}

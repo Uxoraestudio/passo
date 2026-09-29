@@ -1,50 +1,60 @@
 import { MaterialIcon } from "@/components/icons";
+import type { EventRecord } from "@/lib/events-data";
 import styles from "./EventsKpiRow.module.css";
 
-const kpis = [
-  {
-    id: "total",
-    label: "Total de eventos",
-    value: "12",
-    icon: "calendar_month",
-    tone: "purple",
-    delta: "+3 este trimestre",
-    deltaTone: "purple",
-    caption: "Catálogo 2025/26",
-  },
-  {
-    id: "en-venta",
-    label: "Eventos en venta",
-    value: "4",
-    icon: "bolt",
-    tone: "teal",
-    delta: "100% puertas en red",
-    deltaTone: "success",
-    caption: "Check-in activo",
-  },
-  {
-    id: "aforo",
-    label: "Aforo total disponible",
-    value: "48.500",
-    icon: "stadium",
-    tone: "orange",
-    delta: "68.4% ocupado",
-    deltaTone: "orange",
-    caption: "Suma de sedes",
-  },
-  {
-    id: "recaudacion",
-    label: "Recaudación estimada",
-    value: "$248.5M",
-    icon: "account_balance_wallet",
-    tone: "neutral",
-    delta: "+24.8% vs proy.",
-    deltaTone: "success",
-    caption: "Pesos Chilenos (CLP)",
-  },
-];
+const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 
-export default function EventsKpiRow() {
+export default function EventsKpiRow({ events }: { events: EventRecord[] }) {
+  const total = events.length;
+  const enVenta = events.filter((e) => e.status === "en-venta" || e.status === "casi-agotado").length;
+  const aforoTotal = events.reduce((sum, e) => sum + e.capacity, 0);
+  const aforoVendido = events.reduce((sum, e) => sum + e.sold, 0);
+  const ocupacion = aforoTotal > 0 ? Math.round((aforoVendido / aforoTotal) * 100) : 0;
+  const recaudacion = events.reduce((sum, e) => sum + e.sold * e.price_base, 0);
+
+  const kpis = [
+    {
+      id: "total",
+      label: "Total de eventos",
+      value: String(total),
+      icon: "calendar_month",
+      tone: "purple",
+      delta: `${events.filter((e) => e.status !== "finalizado").length} activos`,
+      deltaTone: "purple",
+      caption: "Catálogo actual",
+    },
+    {
+      id: "en-venta",
+      label: "Eventos en venta",
+      value: String(enVenta),
+      icon: "bolt",
+      tone: "teal",
+      delta: total > 0 ? `${Math.round((enVenta / total) * 100)}%` : "0%",
+      deltaTone: "success",
+      caption: "Del catálogo",
+    },
+    {
+      id: "aforo",
+      label: "Aforo total disponible",
+      value: aforoTotal.toLocaleString("es-CL"),
+      icon: "stadium",
+      tone: "orange",
+      delta: `${ocupacion}% ocupado`,
+      deltaTone: "orange",
+      caption: "Suma de sedes",
+    },
+    {
+      id: "recaudacion",
+      label: "Recaudación estimada",
+      value: currency(recaudacion),
+      icon: "account_balance_wallet",
+      tone: "neutral",
+      delta: `${aforoVendido.toLocaleString("es-CL")} vendidas`,
+      deltaTone: "success",
+      caption: "Pesos Chilenos (CLP)",
+    },
+  ];
+
   return (
     <div className={styles.grid}>
       {kpis.map((kpi) => (

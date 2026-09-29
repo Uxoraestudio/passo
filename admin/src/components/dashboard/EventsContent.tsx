@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
-import { createEvent, deleteEvent, listEvents, updateEvent, type EventInput, type EventRecord, type EventStatus } from "@/lib/events-data";
+import { deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
 import EventsKpiRow from "./EventsKpiRow";
 import EventsFilterBar, { type FilterTab } from "./EventsFilterBar";
 import EventRow from "./EventRow";
-import EventFormDrawer from "./EventFormDrawer";
 import styles from "./EventsContent.module.css";
 
 const PAGE_SIZE = 5;
@@ -18,6 +18,7 @@ const statusesByTab: Record<Exclude<FilterTab, "todos">, EventStatus[]> = {
 };
 
 export default function EventsContent() {
+  const router = useRouter();
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -26,11 +27,6 @@ export default function EventsContent() {
   const [venue, setVenue] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingEvent, setEditingEvent] = useState<EventRecord | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState("");
 
   const [reloadToken, setReloadToken] = useState(0);
   const refresh = useCallback(() => setReloadToken((t) => t + 1), []);
@@ -101,39 +97,8 @@ export default function EventsContent() {
     setPage(1);
   };
 
-  const openCreate = () => {
-    setEditingEvent(null);
-    setFormError("");
-    setDrawerOpen(true);
-  };
-
   const openEdit = (event: EventRecord) => {
-    setEditingEvent(event);
-    setFormError("");
-    setDrawerOpen(true);
-  };
-
-  const closeDrawer = () => {
-    if (saving) return;
-    setDrawerOpen(false);
-  };
-
-  const handleSubmit = async (input: EventInput) => {
-    setSaving(true);
-    setFormError("");
-    try {
-      if (editingEvent) {
-        await updateEvent(editingEvent.id, input);
-      } else {
-        await createEvent(input);
-      }
-      setDrawerOpen(false);
-      refresh();
-    } catch {
-      setFormError("No pudimos guardar el evento. Revisa los datos e intenta de nuevo.");
-    } finally {
-      setSaving(false);
-    }
+    router.push(`/eventos/${event.id}/editar`);
   };
 
   const handleDelete = async (event: EventRecord) => {
@@ -171,14 +136,14 @@ export default function EventsContent() {
               <span>PDF</span>
             </button>
           </div>
-          <button type="button" className={styles.createButton} onClick={openCreate}>
+          <button type="button" className={styles.createButton} onClick={() => router.push("/eventos/nuevo")}>
             <MaterialIcon name="add_circle" className={styles.createIcon} />
             <span>Nuevo evento</span>
           </button>
         </div>
       </div>
 
-      <EventsKpiRow />
+      <EventsKpiRow events={events} />
 
       <EventsFilterBar
         tab={tab}
@@ -250,17 +215,6 @@ export default function EventsContent() {
             </button>
           </div>
         </div>
-      )}
-
-      {drawerOpen && (
-        <EventFormDrawer
-          key={editingEvent?.id ?? "new"}
-          event={editingEvent}
-          saving={saving}
-          error={formError}
-          onClose={closeDrawer}
-          onSubmit={handleSubmit}
-        />
       )}
     </div>
   );
