@@ -1,5 +1,6 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import { MaterialIcon } from "@/components/icons";
 import { PALETTE } from "@/lib/venue-layouts";
 import type { Venue } from "@/lib/venues-data";
@@ -26,22 +27,37 @@ function shapeCenter(s: SectorDraft): [number, number] {
   return [300, 210];
 }
 
+function toAmount(raw: string): number | "" {
+  if (raw === "") return "";
+  const n = Math.floor(Number(raw));
+  return Number.isFinite(n) ? Math.max(0, n) : "";
+}
+
+export function sectorIssue(s: SectorDraft, isCustom: boolean): string | null {
+  if (!s.is_active) return null;
+  if (isCustom && !s.name.trim()) return "Falta el nombre";
+  if (!(Number(s.capacity) > 0)) return "Falta la capacidad";
+  if (!(Number(s.price) > 0)) return "Falta el precio";
+  return null;
+}
+
 export default function PerimetryEditor({
   venue,
   sectors,
   onChange,
+  showErrors,
 }: {
   venue: Venue | null;
   sectors: SectorDraft[];
   onChange: (sectors: SectorDraft[]) => void;
+  showErrors: boolean;
 }) {
   if (!venue) {
     return (
       <div className={styles.emptyPerimetry}>
-        <MaterialIcon name="grid_on" />
+        <MaterialIcon decorative name="grid_on" />
         <b>Selecciona un recinto</b>
-        <br />
-        para cargar su perimetría y sectores.
+        <span>para cargar su perimetría y sectores.</span>
       </div>
     );
   }
@@ -79,17 +95,24 @@ export default function PerimetryEditor({
     ]);
   };
 
+  const onSectorKey = (e: KeyboardEvent<SVGGElement>, key: string) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleSector(key);
+    }
+  };
+
   const activeCap = sectors.filter((s) => s.is_active).reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
   const totalCap = sectors.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0);
   const activeCount = sectors.filter((s) => s.is_active).length;
 
   return (
-    <div className={styles.mapWrap} style={isCustom ? { gridTemplateColumns: "1fr" } : undefined}>
+    <div className={styles.mapWrap} data-custom={isCustom}>
       {!isCustom && (
         <div className={styles.map}>
-          <svg viewBox="0 0 600 420">
+          <svg viewBox="0 0 600 420" role="group" aria-label={`Plano de ${venue.name}`}>
             {venue.base_shapes.map((b, i) => (
-              <g key={i} style={{ fill: b.type === "field" ? "#133a26" : "#2a2850" }}>
+              <g key={i} style={{ fill: b.type === "field" ? "#133a26" : "#2a2850" }} aria-hidden="true">
                 <rect x={b.rect[0]} y={b.rect[1]} width={b.rect[2]} height={b.rect[3]} rx={8} />
                 {b.label && (
                   <text x={b.rect[0] + b.rect[2] / 2} y={b.rect[1] + b.rect[3] / 2} textAnchor="middle" dominantBaseline="middle" style={{ letterSpacing: 2, fill: "#c9c7ef" }}>
@@ -106,11 +129,13 @@ export default function PerimetryEditor({
                   className={styles.sector}
                   data-off={!s.is_active}
                   style={{ fill: s.color }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={s.is_active}
+                  aria-label={`${s.name}: ${s.is_active ? "activo" : "inactivo"}`}
                   onClick={() => toggleSector(s.key)}
+                  onKeyDown={(e) => onSectorKey(e, s.key)}
                 >
-                  <title>
-                    {s.name} · {Number(s.capacity || 0).toLocaleString("es-CL")} pers.
-                  </title>
                   {s.shape_path ? <path d={s.shape_path} /> : s.shape_rect ? <rect x={s.shape_rect[0]} y={s.shape_rect[1]} width={s.shape_rect[2]} height={s.shape_rect[3]} rx={8} /> : null}
                   <text x={cx} y={cy - 7} textAnchor="middle" dominantBaseline="middle">
                     {s.short_label}
@@ -126,8 +151,8 @@ export default function PerimetryEditor({
         </div>
       )}
 
-      <div>
-        <div className={`${styles.sectorRow} ${styles.sectorRowHead}`} data-custom={isCustom}>
+      <div className={styles.sectorTable}>
+        <div className={`${styles.sectorRow} ${styles.sectorRowHead}`} data-custom={isCustom} aria-hidden="true">
           <span></span>
           <span>Sector</span>
           <span>Capacidad</span>
@@ -135,51 +160,76 @@ export default function PerimetryEditor({
           {isCustom && <span></span>}
         </div>
 
-        {sectors.map((s) => (
-          <div key={s.key} className={styles.sectorRow} data-custom={isCustom} data-off={!s.is_active}>
-            <input type="checkbox" checked={s.is_active} onChange={() => toggleSector(s.key)} />
-            <div className={styles.sectorName}>
-              <span className={styles.sectorDot} style={{ background: s.color }} />
-              {isCustom ? (
+        {isCustom && sectors.length === 0 && (
+          <p className={styles.sectorEmpty} data-error={showErrors}>
+            Agrega al menos un sector con su capacidad y precio.
+          </p>
+        )}
+
+        {sectors.map((s, i) => {
+          const issue = showErrors ? sectorIssue(s, isCustom) : null;
+          const label = s.name || `Sector ${i + 1}`;
+          return (
+            <div key={s.key} className={styles.sectorRowWrap}>
+              <div className={styles.sectorRow} data-custom={isCustom} data-off={!s.is_active} data-invalid={!!issue}>
+                <input type="checkbox" checked={s.is_active} onChange={() => toggleSector(s.key)} aria-label={`Vender ${label}`} />
+                <div className={styles.sectorName}>
+                  <span className={styles.sectorDot} style={{ background: s.color }} aria-hidden="true" />
+                  {isCustom ? (
+                    <input
+                      type="text"
+                      value={s.name}
+                      maxLength={40}
+                      placeholder="Nombre del sector"
+                      aria-label={`Nombre del sector ${i + 1}`}
+                      aria-invalid={issue === "Falta el nombre"}
+                      onChange={(e) => updateSector(s.key, { name: e.target.value, short_label: e.target.value })}
+                    />
+                  ) : (
+                    <span className={styles.sectorNameText} title={s.name}>
+                      {s.name}
+                    </span>
+                  )}
+                </div>
                 <input
-                  type="text"
-                  className={styles.sectorNameText}
-                  value={s.name}
-                  placeholder="Nombre del sector"
-                  onChange={(e) => updateSector(s.key, { name: e.target.value, short_label: e.target.value })}
+                  type="number"
+                  min={0}
+                  step={1}
+                  inputMode="numeric"
+                  value={s.capacity}
+                  placeholder="0"
+                  aria-label={`Capacidad de ${label}`}
+                  aria-invalid={issue === "Falta la capacidad"}
+                  onChange={(e) => updateSector(s.key, { capacity: toAmount(e.target.value) })}
                 />
-              ) : (
-                <span className={styles.sectorNameText}>{s.name}</span>
-              )}
+                <div className={styles.sectorPricePrefix}>
+                  <b aria-hidden="true">$</b>
+                  <input
+                    type="number"
+                    min={0}
+                    step={500}
+                    inputMode="numeric"
+                    value={s.price}
+                    placeholder="0"
+                    aria-label={`Precio de ${label} en CLP`}
+                    aria-invalid={issue === "Falta el precio"}
+                    onChange={(e) => updateSector(s.key, { price: toAmount(e.target.value) })}
+                  />
+                </div>
+                {isCustom && (
+                  <button type="button" className={styles.deleteSectorButton} onClick={() => removeSector(s.key)} aria-label={`Eliminar ${label}`}>
+                    <MaterialIcon decorative name="delete" />
+                  </button>
+                )}
+              </div>
+              {issue && <p className={styles.sectorError}>{issue}</p>}
             </div>
-            <input
-              type="number"
-              min={0}
-              value={s.capacity}
-              placeholder="0"
-              onChange={(e) => updateSector(s.key, { capacity: e.target.value === "" ? "" : Number(e.target.value) })}
-            />
-            <div className={styles.sectorPricePrefix}>
-              <b>$</b>
-              <input
-                type="number"
-                min={0}
-                value={s.price}
-                placeholder="0"
-                onChange={(e) => updateSector(s.key, { price: e.target.value === "" ? "" : Number(e.target.value) })}
-              />
-            </div>
-            {isCustom && (
-              <button type="button" className={styles.deleteSectorButton} onClick={() => removeSector(s.key)} aria-label="Eliminar sector">
-                <MaterialIcon name="delete" />
-              </button>
-            )}
-          </div>
-        ))}
+          );
+        })}
 
         {isCustom && (
           <button type="button" className={styles.addSectorButton} onClick={addSector}>
-            <MaterialIcon name="add" />
+            <MaterialIcon decorative name="add" />
             Agregar sector
           </button>
         )}

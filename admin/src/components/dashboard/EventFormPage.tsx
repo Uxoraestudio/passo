@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
 import {
+  EVENTS_FLASH_KEY,
   createEvent,
   getEvent,
   listEventSectors,
@@ -14,17 +15,26 @@ import {
 } from "@/lib/events-data";
 import { createVenue, getVenueById, listVenues, sectorCountFor, venueCapacity, type Venue } from "@/lib/venues-data";
 import { LAYOUTS } from "@/lib/venue-layouts";
+import ConfirmDialog from "./ConfirmDialog";
 import EventImageField from "./EventImageField";
-import PerimetryEditor, { type SectorDraft } from "./PerimetryEditor";
+import PerimetryEditor, { sectorIssue, type SectorDraft } from "./PerimetryEditor";
 import styles from "./EventFormPage.module.css";
 
-const statusOptions: { value: EventStatus; label: string; hint: string }[] = [
+const statusOptions: { value: EventStatus; label: string; hint: string; editOnly?: boolean }[] = [
   { value: "borrador", label: "Borrador", hint: "Solo visible para tu equipo." },
   { value: "proximamente", label: "Próximamente", hint: "Visible, sin venta habilitada." },
   { value: "en-venta", label: "En venta", hint: "Publicado y vendiendo entradas." },
-  { value: "casi-agotado", label: "Casi agotado", hint: "Quedan pocas entradas disponibles." },
-  { value: "finalizado", label: "Finalizado", hint: "El evento ya ocurrió." },
+  { value: "casi-agotado", label: "Casi agotado", hint: "Quedan pocas entradas disponibles.", editOnly: true },
+  { value: "finalizado", label: "Finalizado", hint: "El evento ya ocurrió.", editOnly: true },
 ];
+
+const statusBadge: Record<EventStatus, string> = {
+  borrador: "BORRADOR",
+  proximamente: "PRÓXIMAMENTE",
+  "en-venta": "EN VENTA",
+  "casi-agotado": "CASI AGOTADO",
+  finalizado: "FINALIZADO",
+};
 
 const steps = [
   { key: "info", label: "Información" },
@@ -33,7 +43,19 @@ const steps = [
   { key: "fecha", label: "Fecha y hora" },
   { key: "img", label: "Imágenes" },
   { key: "conf", label: "Configuración" },
-];
+] as const;
+
+type StepKey = (typeof steps)[number]["key"];
+
+const areaLabels: Record<StepKey | "status", string> = {
+  info: "Información del evento",
+  venue: "Recinto",
+  map: "Perimetría y precios",
+  fecha: "Fecha y hora",
+  img: "Imágenes",
+  conf: "Configuración de venta",
+  status: "Estado",
+};
 
 type FormState = {
   title: string;
@@ -47,15 +69,19 @@ type FormState = {
   image_url: string;
   hero_image_url: string;
   banner_image_url: string;
-  sold: number;
+  sold: number | "";
   saleStart: string;
-  maxTicketsPerOrder: number;
+  maxTicketsPerOrder: number | "";
   qrValidation: boolean;
   ageRestriction: boolean;
   showInHero: boolean;
   status: EventStatus;
   address: string;
 };
+
+type Issue = { id: string; step: StepKey; target: string; label: string };
+type SaveLevel = "minimal" | "full";
+type LoadState = "loading" | "ready" | "not-found" | "error";
 
 function emptyForm(): FormState {
   return {
@@ -81,28 +107,27 @@ function emptyForm(): FormState {
   };
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 function toDateTimeLocal(iso: string | null) {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function formFromEvent(event: EventRecord): FormState {
   const d = new Date(event.event_date);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const dateStr = Number.isNaN(d.getTime()) ? "" : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const timeStr = Number.isNaN(d.getTime()) ? "21:00" : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const valid = !Number.isNaN(d.getTime());
   return {
     title: event.title,
     subtitle: event.subtitle ?? "",
     category: event.category ?? "Concierto",
     artist: event.artist ?? "",
     description: event.description ?? "",
-    date: dateStr,
-    time: timeStr,
-    doorsOpen: event.doors_open ? event.doors_open.slice(0, 5) : "19:30",
+    date: valid ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` : "",
+    time: valid ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : "21:00",
+    doorsOpen: event.doors_open ? event.doors_open.slice(0, 5) : "",
     image_url: event.image_url ?? "",
     hero_image_url: event.hero_image_url ?? "",
     banner_image_url: event.banner_image_url ?? "",
@@ -135,8 +160,7 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
       },
     ];
   }
-  const layout = LAYOUTS[venue.layout_key];
-  return layout.sectors.map((t) => ({
+  return LAYOUTS[venue.layout_key].sectors.map((t) => ({
     key: crypto.randomUUID(),
     name: t.name,
     short_label: t.short,
@@ -151,82 +175,129 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
   }));
 }
 
+function sectorsSignature(sectors: SectorDraft[]) {
+  return JSON.stringify(
+    sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active])
+  );
+}
+
+function partsOf(form: FormState, venueId: string | null, sectors: SectorDraft[]): Record<keyof typeof areaLabels, string> {
+  return {
+    info: JSON.stringify([form.title, form.subtitle, form.category, form.artist, form.description]),
+    venue: JSON.stringify([venueId, form.address]),
+    map: sectorsSignature(sectors),
+    fecha: JSON.stringify([form.date, form.time, form.doorsOpen]),
+    img: JSON.stringify([form.hero_image_url, form.banner_image_url, form.image_url]),
+    conf: JSON.stringify([form.saleStart, form.maxTicketsPerOrder, form.sold, form.qrValidation, form.ageRestriction, form.showInHero]),
+    status: form.status,
+  };
+}
+
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
 function fmtDate(date: string, time: string) {
   if (!date) return "";
   const [y, m, dd] = date.split("-");
   return `${Number(dd)} ${months[Number(m) - 1]} ${y}${time ? ` • ${time} hrs` : ""}`;
 }
 
+function toWhole(raw: string): number | "" {
+  if (raw === "") return "";
+  const n = Math.floor(Number(raw));
+  return Number.isFinite(n) ? Math.max(0, n) : "";
+}
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export default function EventFormPage({ eventId }: { eventId?: string }) {
   const router = useRouter();
   const mode = eventId ? "edit" : "create";
 
-  const [loading, setLoading] = useState(mode === "edit");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [loadState, setLoadState] = useState<LoadState>(eventId ? "loading" : "ready");
+  const [loadToken, setLoadToken] = useState(0);
+  const [loadedEvent, setLoadedEvent] = useState<EventRecord | null>(null);
 
   const [form, setForm] = useState<FormState>(emptyForm);
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [venueSearch, setVenueSearch] = useState("");
   const [venue, setVenue] = useState<Venue | null>(null);
   const [sectors, setSectors] = useState<SectorDraft[]>([]);
+  const [baseline, setBaseline] = useState(() => (eventId ? null : partsOf(emptyForm(), null, [])));
+
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [venuesError, setVenuesError] = useState(false);
+  const [venuesToken, setVenuesToken] = useState(0);
+  const [venueSearch, setVenueSearch] = useState("");
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customName, setCustomName] = useState("");
   const [customCity, setCustomCity] = useState("Santiago");
+  const [customError, setCustomError] = useState("");
+  const [creatingVenue, setCreatingVenue] = useState(false);
+  const [pendingVenue, setPendingVenue] = useState<Venue | null>(null);
 
-  const [activeStep, setActiveStep] = useState("info");
-  const [toast, setToast] = useState("");
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
-  const [dirty, setDirty] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [attemptLevel, setAttemptLevel] = useState<SaveLevel | null>(null);
+  const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
+  const [activeStep, setActiveStep] = useState<StepKey>("info");
 
-  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const pageRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const leavingRef = useRef(false);
 
   useEffect(() => {
     let active = true;
     listVenues()
-      .then((v) => active && setVenues(v))
-      .catch(() => {});
+      .then((v) => {
+        if (!active) return;
+        setVenues(v);
+        setVenuesError(false);
+      })
+      .catch(() => active && setVenuesError(true));
     return () => {
       active = false;
     };
-  }, []);
+  }, [venuesToken]);
 
   useEffect(() => {
-    if (mode !== "edit" || !eventId) return;
+    if (!eventId) return;
     let active = true;
 
     const load = async () => {
-      setLoading(true);
+      setLoadState("loading");
       try {
-        const [event, sectorRows] = await Promise.all([getEvent(eventId), listEventSectors(eventId)]);
-        if (!active || !event) return;
-        setForm(formFromEvent(event));
-        if (event.venue_id) {
-          const v = await getVenueById(event.venue_id);
-          if (active) setVenue(v);
+        const [event, rows] = await Promise.all([getEvent(eventId), listEventSectors(eventId)]);
+        if (!active) return;
+        if (!event) {
+          setLoadState("not-found");
+          return;
         }
-        if (active) {
-          setSectors(
-            sectorRows.map((s) => ({
-              key: s.id,
-              id: s.id,
-              name: s.name,
-              short_label: s.short_label,
-              capacity: s.capacity,
-              price: s.price,
-              color: s.color,
-              shape_rect: s.shape_rect,
-              shape_path: s.shape_path,
-              label_x: s.label_x,
-              label_y: s.label_y,
-              is_active: s.is_active,
-            }))
-          );
-        }
-      } finally {
-        if (active) setLoading(false);
+        const v = event.venue_id ? await getVenueById(event.venue_id) : null;
+        if (!active) return;
+        const loadedForm = formFromEvent(event);
+        const loadedSectors: SectorDraft[] = rows.map((s) => ({
+          key: s.id,
+          id: s.id,
+          name: s.name,
+          short_label: s.short_label,
+          capacity: s.capacity,
+          price: s.price,
+          color: s.color,
+          shape_rect: s.shape_rect,
+          shape_path: s.shape_path,
+          label_x: s.label_x,
+          label_y: s.label_y,
+          is_active: s.is_active,
+        }));
+        setLoadedEvent(event);
+        setForm(loadedForm);
+        setVenue(v);
+        setSectors(loadedSectors);
+        setBaseline(partsOf(loadedForm, v?.id ?? null, loadedSectors));
+        setLoadState("ready");
+      } catch {
+        if (active) setLoadState("error");
       }
     };
 
@@ -234,11 +305,76 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     return () => {
       active = false;
     };
-  }, [mode, eventId]);
+  }, [eventId, loadToken]);
+
+  // Keep sticky offsets in sync with the real height of the sticky bar (it grows when alerts show).
+  useEffect(() => {
+    const bar = stickyRef.current;
+    const page = pageRef.current;
+    if (!bar || !page) return;
+    const observer = new ResizeObserver(() => {
+      page.style.setProperty("--sticky-h", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+    });
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, [loadState]);
+
+  useEffect(() => {
+    if (loadState !== "ready") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const key = steps.find((s) => `s-${s.key}` === entry.target.id)?.key;
+          if (key) setActiveStep(key);
+        });
+      },
+      { rootMargin: "-35% 0px -60% 0px" }
+    );
+    steps.forEach((s) => {
+      const el = document.getElementById(`s-${s.key}`);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [loadState]);
+
+  const current = useMemo(() => partsOf(form, venue?.id ?? null, sectors), [form, venue, sectors]);
+  const changedAreas = useMemo(
+    () => (baseline ? (Object.keys(current) as (keyof typeof areaLabels)[]).filter((k) => current[k] !== baseline[k]) : []),
+    [current, baseline]
+  );
+  const dirty = loadState === "ready" && changedAreas.length > 0;
+
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (leavingRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    // Intercept in-app links (sidebar, topbar) so leaving always goes through the confirmation.
+    const onClick = (e: MouseEvent) => {
+      if (leavingRef.current || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const anchor = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || anchor.target === "_blank" || anchor.hasAttribute("download")) return;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.hash) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setLeaveTarget(url.pathname + url.search + url.hash);
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [dirty]);
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
-    setDirty(true);
+    setSaveError("");
   };
 
   const filteredVenues = useMemo(() => {
@@ -246,68 +382,92 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     return venues.filter((v) => !q || `${v.name} ${v.city}`.toLowerCase().includes(q));
   }, [venues, venueSearch]);
 
-  const selectVenue = (v: Venue) => {
-    setVenue(v);
-    setSectors(sectorsFromVenue(v));
-    setShowCustomForm(false);
-    setDirty(true);
-  };
-
-  const handleCreateCustomVenue = async () => {
-    if (!customName.trim()) return;
-    try {
-      const v = await createVenue({ name: customName.trim(), city: customCity.trim() || "Santiago" });
-      setVenues((prev) => [...prev, v]);
-      selectVenue(v);
-    } catch {
-      window.alert("No pudimos crear el recinto. Intenta de nuevo.");
-    }
-  };
-
+  // Events saved before the venue catalog (or whose venue no longer exists): keep their stored venue/capacity/price.
+  const legacy = loadedEvent && !venue ? loadedEvent : null;
+  const isCustomVenue = !!venue && (venue.is_custom || venue.layout_key === "custom");
   const activeSectors = sectors.filter((s) => s.is_active);
-  const prices = activeSectors.map((s) => Number(s.price) || 0).filter((p) => p > 0);
+  const perimetryReady = activeSectors.length > 0 && sectors.every((s) => !sectorIssue(s, isCustomVenue));
+  const legacyPerimetryOk = !!legacy && legacy.capacity > 0 && legacy.price_base > 0;
+  const hasVenue = !!venue || !!legacy?.venue;
+  const perimetryOk = venue ? perimetryReady : legacyPerimetryOk;
+
+  const effectiveCapacity = sectors.length > 0 ? activeSectors.reduce((sum, s) => sum + (Number(s.capacity) || 0), 0) : legacy?.capacity ?? 0;
+  const prices = sectors.length > 0 ? activeSectors.map((s) => Number(s.price) || 0).filter((p) => p > 0) : legacy ? [legacy.price_base].filter((p) => p > 0) : [];
   const minPrice = prices.length ? Math.min(...prices) : 0;
-  const perimetryReady = sectors.length > 0 && activeSectors.length > 0 && activeSectors.every((s) => Number(s.capacity) > 0 && Number(s.price) > 0);
+
+  const doorsAfterStart = !!(form.doorsOpen && form.time && form.doorsOpen > form.time);
+  const saleAfterEvent = !!(form.saleStart && form.date && form.time && new Date(form.saleStart) > new Date(`${form.date}T${form.time}`));
+
+  const issuesFor = (level: SaveLevel): Issue[] => {
+    const list: Issue[] = [];
+    if (!form.title.trim()) list.push({ id: "title", step: "info", target: "f-title", label: "Título del evento" });
+    if (!form.date) list.push({ id: "date", step: "fecha", target: "f-date", label: "Fecha del evento" });
+    if (!form.time) list.push({ id: "time", step: "fecha", target: "f-time", label: "Hora de inicio" });
+    if (level === "full") {
+      if (!hasVenue) list.push({ id: "venue", step: "venue", target: "h-venue", label: "Recinto" });
+      else if (!perimetryOk) list.push({ id: "map", step: "map", target: "h-map", label: "Sectores activos con capacidad y precio" });
+    }
+    if (!(Number(form.maxTicketsPerOrder) >= 1)) list.push({ id: "max", step: "conf", target: "f-max", label: "Máx. entradas por compra (mínimo 1)" });
+    if (mode === "edit" && effectiveCapacity > 0 && Number(form.sold) > effectiveCapacity) {
+      list.push({ id: "sold", step: "conf", target: "f-sold", label: `Entradas vendidas superan el aforo (${effectiveCapacity.toLocaleString("es-CL")})` });
+    }
+    return list;
+  };
+
+  const levelForSubmit: SaveLevel = mode === "create" || form.status !== "borrador" ? "full" : "minimal";
+  const issues = attemptLevel ? issuesFor(attemptLevel) : [];
+  const issueIds = new Set(issues.map((i) => i.id));
+  const invalid = (id: string) => issueIds.has(id);
 
   const checks = [
-    { key: "info", label: "Título del evento", ok: !!form.title.trim() },
-    { key: "venue", label: "Recinto seleccionado", ok: !!venue },
-    { key: "map", label: "Perimetría: sectores con capacidad y precio", ok: perimetryReady },
-    { key: "fecha", label: "Fecha y hora", ok: !!(form.date && form.time) },
-    { key: "img", label: "Banner Hero (16:9)", ok: !!form.hero_image_url },
-    { key: "img", label: "Banner interno (2.5:1)", ok: !!form.banner_image_url },
-    { key: "img", label: "Imagen de tarjeta (4:3)", ok: !!form.image_url },
+    { key: "info" as const, label: "Título del evento", ok: !!form.title.trim() },
+    { key: "venue" as const, label: "Recinto seleccionado", ok: hasVenue },
+    { key: "map" as const, label: "Sectores con capacidad y precio", ok: perimetryOk },
+    { key: "fecha" as const, label: "Fecha y hora", ok: !!(form.date && form.time) },
+    { key: "img" as const, label: "Banner Hero (16:9)", ok: !!form.hero_image_url, optional: true },
+    { key: "img" as const, label: "Banner interno (2.5:1)", ok: !!form.banner_image_url, optional: true },
+    { key: "img" as const, label: "Imagen de tarjeta (4:3)", ok: !!form.image_url, optional: true },
   ];
   const okCount = checks.filter((c) => c.ok).length;
-  const ready = okCount === checks.length;
-  const doneSteps = new Set(steps.filter((s) => s.key !== "conf" && checks.filter((c) => c.key === s.key).every((c) => c.ok)).map((s) => s.key));
+  const doneSteps = new Set(steps.filter((s) => s.key !== "conf" && checks.some((c) => c.key === s.key) && checks.filter((c) => c.key === s.key).every((c) => c.ok)).map((s) => s.key));
+  const errorSteps = new Set(issues.map((i) => i.step));
 
-  const buildInput = (statusOverride?: EventStatus): EventInput => ({
+  const scrollToStep = (key: StepKey) => {
+    setActiveStep(key);
+    document.getElementById(`s-${key}`)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+  };
+
+  const focusIssue = (issue: Issue) => {
+    scrollToStep(issue.step);
+    window.setTimeout(() => document.getElementById(issue.target)?.focus({ preventScroll: true }), prefersReducedMotion() ? 0 : 350);
+  };
+
+  const buildInput = (status: EventStatus): EventInput => ({
     title: form.title.trim(),
     subtitle: form.subtitle.trim(),
     description: form.description.trim(),
     venue_id: venue?.id ?? null,
-    venue: venue?.name ?? "",
-    city: venue?.city ?? "",
-    address: form.address,
+    venue: venue?.name ?? legacy?.venue ?? "",
+    city: venue?.city ?? legacy?.city ?? "",
+    address: form.address.trim(),
     category: form.category,
-    artist: form.artist,
-    event_date: form.date && form.time ? new Date(`${form.date}T${form.time}`).toISOString() : "",
+    artist: form.artist.trim(),
+    event_date: new Date(`${form.date}T${form.time}`).toISOString(),
     doors_open: form.doorsOpen,
     image_url: form.image_url,
     hero_image_url: form.hero_image_url,
     banner_image_url: form.banner_image_url,
-    sold: form.sold,
-    status: statusOverride ?? form.status,
+    sold: Number(form.sold) || 0,
+    status,
     show_in_hero: form.showInHero,
     sale_start: form.saleStart ? new Date(form.saleStart).toISOString() : "",
-    max_tickets_per_order: form.maxTicketsPerOrder,
+    max_tickets_per_order: Number(form.maxTicketsPerOrder) || 1,
     qr_validation: form.qrValidation,
     age_restriction: form.ageRestriction,
     sectors: sectors.map((s, i) => ({
       id: s.id,
-      name: s.name,
-      short_label: s.short_label,
+      name: s.name.trim(),
+      short_label: s.short_label.trim() || s.name.trim(),
       capacity: Number(s.capacity) || 0,
       price: Number(s.price) || 0,
       color: s.color,
@@ -318,116 +478,219 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       is_active: s.is_active,
       sort_order: i,
     })),
+    capacity: loadedEvent?.capacity ?? 0,
+    price_base: loadedEvent?.price_base ?? 0,
   });
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 2600);
-  };
-
-  const save = async (asDraft: boolean) => {
-    if (!form.title.trim()) {
-      showToast("Agrega al menos un título");
-      setActiveStep("info");
-      return;
-    }
-    if (!asDraft && !ready) {
-      const missing = checks.filter((c) => !c.ok).map((c) => c.label);
-      showToast(`Falta: ${missing.slice(0, 2).join(", ")}${missing.length > 2 ? "…" : ""}`);
+  const save = async (kind: "draft" | "submit", thenHref = "/eventos") => {
+    const level: SaveLevel = kind === "draft" ? "minimal" : levelForSubmit;
+    const status: EventStatus = kind === "draft" ? "borrador" : form.status;
+    const found = issuesFor(level);
+    if (found.length > 0) {
+      setAttemptLevel(level);
+      setLeaveTarget(null);
+      focusIssue(found[0]);
       return;
     }
 
     setSaving(true);
-    setError("");
+    setSaveError("");
     try {
-      const input = buildInput(asDraft ? "borrador" : undefined);
+      const input = buildInput(status);
       if (mode === "edit" && eventId) {
         await updateEvent(eventId, input);
       } else {
         await createEvent(input);
       }
-      setDirty(false);
-      router.push("/eventos");
+      const flash = mode === "edit" ? `Cambios guardados en «${input.title}»` : status === "borrador" ? `Borrador «${input.title}» guardado` : `Evento «${input.title}» creado`;
+      try {
+        sessionStorage.setItem(EVENTS_FLASH_KEY, flash);
+      } catch {
+        // storage unavailable: the save still succeeded
+      }
+      leavingRef.current = true;
+      router.push(thenHref);
     } catch {
-      setError("No pudimos guardar el evento. Revisa los datos e intenta de nuevo.");
-    } finally {
+      setLeaveTarget(null);
+      setSaveError("No pudimos guardar el evento. Revisa tu conexión e inténtalo de nuevo; tus cambios siguen aquí.");
       setSaving(false);
     }
   };
 
-  const tryLeave = () => {
-    if (dirty) {
-      setShowLeaveModal(true);
+  const requestLeave = (href = "/eventos") => {
+    if (dirty && !leavingRef.current) {
+      setLeaveTarget(href);
       return;
     }
-    router.push("/eventos");
+    leavingRef.current = true;
+    router.push(href);
   };
 
-  const scrollTo = (key: string) => {
-    setActiveStep(key);
-    sectionRefs.current[key]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const discardAndLeave = () => {
+    const target = leaveTarget ?? "/eventos";
+    leavingRef.current = true;
+    setLeaveTarget(null);
+    router.push(target);
   };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const key = Object.entries(sectionRefs.current).find(([, el]) => el === entry.target)?.[0];
-            if (key) setActiveStep(key);
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -55% 0px" }
+  const applyVenue = (v: Venue) => {
+    setVenue(v);
+    setSectors(sectorsFromVenue(v));
+    setShowCustomForm(false);
+    setPendingVenue(null);
+  };
+
+  const selectVenue = (v: Venue) => {
+    if (venue?.id === v.id) return;
+    const touched = venue ? sectorsSignature(sectors) !== sectorsSignature(sectorsFromVenue(venue)) : sectors.length > 0;
+    if (touched) {
+      setPendingVenue(v);
+      return;
+    }
+    applyVenue(v);
+  };
+
+  const handleCreateCustomVenue = async () => {
+    const name = customName.trim();
+    const city = customCity.trim();
+    if (!name || !city) {
+      setCustomError(!name ? "Escribe el nombre del recinto." : "Escribe la ciudad del recinto.");
+      return;
+    }
+    setCreatingVenue(true);
+    setCustomError("");
+    try {
+      const v = await createVenue({ name, city });
+      setVenues((prev) => [...prev, v]);
+      setCustomName("");
+      selectVenue(v);
+      setShowCustomForm(false);
+    } catch {
+      setCustomError("No pudimos crear el recinto. Revisa tu conexión e inténtalo de nuevo.");
+    } finally {
+      setCreatingVenue(false);
+    }
+  };
+
+  if (loadState === "loading") {
+    return (
+      <div className={styles.page}>
+        <div className={styles.stateCard} role="status">
+          <span className={styles.spinner} aria-hidden="true" />
+          Cargando evento…
+        </div>
+      </div>
     );
-    Object.values(sectionRefs.current).forEach((el) => el && observer.observe(el));
-    return () => observer.disconnect();
-  }, [loading]);
-
-  if (loading) {
-    return <div className={styles.page}>Cargando evento...</div>;
   }
 
-  return (
-    <div className={styles.page}>
-      <div className={styles.stickyBar}>
-        <div className={styles.crumb}>
-          <button type="button" onClick={tryLeave}>
-            Eventos
-          </button>
-          <span>/</span>
-          <span className={styles.crumbCurrent}>{mode === "edit" ? "Editar evento" : "Nuevo evento"}</span>
-        </div>
-        <div className={styles.headRow}>
-          <div className={styles.titleRow}>
-            <button type="button" className={styles.back} onClick={tryLeave} title="Volver">
-              <MaterialIcon name="arrow_back" />
+  if (loadState === "not-found" || loadState === "error") {
+    const notFound = loadState === "not-found";
+    return (
+      <div className={styles.page}>
+        <div className={styles.stateCard} role="alert">
+          <MaterialIcon decorative name={notFound ? "search_off" : "cloud_off"} className={styles.stateIcon} />
+          <h1 className={styles.stateTitle}>{notFound ? "No encontramos este evento" : "No pudimos cargar el evento"}</h1>
+          <p className={styles.stateText}>
+            {notFound ? "Puede que se haya eliminado o que el enlace esté incompleto." : "Revisa tu conexión e inténtalo de nuevo."}
+          </p>
+          <div className={styles.stateActions}>
+            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => router.push("/eventos")}>
+              Volver a eventos
             </button>
-            <div>
-              <h1 className={styles.liveTitle}>{form.title || (mode === "edit" ? "Editar evento" : "Nuevo evento")}</h1>
-              <p className={styles.liveSubtitle}>Completa la información para {mode === "edit" ? "actualizar" : "crear y publicar"} tu evento.</p>
-            </div>
-          </div>
-          <div className={styles.headActions}>
-            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={tryLeave}>
-              Cancelar
-            </button>
-            <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => save(true)} disabled={saving}>
-              <MaterialIcon name="drafts" className={styles.btnIcon} />
-              Guardar borrador
-            </button>
-            <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => save(false)} disabled={saving}>
-              <MaterialIcon name="check" className={styles.btnIcon} />
-              {saving ? "Guardando..." : mode === "edit" ? "Guardar cambios" : "Crear evento"}
-            </button>
+            {!notFound && (
+              <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => setLoadToken((t) => t + 1)}>
+                Reintentar
+              </button>
+            )}
           </div>
         </div>
       </div>
+    );
+  }
 
-      {error && <p className={styles.error}>{error}</p>}
+  const visibleStatuses = statusOptions.filter((o) => mode === "edit" || !o.editOnly);
+  const pageTitle = mode === "edit" ? "Editar evento" : "Nuevo evento";
+
+  return (
+    <div className={styles.page} ref={pageRef}>
+      <div className={styles.stickyBar} ref={stickyRef}>
+        <nav className={styles.crumb} aria-label="Ruta">
+          <button type="button" onClick={() => requestLeave("/eventos")}>
+            Eventos
+          </button>
+          <MaterialIcon decorative name="chevron_right" className={styles.crumbSep} />
+          <span className={styles.crumbCurrent} aria-current="page">
+            {pageTitle}
+          </span>
+        </nav>
+        <div className={styles.headRow}>
+          <div className={styles.titleRow}>
+            <button type="button" className={styles.back} onClick={() => requestLeave("/eventos")} aria-label="Volver a eventos">
+              <MaterialIcon decorative name="arrow_back" />
+            </button>
+            <div className={styles.titleText}>
+              <h1 className={styles.liveTitle}>{form.title.trim() || pageTitle}</h1>
+              <p className={styles.liveSubtitle}>
+                {dirty ? (
+                  <span className={styles.unsaved}>
+                    <span className={styles.unsavedDot} aria-hidden="true" />
+                    Cambios sin guardar
+                  </span>
+                ) : mode === "edit" ? (
+                  "Todos los cambios están guardados."
+                ) : (
+                  "Completa la información para crear y publicar tu evento."
+                )}
+              </p>
+            </div>
+          </div>
+          <div className={styles.headActions}>
+            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => requestLeave("/eventos")} disabled={saving}>
+              Cancelar
+            </button>
+            {mode === "create" && (
+              <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => save("draft")} disabled={saving}>
+                <MaterialIcon decorative name="draft" className={styles.btnIcon} />
+                Guardar borrador
+              </button>
+            )}
+            <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => save("submit")} disabled={saving}>
+              <MaterialIcon decorative name={saving ? "progress_activity" : "check"} className={`${styles.btnIcon} ${saving ? styles.spin : ""}`} />
+              {saving ? "Guardando…" : mode === "edit" ? "Guardar cambios" : "Crear evento"}
+            </button>
+          </div>
+        </div>
+
+        {saveError && (
+          <div className={styles.alert} role="alert">
+            <MaterialIcon decorative name="error" className={styles.alertIcon} />
+            <p>{saveError}</p>
+          </div>
+        )}
+
+        {issues.length > 0 && (
+          <div className={styles.alert} role="alert">
+            <MaterialIcon decorative name="error" className={styles.alertIcon} />
+            <div>
+              <p className={styles.alertTitle}>
+                {attemptLevel === "minimal" ? "Para guardar el borrador falta completar:" : "Para guardar el evento falta completar:"}
+              </p>
+              <ul className={styles.alertList}>
+                {issues.map((i) => (
+                  <li key={i.id}>
+                    <button type="button" onClick={() => focusIssue(i)}>
+                      {i.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className={styles.grid}>
-        <nav className={styles.steps}>
+        <nav className={styles.steps} aria-label="Secciones del formulario">
           {steps.map((s, i) => (
             <a
               key={s.key}
@@ -435,111 +698,187 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               className={styles.stepLink}
               data-active={activeStep === s.key}
               data-done={doneSteps.has(s.key)}
+              data-error={errorSteps.has(s.key)}
+              aria-current={activeStep === s.key ? "step" : undefined}
               onClick={(e) => {
                 e.preventDefault();
-                scrollTo(s.key);
+                scrollToStep(s.key);
               }}
             >
-              <span className={styles.stepNumber}>{i + 1}</span>
+              <span className={styles.stepNumber} aria-hidden="true">
+                {errorSteps.has(s.key) ? "!" : doneSteps.has(s.key) ? <MaterialIcon decorative name="check" /> : i + 1}
+              </span>
               {s.label}
+              {errorSteps.has(s.key) && <span className={styles.srOnly}> (tiene errores)</span>}
             </a>
           ))}
         </nav>
 
-        <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-          <div className={styles.sec} id="s-info" ref={(el) => { sectionRefs.current.info = el; }}>
+        <form className={styles.form} onSubmit={(e) => e.preventDefault()} noValidate>
+          <section className={styles.sec} id="s-info" aria-labelledby="h-info">
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#ffe7dc", color: "var(--color-orange)" }}>
-                <MaterialIcon name="reorder" />
+              <div className={styles.secIcon} data-tone="orange" aria-hidden="true">
+                <MaterialIcon decorative name="notes" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>Información básica</h2>
+                <h2 className={styles.secTitle} id="h-info" tabIndex={-1}>
+                  Información básica
+                </h2>
                 <p className={styles.secDesc}>El título y subtítulo se muestran en la portada y en la ficha del evento.</p>
               </div>
             </div>
             <div className={styles.row}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-title">
                 <span className={styles.label}>
-                  Título <i>*</i>
+                  <span>
+                    Título <i aria-hidden="true">*</i>
+                  </span>
                   <small className={styles.counter}>{form.title.length}/80</small>
                 </span>
-                <input type="text" maxLength={80} value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Ej: Beéle en Chile — Gira 2026" />
+                <input
+                  id="f-title"
+                  type="text"
+                  maxLength={80}
+                  required
+                  aria-required="true"
+                  aria-invalid={invalid("title")}
+                  aria-describedby={invalid("title") ? "e-title" : undefined}
+                  value={form.title}
+                  onChange={(e) => update("title", e.target.value)}
+                  placeholder="Ej: Beéle en Chile — Gira 2026"
+                />
+                {invalid("title") && (
+                  <span className={styles.fieldError} id="e-title">
+                    Escribe un título para identificar el evento.
+                  </span>
+                )}
               </label>
             </div>
             <div className={styles.row}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-subtitle">
                 <span className={styles.label}>
-                  Subtítulo
+                  <span>Subtítulo</span>
                   <small className={styles.counter}>{form.subtitle.length}/120</small>
                 </span>
-                <input type="text" maxLength={120} value={form.subtitle} onChange={(e) => update("subtitle", e.target.value)} placeholder="Ej: Una noche única en Santiago" />
+                <input id="f-subtitle" type="text" maxLength={120} value={form.subtitle} onChange={(e) => update("subtitle", e.target.value)} placeholder="Ej: Una noche única en Santiago" />
               </label>
             </div>
             <div className={`${styles.row} ${styles.c2}`}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-category">
                 <span className={styles.label}>Categoría</span>
-                <select value={form.category} onChange={(e) => update("category", e.target.value)}>
+                <select id="f-category" value={form.category} onChange={(e) => update("category", e.target.value)}>
                   {["Concierto", "Festival", "Teatro", "Stand-up", "Deportes", "Otro"].map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
               </label>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-artist">
                 <span className={styles.label}>Artista / Organizador</span>
-                <input type="text" value={form.artist} onChange={(e) => update("artist", e.target.value)} placeholder="Ej: Beéle" />
+                <input id="f-artist" type="text" maxLength={80} value={form.artist} onChange={(e) => update("artist", e.target.value)} placeholder="Ej: Beéle" />
               </label>
             </div>
             <div className={styles.row}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-description">
                 <span className={styles.label}>Descripción</span>
-                <textarea value={form.description} onChange={(e) => update("description", e.target.value)} placeholder="Cuenta de qué se trata el evento, line-up, horarios de apertura de puertas, restricciones de edad…" />
+                <textarea
+                  id="f-description"
+                  value={form.description}
+                  onChange={(e) => update("description", e.target.value)}
+                  placeholder="Cuenta de qué se trata el evento, line-up, horarios de apertura de puertas, restricciones de edad…"
+                />
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className={styles.sec} id="s-venue" ref={(el) => { sectionRefs.current.venue = el; }}>
+          <section className={styles.sec} id="s-venue" aria-labelledby="h-venue" data-invalid={invalid("venue")}>
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#e9e3ff", color: "var(--color-purple)" }}>
-                <MaterialIcon name="location_on" />
+              <div className={styles.secIcon} data-tone="purple" aria-hidden="true">
+                <MaterialIcon decorative name="location_on" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>
-                  Recinto <span style={{ color: "var(--color-orange)" }}>*</span>
+                <h2 className={styles.secTitle} id="h-venue" tabIndex={-1}>
+                  Recinto <i className={styles.req} aria-hidden="true">*</i>
                 </h2>
                 <p className={styles.secDesc}>Elige dónde se realiza el evento. Su perimetría (plano y sectores) se carga automáticamente.</p>
               </div>
             </div>
-            <div className={styles.venueSearch}>
-              <MaterialIcon name="search" className={styles.venueIcon} />
-              <input type="text" value={venueSearch} onChange={(e) => setVenueSearch(e.target.value)} placeholder="Buscar recinto o ciudad…" />
-            </div>
-            <div className={styles.venues}>
-              {filteredVenues.map((v) => (
-                <button key={v.id} type="button" className={styles.venueCard} data-active={venue?.id === v.id} data-custom={v.is_custom} onClick={() => (v.is_custom ? setShowCustomForm(true) : selectVenue(v))}>
-                  <div className={styles.venueThumb} style={{ background: v.is_custom ? "#f8f9fa" : `linear-gradient(135deg, ${v.gradient})`, color: v.is_custom ? "#797488" : undefined }}>
-                    <MaterialIcon name={v.is_custom ? "add" : "stadium"} />
-                  </div>
-                  <div className={styles.venueBody}>
-                    <span className={styles.venueName}>{v.name}</span>
-                    <span className={styles.venueCity}>{v.city}</span>
-                    <div className={styles.venueTags}>
-                      <span className={styles.venueTag}>{v.type}</span>
-                      {!v.is_custom && (
-                        <>
-                          <span className={styles.venueTag}>{(venueCapacity(v) ?? 0).toLocaleString("es-CL")} pers.</span>
-                          <span className={styles.venueTag}>{sectorCountFor(v)} sectores</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <span className={styles.venueCheck}>
-                    <MaterialIcon name="check" />
-                  </span>
+
+            {invalid("venue") && <p className={styles.fieldError}>Elige un recinto para poder vender entradas.</p>}
+
+            {legacy && (
+              <div className={styles.notice}>
+                <MaterialIcon decorative name="history" className={styles.noticeIcon} />
+                <p>
+                  Este evento se creó antes del catálogo de recintos. Hoy figura en <b>{[legacy.venue, legacy.city].filter(Boolean).join(", ") || "sin recinto"}</b>
+                  {legacy.capacity > 0 && (
+                    <>
+                      {" "}
+                      con aforo <b>{legacy.capacity.toLocaleString("es-CL")}</b> y precio base <b>{currency(legacy.price_base)}</b>
+                    </>
+                  )}
+                  . Elige un recinto para configurar sus sectores; si no, se conservan estos valores.
+                </p>
+              </div>
+            )}
+
+            <label className={styles.venueSearch}>
+              <MaterialIcon decorative name="search" className={styles.venueIcon} />
+              <span className={styles.srOnly}>Buscar recinto</span>
+              <input type="search" value={venueSearch} onChange={(e) => setVenueSearch(e.target.value)} placeholder="Buscar recinto o ciudad…" />
+            </label>
+
+            {venuesError && (
+              <div className={styles.inlineError} role="alert">
+                <span>No pudimos cargar los recintos.</span>
+                <button type="button" onClick={() => setVenuesToken((t) => t + 1)}>
+                  Reintentar
                 </button>
-              ))}
-              <button type="button" className={styles.venueCard} data-custom="true" data-active={showCustomForm} onClick={() => setShowCustomForm(true)}>
-                <div className={styles.venueThumb} style={{ background: "#f8f9fa", color: "#797488" }}>
-                  <MaterialIcon name="add" />
+              </div>
+            )}
+
+            <div className={styles.venues}>
+              {filteredVenues.map((v) => {
+                const selected = venue?.id === v.id;
+                return (
+                  <button key={v.id} type="button" className={styles.venueCard} data-active={selected} aria-pressed={selected} onClick={() => selectVenue(v)}>
+                    <div
+                      className={styles.venueThumb}
+                      data-custom={v.is_custom}
+                      style={v.is_custom || !v.gradient ? undefined : { background: `linear-gradient(135deg, ${v.gradient})` }}
+                      aria-hidden="true"
+                    >
+                      <MaterialIcon decorative name={v.is_custom ? "location_city" : "stadium"} />
+                    </div>
+                    <div className={styles.venueBody}>
+                      <span className={styles.venueName}>{v.name}</span>
+                      <span className={styles.venueCity}>{v.city}</span>
+                      <div className={styles.venueTags}>
+                        <span className={styles.venueTag}>{v.is_custom ? "Personalizado" : v.type}</span>
+                        {!v.is_custom && (
+                          <>
+                            <span className={styles.venueTag}>{(venueCapacity(v) ?? 0).toLocaleString("es-CL")} pers.</span>
+                            <span className={styles.venueTag}>{sectorCountFor(v)} sectores</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <span className={styles.venueCheck} aria-hidden="true">
+                      <MaterialIcon decorative name="check" />
+                    </span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                className={styles.venueCard}
+                data-dashed="true"
+                data-active={showCustomForm}
+                aria-expanded={showCustomForm}
+                aria-controls="custom-venue"
+                onClick={() => setShowCustomForm((s) => !s)}
+              >
+                <div className={styles.venueThumb} data-custom="true" aria-hidden="true">
+                  <MaterialIcon decorative name="add" />
                 </div>
                 <div className={styles.venueBody}>
                   <span className={styles.venueName}>Otro recinto</span>
@@ -550,90 +889,127 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 </div>
               </button>
             </div>
+
+            {filteredVenues.length === 0 && venueSearch && !venuesError && (
+              <p className={styles.hint}>No hay recintos que coincidan con «{venueSearch}». Usa «Otro recinto» para crearlo.</p>
+            )}
+
             {showCustomForm && (
-              <div style={{ marginTop: 20 }}>
+              <div className={styles.customVenue} id="custom-venue">
                 <div className={`${styles.row} ${styles.c2}`}>
-                  <label className={styles.field}>
+                  <label className={styles.field} htmlFor="f-cv-name">
                     <span className={styles.label}>
-                      Nombre del recinto <i>*</i>
+                      <span>
+                        Nombre del recinto <i aria-hidden="true">*</i>
+                      </span>
                     </span>
-                    <input type="text" value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Ej: Club Chocolate" />
+                    <input id="f-cv-name" type="text" maxLength={80} value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="Ej: Club Chocolate" />
                   </label>
-                  <label className={styles.field}>
+                  <label className={styles.field} htmlFor="f-cv-city">
                     <span className={styles.label}>
-                      Ciudad <i>*</i>
+                      <span>
+                        Ciudad <i aria-hidden="true">*</i>
+                      </span>
                     </span>
-                    <input type="text" value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
+                    <input id="f-cv-city" type="text" maxLength={60} value={customCity} onChange={(e) => setCustomCity(e.target.value)} />
                   </label>
                 </div>
                 <div className={styles.row}>
-                  <label className={styles.field}>
+                  <label className={styles.field} htmlFor="f-address">
                     <span className={styles.label}>Dirección</span>
-                    <input type="text" value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Calle y número" />
+                    <input id="f-address" type="text" maxLength={120} value={form.address} onChange={(e) => update("address", e.target.value)} placeholder="Calle y número" />
                   </label>
                 </div>
-                <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={handleCreateCustomVenue} disabled={!customName.trim()}>
-                  Usar este recinto
-                </button>
+                {customError && (
+                  <p className={styles.fieldError} role="alert">
+                    {customError}
+                  </p>
+                )}
+                <div className={styles.customActions}>
+                  <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setShowCustomForm(false)} disabled={creatingVenue}>
+                    Cancelar
+                  </button>
+                  <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={handleCreateCustomVenue} disabled={creatingVenue}>
+                    {creatingVenue ? "Creando…" : "Crear y usar este recinto"}
+                  </button>
+                </div>
               </div>
             )}
-          </div>
+          </section>
 
-          <div className={styles.sec} id="s-map" ref={(el) => { sectionRefs.current.map = el; }}>
+          <section className={styles.sec} id="s-map" aria-labelledby="h-map" data-invalid={invalid("map")}>
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#ffe7dc", color: "var(--color-orange)" }}>
-                <MaterialIcon name="grid_on" />
+              <div className={styles.secIcon} data-tone="orange" aria-hidden="true">
+                <MaterialIcon decorative name="grid_on" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>Perimetría y entradas</h2>
+                <h2 className={styles.secTitle} id="h-map" tabIndex={-1}>
+                  Perimetría y entradas
+                </h2>
                 <p className={styles.secDesc}>Activa los sectores que se venderán y define la capacidad y el precio de cada uno. El aforo total se calcula solo.</p>
               </div>
             </div>
-            <PerimetryEditor venue={venue} sectors={sectors} onChange={setSectors} />
-          </div>
+            {invalid("map") && <p className={styles.fieldError}>Cada sector activo necesita capacidad y precio mayores a cero.</p>}
+            <PerimetryEditor venue={venue} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+          </section>
 
-          <div className={styles.sec} id="s-fecha" ref={(el) => { sectionRefs.current.fecha = el; }}>
+          <section className={styles.sec} id="s-fecha" aria-labelledby="h-fecha">
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#e6ecff", color: "var(--color-info)" }}>
-                <MaterialIcon name="calendar_month" />
+              <div className={styles.secIcon} data-tone="blue" aria-hidden="true">
+                <MaterialIcon decorative name="calendar_month" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>Fecha y hora</h2>
-                <p className={styles.secDesc}>Cuándo ocurre el evento.</p>
+                <h2 className={styles.secTitle} id="h-fecha" tabIndex={-1}>
+                  Fecha y hora
+                </h2>
+                <p className={styles.secDesc}>Cuándo ocurre el evento. La fecha es obligatoria incluso para borradores.</p>
               </div>
             </div>
             <div className={`${styles.row} ${styles.c3}`}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-date">
                 <span className={styles.label}>
-                  Fecha <i>*</i>
+                  <span>
+                    Fecha <i aria-hidden="true">*</i>
+                  </span>
                 </span>
-                <input type="date" value={form.date} onChange={(e) => update("date", e.target.value)} />
+                <input id="f-date" type="date" required aria-required="true" aria-invalid={invalid("date")} value={form.date} onChange={(e) => update("date", e.target.value)} />
+                {invalid("date") && <span className={styles.fieldError}>Elige la fecha del evento.</span>}
               </label>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-time">
                 <span className={styles.label}>
-                  Hora de inicio <i>*</i>
+                  <span>
+                    Hora de inicio <i aria-hidden="true">*</i>
+                  </span>
                 </span>
-                <input type="time" value={form.time} onChange={(e) => update("time", e.target.value)} />
+                <input id="f-time" type="time" required aria-required="true" aria-invalid={invalid("time")} value={form.time} onChange={(e) => update("time", e.target.value)} />
+                {invalid("time") && <span className={styles.fieldError}>Indica a qué hora comienza.</span>}
               </label>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-doors">
                 <span className={styles.label}>Apertura de puertas</span>
-                <input type="time" value={form.doorsOpen} onChange={(e) => update("doorsOpen", e.target.value)} />
+                <input id="f-doors" type="time" value={form.doorsOpen} onChange={(e) => update("doorsOpen", e.target.value)} aria-describedby={doorsAfterStart ? "w-doors" : undefined} />
+                {doorsAfterStart && (
+                  <span className={styles.fieldWarn} id="w-doors">
+                    Las puertas abren después del inicio. ¿Es correcto?
+                  </span>
+                )}
               </label>
             </div>
-          </div>
+          </section>
 
-          <div className={styles.sec} id="s-img" ref={(el) => { sectionRefs.current.img = el; }}>
+          <section className={styles.sec} id="s-img" aria-labelledby="h-img">
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#dcf7e9", color: "var(--color-success)" }}>
-                <MaterialIcon name="image" />
+              <div className={styles.secIcon} data-tone="green" aria-hidden="true">
+                <MaterialIcon decorative name="image" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>Imágenes del evento</h2>
-                <p className={styles.secDesc}>Sube una imagen distinta para cada lugar donde aparece el evento.</p>
+                <h2 className={styles.secTitle} id="h-img" tabIndex={-1}>
+                  Imágenes del evento
+                </h2>
+                <p className={styles.secDesc}>Sube una imagen distinta para cada lugar donde aparece el evento. Si falta alguna, el sitio usa una imagen genérica.</p>
               </div>
             </div>
             <div className={styles.tip}>
-              <MaterialIcon name="info" />
+              <MaterialIcon decorative name="info" className={styles.tipIcon} />
               <span>
                 En cada imagen, mantén el elemento principal <b>centrado</b> — es el área segura que se conserva al recortar. Evita textos o rostros cerca de los bordes.
               </span>
@@ -643,71 +1019,109 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               <EventImageField label="Banner interno del evento — 1280 × 500 px · ~2.5:1" hint="Cabecera de la página de detalle del evento." value={form.banner_image_url} onChange={(url) => update("banner_image_url", url)} />
               <EventImageField label="Tarjeta destacada / listado — 800 × 560 px · 4:3" hint="Eventos destacados, Cerca de ti y listado de eventos." value={form.image_url} onChange={(url) => update("image_url", url)} />
             </div>
-          </div>
+          </section>
 
-          <div className={styles.sec} id="s-conf" ref={(el) => { sectionRefs.current.conf = el; }}>
+          <section className={styles.sec} id="s-conf" aria-labelledby="h-conf">
             <div className={styles.secHead}>
-              <div className={styles.secIcon} style={{ background: "#f3f4f9", color: "#4a4c66" }}>
-                <MaterialIcon name="tune" />
+              <div className={styles.secIcon} data-tone="neutral" aria-hidden="true">
+                <MaterialIcon decorative name="tune" />
               </div>
               <div>
-                <h2 className={styles.secTitle}>Configuración de venta</h2>
+                <h2 className={styles.secTitle} id="h-conf" tabIndex={-1}>
+                  Configuración de venta
+                </h2>
                 <p className={styles.secDesc}>Opciones de visibilidad y reglas de compra.</p>
               </div>
             </div>
             <div className={`${styles.row} ${styles.c2}`}>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-sale">
                 <span className={styles.label}>Inicio de venta</span>
-                <input type="datetime-local" value={form.saleStart} onChange={(e) => update("saleStart", e.target.value)} />
+                <input id="f-sale" type="datetime-local" value={form.saleStart} onChange={(e) => update("saleStart", e.target.value)} aria-describedby={saleAfterEvent ? "w-sale" : "h-sale"} />
+                {saleAfterEvent ? (
+                  <span className={styles.fieldWarn} id="w-sale">
+                    La venta empieza después del evento. Revisa la fecha.
+                  </span>
+                ) : (
+                  <span className={styles.hint} id="h-sale">
+                    Déjalo vacío para vender en cuanto publiques.
+                  </span>
+                )}
               </label>
-              <label className={styles.field}>
+              <label className={styles.field} htmlFor="f-max">
                 <span className={styles.label}>Máx. entradas por compra</span>
-                <input type="number" min={1} value={form.maxTicketsPerOrder} onChange={(e) => update("maxTicketsPerOrder", Number(e.target.value))} />
+                <input
+                  id="f-max"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  aria-invalid={invalid("max")}
+                  value={form.maxTicketsPerOrder}
+                  onChange={(e) => update("maxTicketsPerOrder", toWhole(e.target.value))}
+                />
+                {invalid("max") && <span className={styles.fieldError}>Debe ser 1 o más.</span>}
               </label>
             </div>
             {mode === "edit" && (
               <div className={`${styles.row} ${styles.c2}`}>
-                <label className={styles.field}>
+                <label className={styles.field} htmlFor="f-sold">
                   <span className={styles.label}>Entradas vendidas (manual)</span>
-                  <input type="number" min={0} value={form.sold} onChange={(e) => update("sold", Number(e.target.value))} />
+                  <input
+                    id="f-sold"
+                    type="number"
+                    min={0}
+                    step={1}
+                    inputMode="numeric"
+                    aria-invalid={invalid("sold")}
+                    value={form.sold}
+                    onChange={(e) => update("sold", toWhole(e.target.value))}
+                  />
+                  {invalid("sold") ? (
+                    <span className={styles.fieldError}>No puede superar el aforo habilitado ({effectiveCapacity.toLocaleString("es-CL")}).</span>
+                  ) : (
+                    <span className={styles.hint}>Aforo habilitado: {effectiveCapacity.toLocaleString("es-CL")} personas.</span>
+                  )}
                 </label>
               </div>
             )}
-            <div className={styles.switch}>
-              <div className={styles.switchText}>
-                <b>Mostrar en banner Hero del home</b>
-                <small>El evento aparecerá en el carrusel principal de la portada.</small>
+            {[
+              { key: "showInHero" as const, id: "t-hero", title: "Mostrar en banner Hero del home", desc: "El evento aparecerá en el carrusel principal de la portada." },
+              { key: "qrValidation" as const, id: "t-qr", title: "Validación con QR en puerta", desc: "Habilita el check-in desde la app de Validación." },
+              { key: "ageRestriction" as const, id: "t-age", title: "Evento para mayores de 18", desc: "Se solicitará confirmación de edad al comprar." },
+            ].map((t) => (
+              <div key={t.key} className={styles.switch}>
+                <div className={styles.switchText}>
+                  <b id={`${t.id}-label`}>{t.title}</b>
+                  <small id={`${t.id}-desc`}>{t.desc}</small>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  className={styles.tg}
+                  aria-checked={form[t.key]}
+                  aria-labelledby={`${t.id}-label`}
+                  aria-describedby={`${t.id}-desc`}
+                  data-checked={form[t.key]}
+                  onClick={() => update(t.key, !form[t.key])}
+                />
               </div>
-              <button type="button" className={styles.tg} data-checked={form.showInHero} onClick={() => update("showInHero", !form.showInHero)} />
-            </div>
-            <div className={styles.switch}>
-              <div className={styles.switchText}>
-                <b>Validación con QR en puerta</b>
-                <small>Habilita el check-in desde la app de Validación.</small>
-              </div>
-              <button type="button" className={styles.tg} data-checked={form.qrValidation} onClick={() => update("qrValidation", !form.qrValidation)} />
-            </div>
-            <div className={styles.switch}>
-              <div className={styles.switchText}>
-                <b>Evento para mayores de 18</b>
-                <small>Se solicitará confirmación de edad al comprar.</small>
-              </div>
-              <button type="button" className={styles.tg} data-checked={form.ageRestriction} onClick={() => update("ageRestriction", !form.ageRestriction)} />
-            </div>
-          </div>
+            ))}
+          </section>
         </form>
 
-        <aside className={styles.aside}>
+        <aside className={styles.aside} aria-label="Resumen del evento">
           <div className={styles.box}>
-            <h3 className={styles.boxTitle}>Estado</h3>
-            <div className={styles.radio}>
-              {statusOptions.map((opt) => (
+            <h3 className={styles.boxTitle} id="estado-title">
+              Estado
+            </h3>
+            <div className={styles.radio} role="radiogroup" aria-labelledby="estado-title">
+              {visibleStatuses.map((opt) => (
                 <label key={opt.value} className={styles.radioOption} data-checked={form.status === opt.value}>
-                  <input type="radio" name="status" checked={form.status === opt.value} onChange={() => update("status", opt.value)} />
-                  <div>
+                  <input type="radio" name="status" value={opt.value} checked={form.status === opt.value} onChange={() => update("status", opt.value)} />
+                  <span>
                     <b>{opt.label}</b>
                     <small>{opt.hint}</small>
-                  </div>
+                  </span>
                 </label>
               ))}
             </div>
@@ -716,73 +1130,101 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           <div className={styles.box}>
             <h3 className={styles.boxTitle}>Vista previa</h3>
             <div className={styles.preview}>
-              <div className={styles.previewImage} style={form.image_url ? { backgroundImage: `url(${form.image_url})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
-                <span className={styles.previewBadge}>{{ borrador: "BORRADOR", proximamente: "PRÓXIMAMENTE", "en-venta": "EN VENTA", "casi-agotado": "CASI AGOTADO", finalizado: "FINALIZADO" }[form.status]}</span>
-                {!form.image_url && <MaterialIcon name="image" />}
+              <div className={styles.previewImage} style={form.image_url ? { backgroundImage: `url("${form.image_url}")` } : undefined}>
+                <span className={styles.previewBadge}>{statusBadge[form.status]}</span>
+                {!form.image_url && <MaterialIcon decorative name="image" className={styles.previewPlaceholder} />}
               </div>
               <div className={styles.previewBody}>
-                <h4>{form.title || "Título del evento"}</h4>
+                <h4>{form.title.trim() || "Título del evento"}</h4>
                 <p>
-                  <MaterialIcon name="calendar_month" />
+                  <MaterialIcon decorative name="calendar_month" />
                   <span>{fmtDate(form.date, form.time) || "Fecha por definir"}</span>
                 </p>
                 <p>
-                  <MaterialIcon name="location_on" />
-                  <span>{venue ? `${venue.name}, ${venue.city}` : "Recinto, Ciudad"}</span>
+                  <MaterialIcon decorative name="location_on" />
+                  <span>{venue ? `${venue.name}, ${venue.city}` : legacy?.venue ? `${legacy.venue}, ${legacy.city}` : "Recinto por definir"}</span>
                 </p>
-                <div className={styles.previewPrice}>{minPrice ? `Desde ${currency(minPrice)}` : "Desde $—"}</div>
+                <div className={styles.previewPrice}>{minPrice ? `Desde ${currency(minPrice)}` : "Precio por definir"}</div>
               </div>
             </div>
           </div>
 
           <div className={styles.box}>
             <h3 className={styles.boxTitle}>Checklist de publicación</h3>
-            <div className={styles.progress}>
-              <span className={styles.progressFill} style={{ width: `${(okCount / checks.length) * 100}%` }} />
+            <div
+              className={styles.progress}
+              role="progressbar"
+              aria-label="Avance de la configuración"
+              aria-valuemin={0}
+              aria-valuemax={checks.length}
+              aria-valuenow={okCount}
+              aria-valuetext={`${okCount} de ${checks.length} completados`}
+            >
+              <span className={styles.progressFill} style={{ transform: `scaleX(${okCount / checks.length})` }} />
             </div>
-            <div className={styles.checklist}>
-              {checks.map((c, i) => (
-                <div key={i} className={styles.checkItem} data-ok={c.ok}>
-                  <span className={styles.checkDot}>{c.ok && <MaterialIcon name="check" />}</span>
-                  {c.label}
-                </div>
+            <ul className={styles.checklist}>
+              {checks.map((c) => (
+                <li key={c.label}>
+                  <button type="button" className={styles.checkItem} data-ok={c.ok} onClick={() => scrollToStep(c.key)}>
+                    <span className={styles.checkDot} aria-hidden="true">
+                      {c.ok && <MaterialIcon decorative name="check" />}
+                    </span>
+                    <span className={styles.checkLabel}>
+                      {c.label}
+                      <span className={styles.srOnly}>{c.ok ? " (listo)" : " (pendiente)"}</span>
+                    </span>
+                    {c.optional && !c.ok && <span className={styles.optionalTag}>Recomendado</span>}
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </aside>
       </div>
 
-      {showLeaveModal && (
-        <div className={styles.overlay} onClick={() => setShowLeaveModal(false)}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalIcon}>
-              <MaterialIcon name="warning" />
-            </div>
-            <h3>¿Salir sin guardar?</h3>
-            <p>
-              Tienes cambios sin guardar en este evento. Si sales ahora, <b>perderás toda la información ingresada</b>.
-            </p>
-            <div className={styles.modalActions}>
-              <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => setShowLeaveModal(false)}>
-                Seguir editando
-              </button>
-              <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => save(true)}>
-                Guardar como borrador y salir
-              </button>
-              <button type="button" className={`${styles.btn} ${styles.btnDanger}`} onClick={() => router.push("/eventos")}>
-                Salir y descartar cambios
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={leaveTarget !== null}
+        title="¿Salir sin guardar?"
+        details={changedAreas.map((a) => areaLabels[a])}
+        busy={saving}
+        onClose={() => setLeaveTarget(null)}
+        actions={[
+          { label: "Seguir editando", variant: "primary", autoFocus: true, onClick: () => setLeaveTarget(null) },
+          {
+            label: mode === "edit" ? "Guardar cambios y salir" : "Guardar como borrador y salir",
+            busyLabel: "Guardando…",
+            variant: "soft",
+            onClick: () => save(mode === "edit" ? "submit" : "draft", leaveTarget ?? "/eventos"),
+          },
+          { label: "Salir sin guardar", variant: "danger", onClick: discardAndLeave },
+        ]}
+      >
+        <p>
+          {mode === "edit" ? (
+            <>
+              Tienes cambios sin guardar en <b>«{form.title.trim() || loadedEvent?.title}»</b>. Si sales ahora, se perderán.
+            </>
+          ) : (
+            "Tienes un evento nuevo sin guardar. Si sales ahora, se perderá lo que ingresaste."
+          )}
+        </p>
+        {changedAreas.length > 0 && <p className={styles.modalLead}>Secciones con cambios:</p>}
+      </ConfirmDialog>
 
-      {toast && (
-        <div className={styles.toast} data-show={!!toast}>
-          {toast}
-        </div>
-      )}
+      <ConfirmDialog
+        open={pendingVenue !== null}
+        icon="swap_horiz"
+        title="¿Cambiar de recinto?"
+        onClose={() => setPendingVenue(null)}
+        actions={[
+          { label: "Mantener recinto actual", variant: "soft", autoFocus: true, onClick: () => setPendingVenue(null) },
+          { label: `Cambiar a ${pendingVenue?.name ?? "otro recinto"}`, variant: "danger", onClick: () => pendingVenue && applyVenue(pendingVenue) },
+        ]}
+      >
+        <p>
+          Los sectores, capacidades y precios que configuraste{venue ? <> para <b>{venue.name}</b></> : null} se reemplazarán por los de <b>{pendingVenue?.name}</b>.
+        </p>
+      </ConfirmDialog>
     </div>
   );
 }
-

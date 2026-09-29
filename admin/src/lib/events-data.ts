@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 
+export const EVENTS_FLASH_KEY = "eventos:flash";
+
 export type EventStatus = "borrador" | "en-venta" | "casi-agotado" | "proximamente" | "finalizado";
 
 export type EventRecord = {
@@ -72,6 +74,9 @@ export type EventInput = {
   qr_validation: boolean;
   age_restriction: boolean;
   sectors: SectorInput[];
+  // Used only when `sectors` is empty (events created before sectors existed).
+  capacity: number;
+  price_base: number;
 };
 
 function slugify(title: string) {
@@ -92,7 +97,8 @@ function computeCapacityAndPrice(sectors: SectorInput[]): { capacity: number; pr
 }
 
 function eventPayload(input: EventInput) {
-  const { capacity, price_base } = computeCapacityAndPrice(input.sectors);
+  const { capacity, price_base } =
+    input.sectors.length > 0 ? computeCapacityAndPrice(input.sectors) : { capacity: input.capacity, price_base: input.price_base };
   return {
     title: input.title,
     subtitle: input.subtitle || null,

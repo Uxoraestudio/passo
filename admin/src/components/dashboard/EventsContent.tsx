@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
-import { deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
+import { EVENTS_FLASH_KEY, deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
 import EventsKpiRow from "./EventsKpiRow";
 import EventsFilterBar, { type FilterTab } from "./EventsFilterBar";
 import EventRow from "./EventRow";
@@ -30,6 +30,27 @@ export default function EventsContent() {
 
   const [reloadToken, setReloadToken] = useState(0);
   const refresh = useCallback(() => setReloadToken((t) => t + 1), []);
+
+  const [flash, setFlash] = useState("");
+
+  useEffect(() => {
+    let message: string | null = null;
+    try {
+      message = sessionStorage.getItem(EVENTS_FLASH_KEY);
+    } catch {
+      return;
+    }
+    if (!message) return;
+    const show = window.setTimeout(() => {
+      sessionStorage.removeItem(EVENTS_FLASH_KEY);
+      setFlash(message ?? "");
+    }, 0);
+    const hide = window.setTimeout(() => setFlash(""), 4200);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +134,14 @@ export default function EventsContent() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.toast} role="status" aria-live="polite" data-show={!!flash}>
+        {flash && (
+          <>
+            <MaterialIcon decorative name="check_circle" className={styles.toastIcon} />
+            {flash}
+          </>
+        )}
+      </div>
       <div className={styles.headerRow}>
         <div>
           <div className={styles.eyebrow}>

@@ -8,13 +8,16 @@ export function MaterialIcon({
   name,
   className,
   style,
+  decorative = false,
 }: {
   name: string;
   className?: string;
   style?: CSSProperties;
+  // The ligature text ("arrow_back") is otherwise read aloud by screen readers.
+  decorative?: boolean;
 }) {
   return (
-    <span className={`material-symbols-outlined${className ? ` ${className}` : ""}`} style={style}>
+    <span className={`material-symbols-outlined${className ? ` ${className}` : ""}`} style={style} aria-hidden={decorative || undefined}>
       {name}
     </span>
   );
