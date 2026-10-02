@@ -4,6 +4,7 @@ import RegisterForm from "@/components/RegisterForm";
 import LoginBrandPanel from "@/components/LoginBrandPanel";
 import Footer from "@/components/Footer";
 import { getSeoPage } from "@/lib/seo-settings";
+import { safeNextPath } from "@/lib/auth-redirect";
 import styles from "../login-usuario/page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,13 +23,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RegistroPage() {
+export default async function RegistroPage({ searchParams }: PageProps<"/registro">) {
+  const next = safeNextPath((await searchParams)?.next);
+
   return (
     <>
       <LoginHeader />
       <main className={styles.main}>
         <div className={styles.grid}>
-          <RegisterForm />
+          <RegisterForm next={next} />
           <LoginBrandPanel />
         </div>
       </main>

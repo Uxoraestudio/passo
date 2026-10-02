@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import AsientosClient from "@/components/AsientosClient";
 import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
+import { requireUser } from "@/lib/auth-redirect";
 import { defaultEventDetail, eventDetails } from "@/lib/eventDetails";
 
 export default async function AsientosPage({
@@ -21,6 +22,8 @@ export default async function AsientosPage({
   if (!row || !detail || !tier) {
     notFound();
   }
+
+  await requireUser(`/eventos/${slug}/asientos/?sector=${encodeURIComponent(sectorId)}&qty=${qty}`);
 
   const event = toEventCardData(row);
 

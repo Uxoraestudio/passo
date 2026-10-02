@@ -4,6 +4,7 @@ import LoginForm from "@/components/LoginForm";
 import LoginBrandPanel from "@/components/LoginBrandPanel";
 import Footer from "@/components/Footer";
 import { getSeoPage } from "@/lib/seo-settings";
+import { safeNextPath } from "@/lib/auth-redirect";
 import styles from "./page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,13 +23,15 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function LoginUsuarioPage() {
+export default async function LoginUsuarioPage({ searchParams }: PageProps<"/login-usuario">) {
+  const next = safeNextPath((await searchParams)?.next);
+
   return (
     <>
-      <LoginHeader />
+      <LoginHeader next={next} />
       <main className={styles.main}>
         <div className={styles.grid}>
-          <LoginForm />
+          <LoginForm next={next} />
           <LoginBrandPanel />
         </div>
       </main>

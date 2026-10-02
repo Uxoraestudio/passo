@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { TicketTier } from "@/lib/eventDetails";
@@ -23,12 +20,6 @@ export default function EventSectorPanel({
   aboutText: string[];
   children?: ReactNode;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const toggleSelected = (id: string) => {
-    setSelectedId((current) => (current === id ? null : id));
-  };
-
   const prices = tiers.map((tier) => tier.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
@@ -42,13 +33,13 @@ export default function EventSectorPanel({
             <div className={pageStyles.sectionEyebrow}>
               <span className={pageStyles.bracket}>[</span> Vista Referencial <span className={pageStyles.bracket}>]</span>
             </div>
-            <h2 className={pageStyles.sectionTitle}>Mapa Interactivo del Recinto</h2>
+            <h2 className={pageStyles.sectionTitle}>Mapa del Recinto</h2>
             <p className={pageStyles.sectionSubtitle}>
-              Toca un sector del plano para verlo destacado en la lista de precios.
+              Ubicación referencial de cada sector. Elegirás tu sector en el siguiente paso.
             </p>
           </div>
           <div className={pageStyles.venueMapWrap}>
-            <VenueMap tiers={tiers} activeIds={selectedId ? [selectedId] : []} onSelect={toggleSelected} />
+            <VenueMap tiers={tiers} interactive={false} />
           </div>
           <div className={pageStyles.legend}>
             {tiers.map((tier) => (
@@ -94,14 +85,7 @@ export default function EventSectorPanel({
 
           <div className={styles.tiers}>
             {tiers.map((tier) => (
-              <button
-                key={tier.id}
-                type="button"
-                className={styles.tier}
-                data-active={selectedId === tier.id}
-                onClick={() => toggleSelected(tier.id)}
-                aria-pressed={selectedId === tier.id}
-              >
+              <div key={tier.id} className={styles.tier}>
                 <div className={styles.tierBody}>
                   <div className={styles.tierTop}>
                     <span className={styles.tierColorDot} style={{ background: tier.color }} aria-hidden="true" />
@@ -116,7 +100,7 @@ export default function EventSectorPanel({
                   <span>{currency(tier.price)}</span>
                   <small>+ cargo por servicio</small>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
 

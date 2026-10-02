@@ -10,7 +10,15 @@ import styles from "./Header.module.css";
 
 const SCROLL_THRESHOLD = 24;
 
-export default function HeaderInner({ logoUrl, events }: { logoUrl: string | null; events: EventCardData[] }) {
+export default function HeaderInner({
+  logoUrl,
+  events,
+  account,
+}: {
+  logoUrl: string | null;
+  events: EventCardData[];
+  account: { firstName: string; initials: string } | null;
+}) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -46,6 +54,14 @@ export default function HeaderInner({ logoUrl, events }: { logoUrl: string | nul
             </div>
             <SearchBar compact={scrolled} events={events} />
             <LanguageSwitcher />
+            {account ? (
+              <Link href="/mi-cuenta/" className={styles.accountChip} aria-label={`Mi cuenta, ${account.firstName}`}>
+                <span className={styles.accountAvatar} aria-hidden="true">
+                  {account.initials}
+                </span>
+                <span className={styles.accountName}>{account.firstName}</span>
+              </Link>
+            ) : (
             <Link href="/login-usuario/" className={styles.accountButton} aria-label="Iniciar sesión">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
@@ -58,6 +74,7 @@ export default function HeaderInner({ logoUrl, events }: { logoUrl: string | nul
                 />
               </svg>
             </Link>
+            )}
           </div>
         </div>
       </header>

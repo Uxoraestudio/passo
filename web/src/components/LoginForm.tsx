@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./LoginForm.module.css";
 
-export default function LoginForm() {
+export default function LoginForm({ next }: { next: string | null }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -28,7 +28,7 @@ export default function LoginForm() {
       return;
     }
 
-    router.push("/");
+    router.push(next ?? "/mi-cuenta/");
     router.refresh();
   };
 
@@ -40,7 +40,9 @@ export default function LoginForm() {
           <br />
           <span className={styles.accent}>sesión</span>
         </h1>
-        <p className={styles.subtitle}>Tu próxima gran experiencia te está esperando.</p>
+        <p className={styles.subtitle}>
+          {next ? "Inicia sesión para continuar con la compra de tus entradas." : "Tu próxima gran experiencia te está esperando."}
+        </p>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -199,7 +201,7 @@ export default function LoginForm() {
       </form>
 
       <p className={styles.signupHint}>
-        ¿No tienes cuenta? <a href="/registro/">Crear cuenta</a>
+        ¿No tienes cuenta? <a href={next ? `/registro/?next=${encodeURIComponent(next)}` : "/registro/"}>Crear cuenta</a>
       </p>
     </div>
   );

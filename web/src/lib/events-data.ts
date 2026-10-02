@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Slide } from "@/components/Hero";
 import { type EventCardData, type EventRow, toEventCardData, toHeroSlide } from "@/lib/events";
 
-export const getAllEvents = cache(async (): Promise<EventCardData[]> => {
+export const getPublishedEventRows = cache(async (): Promise<EventRow[]> => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("events")
@@ -11,7 +11,11 @@ export const getAllEvents = cache(async (): Promise<EventCardData[]> => {
     .neq("status", "borrador")
     .order("event_date", { ascending: true });
 
-  return (data ?? []).map((row) => toEventCardData(row as EventRow));
+  return (data ?? []) as EventRow[];
+});
+
+export const getAllEvents = cache(async (): Promise<EventCardData[]> => {
+  return (await getPublishedEventRows()).map(toEventCardData);
 });
 
 export const getHeroEvents = cache(async (): Promise<Slide[]> => {

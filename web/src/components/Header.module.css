@@ -173,6 +173,53 @@
   outline-offset: 2px;
 }
 
+.accountChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 44px;
+  padding: 4px 14px 4px 4px;
+  border-radius: 9999px;
+  background: #f2edfe;
+  color: var(--color-gray-900);
+  font-size: 14px;
+  font-weight: 700;
+  transition: background 150ms ease, height 250ms ease, transform 150ms ease;
+}
+
+.accountChip:hover {
+  background: #e4dcfd;
+  transform: translateY(-1px);
+}
+
+.accountChip:focus-visible {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 2px;
+}
+
+.accountAvatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-purple);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  transition: width 250ms ease, height 250ms ease;
+}
+
+.header[data-scrolled="true"] .accountChip {
+  height: 38px;
+}
+
+.header[data-scrolled="true"] .accountAvatar {
+  width: 30px;
+  height: 30px;
+}
+
 .categoriesMobile {
   display: none;
 }
@@ -180,6 +227,14 @@
 @media (max-width: 1024px) {
   .nav {
     display: none;
+  }
+
+  .accountName {
+    display: none;
+  }
+
+  .accountChip {
+    padding-right: 4px;
   }
 
   .categoriesMobile {

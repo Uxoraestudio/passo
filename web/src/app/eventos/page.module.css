@@ -509,7 +509,7 @@
 
 @media (min-width: 640px) {
   .hero {
-    padding: 40px 32px 44px;
+    padding: 40px max(32px, calc((100% - 1216px) / 2)) 44px;
   }
 
   .title {
@@ -539,7 +539,8 @@
 
 @media (min-width: 1024px) {
   .hero {
-    padding: 56px 48px;
+    padding-top: 56px;
+    padding-bottom: 56px;
   }
 
   .title {

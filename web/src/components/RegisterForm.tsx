@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./LoginForm.module.css";
 
-export default function RegisterForm() {
+export default function RegisterForm({ next }: { next: string | null }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -32,7 +32,7 @@ export default function RegisterForm() {
       return;
     }
 
-    router.push("/");
+    router.push(next ?? "/mi-cuenta/");
     router.refresh();
   };
 
@@ -156,7 +156,7 @@ export default function RegisterForm() {
       </form>
 
       <p className={styles.signupHint}>
-        ¿Ya tienes cuenta? <a href="/login-usuario/">Inicia sesión</a>
+        ¿Ya tienes cuenta? <a href={next ? `/login-usuario/?next=${encodeURIComponent(next)}` : "/login-usuario/"}>Inicia sesión</a>
       </p>
     </div>
   );

@@ -61,19 +61,6 @@
   border-radius: 14px;
   border: 1.5px solid var(--color-gray-200);
   background: #fff;
-  width: 100%;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease;
-}
-
-.tier:hover {
-  border-color: var(--color-purple);
-}
-
-.tier[data-active="true"] {
-  border-color: var(--color-purple);
-  background: #f2edfe;
 }
 
 .tierBody {
