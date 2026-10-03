@@ -7,7 +7,7 @@ import styles from "./CategoriesMenu.module.css";
 
 const ALL_HREF = "/eventos/";
 
-export default function CategoriesMenu({ compact = false }: { compact?: boolean }) {
+export default function CategoriesMenu({ compact = false, scrolled = false }: { compact?: boolean; scrolled?: boolean }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -53,7 +53,7 @@ export default function CategoriesMenu({ compact = false }: { compact?: boolean 
       </button>
 
       {open && (
-        <div className={styles.dropdown} role="menu" aria-label="Categorías de eventos">
+        <div className={styles.dropdown} data-scrolled={scrolled} role="menu" aria-label="Categorías de eventos">
           <Link href={ALL_HREF} className={styles.option} role="menuitem" onClick={() => setOpen(false)}>
             Todos
           </Link>

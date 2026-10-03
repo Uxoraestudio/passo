@@ -87,6 +87,12 @@
   box-shadow: 0 20px 40px -16px rgba(101, 52, 245, 0.35);
   padding: 14px;
   z-index: 60;
+  transition: top 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The compact header's backdrop-filter makes it the containing block (it sits 14px down), so this is relative to it. */
+.dropdown[data-scrolled="true"] {
+  top: 70px;
 }
 
 .option {

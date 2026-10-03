@@ -314,16 +314,27 @@
 }
 
 .stepper button {
+  display: grid;
+  place-items: center;
   width: 30px;
   height: 30px;
+  padding: 0;
   border-radius: 9999px;
   border: 1px solid var(--color-gray-200);
   background: #fff;
-  font-size: 16px;
-  font-weight: 700;
   color: var(--color-gray-700);
   cursor: pointer;
   transition: background 150ms ease, color 150ms ease;
+}
+
+.stepper button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.stepper button:focus-visible {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 2px;
 }
 
 .stepper button:hover:not(:disabled) {

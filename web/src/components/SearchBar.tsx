@@ -9,6 +9,7 @@ export default function SearchBar({ compact = false, events }: { compact?: boole
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [queryForActiveIndex, setQueryForActiveIndex] = useState(query);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,36 +24,44 @@ export default function SearchBar({ compact = false, events }: { compact?: boole
   }
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !mobileOpen) return;
     const onClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setOpen(false);
+        setMobileOpen(false);
       }
     };
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
-  }, [open]);
+  }, [open, mobileOpen]);
+
+  useEffect(() => {
+    if (mobileOpen) inputRef.current?.focus();
+  }, [mobileOpen]);
+
+  const close = () => {
+    setOpen(false);
+    setMobileOpen(false);
+    inputRef.current?.blur();
+  };
 
   const runSearch = () => {
     const trimmed = query.trim();
     if (!trimmed) return;
-    setOpen(false);
-    inputRef.current?.blur();
+    close();
     router.push(`/eventos?q=${encodeURIComponent(trimmed)}`);
   };
 
   const goToResult = (index: number) => {
     const result = results[index];
     if (!result) return;
-    setOpen(false);
-    inputRef.current?.blur();
+    close();
     router.push(eventHref(result));
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Escape") {
-      setOpen(false);
-      inputRef.current?.blur();
+      close();
       return;
     }
     if (event.key === "ArrowDown") {
@@ -80,7 +89,25 @@ export default function SearchBar({ compact = false, events }: { compact?: boole
   const showDropdown = open && query.trim().length > 0;
 
   return (
-    <div className={styles.container} data-compact={compact} ref={containerRef}>
+    <div className={styles.container} data-compact={compact} data-mobile-open={mobileOpen} ref={containerRef}>
+      <button
+        type="button"
+        className={styles.mobileTrigger}
+        aria-label={mobileOpen ? "Cerrar búsqueda" : "Buscar eventos"}
+        aria-expanded={mobileOpen}
+        onClick={() => (mobileOpen ? close() : setMobileOpen(true))}
+      >
+        {mobileOpen ? (
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="2" />
+            <path d="M20 20l-4.2-4.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        )}
+      </button>
       <div className={styles.search} data-focused={open}>
         <input
           ref={inputRef}

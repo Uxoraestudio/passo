@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import type { KeyboardEvent, MouseEvent } from "react";
 import { eventHref, type EventCardData } from "@/lib/events";
 import { useFavorites } from "@/lib/favorites";
@@ -51,6 +50,15 @@ export default function EventCard({ event }: { event: EventCardData }) {
           <span className={styles.dateDay}>{event.day}</span>
           <span className={styles.dateMonth}>{event.month}</span>
         </div>
+        {event.tags.length > 0 && (
+          <div className={styles.photoTags}>
+            {event.tags.map((tag) => (
+              <span key={tag.label} className={styles.photoTag} data-variant={tag.variant}>
+                {tag.label}
+              </span>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className={styles.favoriteButton}
@@ -110,24 +118,6 @@ export default function EventCard({ event }: { event: EventCardData }) {
                 />
               </svg>
             </span>
-          </div>
-          <div className={styles.tags}>
-            {event.tags.map((tag) => (
-              <Link
-                key={tag.label}
-                href={`/eventos?category=${encodeURIComponent(tag.label.toLowerCase())}`}
-                className={`${styles.tag} ${
-                  tag.variant === "primary"
-                    ? styles.tagPrimary
-                    : tag.variant === "orange"
-                      ? styles.tagOrange
-                      : styles.tagSecondary
-                }`}
-                onClick={(clickEvent) => clickEvent.stopPropagation()}
-              >
-                {tag.label}
-              </Link>
-            ))}
           </div>
         </div>
       </div>

@@ -128,8 +128,96 @@
   color: var(--color-gray-500);
 }
 
+.mobileTrigger {
+  display: none;
+}
+
 @media (max-width: 1024px) {
-  .container {
+  .mobileTrigger {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 9999px;
+    background: var(--color-orange);
+    color: #fff;
+    box-shadow: 0 6px 14px -6px rgba(255, 120, 45, 0.7);
+    transition: transform 150ms ease, width 250ms ease, height 250ms ease;
+  }
+
+  .mobileTrigger:active {
+    transform: scale(0.94);
+  }
+
+  .mobileTrigger:focus-visible {
+    outline: 2px solid var(--color-purple);
+    outline-offset: 2px;
+  }
+
+  .mobileTrigger svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .container[data-compact="true"] .mobileTrigger {
+    width: 38px;
+    height: 38px;
+  }
+
+  .container[data-compact="true"] .mobileTrigger svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .search {
     display: none;
+  }
+
+  .container[data-mobile-open="true"] .search {
+    display: flex;
+    position: fixed;
+    top: 88px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    z-index: 61;
+    padding: 6px 6px 6px 18px;
+    background: #fff;
+    border-color: var(--color-purple);
+    box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.12), 0 18px 36px -14px rgba(17, 24, 39, 0.35);
+    animation: searchDrop 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .container[data-mobile-open="true"] .searchInput {
+    font-size: 16px;
+  }
+
+  .container[data-mobile-open="true"] .dropdown {
+    position: fixed;
+    top: 148px;
+    left: 16px;
+    right: 16px;
+  }
+
+  /* Compact header is the containing block (inset 16px, 14px down), so offsets are relative to it. */
+  .container[data-compact="true"][data-mobile-open="true"] .search {
+    top: 70px;
+    left: 0;
+    right: 0;
+  }
+
+  .container[data-compact="true"][data-mobile-open="true"] .dropdown {
+    top: 130px;
+    left: 0;
+    right: 0;
+  }
+}
+
+@keyframes searchDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 }

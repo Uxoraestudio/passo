@@ -167,11 +167,15 @@ export default function AsientosClient({
           <div className={styles.mapFooter}>
             <div className={styles.zoomControls}>
               <button type="button" onClick={() => setZoom((z) => Math.max(0.7, z - 0.1))} aria-label="Alejar">
-                −
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3.5 8h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
               </button>
               <span>{Math.round(zoom * 100)}%</span>
               <button type="button" onClick={() => setZoom((z) => Math.min(1.4, z + 0.1))} aria-label="Acercar">
-                +
+                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3.5 8h9M8 3.5v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
               </button>
               <button type="button" className={styles.centerButton} onClick={() => setZoom(1)}>
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">

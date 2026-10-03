@@ -42,7 +42,7 @@ export default function HeaderInner({
               )}
             </Link>
             <nav className={styles.nav}>
-              <CategoriesMenu />
+              <CategoriesMenu scrolled={scrolled} />
               <Link href="#" className={styles.navLink}>
                 Ayuda
               </Link>
@@ -50,7 +50,7 @@ export default function HeaderInner({
           </div>
           <div className={styles.right}>
             <div className={styles.categoriesMobile}>
-              <CategoriesMenu compact />
+              <CategoriesMenu compact scrolled={scrolled} />
             </div>
             <SearchBar compact={scrolled} events={events} />
             <LanguageSwitcher />

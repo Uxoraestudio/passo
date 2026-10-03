@@ -240,4 +240,8 @@
   .categoriesMobile {
     display: flex;
   }
+
+  .right {
+    gap: 10px;
+  }
 }

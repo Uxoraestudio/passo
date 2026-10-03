@@ -158,7 +158,9 @@ export default function EntradasClient({
                     </div>
                     <div className={styles.stepper}>
                       <button type="button" onClick={() => updateQty(tier.id, -1)} disabled={qty === 0} aria-label={`Restar ${tier.name}`}>
-                        −
+                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M3.5 8h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
                       </button>
                       <span>{qty}</span>
                       <button
@@ -167,7 +169,9 @@ export default function EntradasClient({
                         disabled={totalQty >= MAX_TICKETS}
                         aria-label={`Sumar ${tier.name}`}
                       >
-                        +
+                        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M3.5 8h9M8 3.5v9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
                       </button>
                     </div>
                   </div>
