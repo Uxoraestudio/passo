@@ -73,6 +73,11 @@
   animation: content-in 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Every slide's copy stays in the DOM (so page translation reaches all of it); only the active one shows. */
+.content[data-active="false"] {
+  display: none;
+}
+
 .infoLink {
   display: flex;
   flex-direction: column;

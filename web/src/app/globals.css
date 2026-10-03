@@ -60,3 +60,21 @@ button {
   font: inherit;
   cursor: pointer;
 }
+
+/* Google Translate: keep its banner, tooltips and highlights out of the design */
+iframe.skiptranslate,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-tooltip {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}

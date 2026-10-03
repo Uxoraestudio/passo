@@ -7,9 +7,9 @@ import SortSelect from "@/components/SortSelect";
 import { cities, searchEvents } from "@/lib/events";
 import { getAllEvents } from "@/lib/events-data";
 import { getSeoPage } from "@/lib/seo-settings";
+import { CATEGORIES, findCategory, matchesCategory } from "@/lib/categories";
 import styles from "./page.module.css";
 
-const categoryOptions = ["Música", "Deportes", "Teatro", "Comedia", "Festivales", "Danza", "Fútbol"];
 
 function parsePrice(price: string): number {
   return Number(price.replace(/[^0-9]/g, "")) || 0;
@@ -34,8 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function EventosPage({ searchParams }: PageProps<"/eventos">) {
   const params = await searchParams;
   const q = typeof params?.q === "string" ? params.q : "";
-  const rawCategory = typeof params?.category === "string" ? params.category : "";
-  const category = rawCategory === "todas" ? "" : rawCategory;
+  const category = findCategory(typeof params?.category === "string" ? params.category : null);
   const city = typeof params?.city === "string" ? params.city : "Santiago";
   const sort = typeof params?.sort === "string" ? params.sort : "proximos";
   const minPrice = typeof params?.minPrice === "string" ? Number(params.minPrice) : undefined;
@@ -46,9 +45,7 @@ export default async function EventosPage({ searchParams }: PageProps<"/eventos"
   let results = allEvents;
   if (q) results = searchEvents(q, results);
   if (category) {
-    results = results.filter((event) =>
-      event.tags.some((tag) => tag.label.toLowerCase() === category.toLowerCase())
-    );
+    results = results.filter((event) => matchesCategory(event.category, category));
   }
   if (city && city !== "Santiago") {
     results = results.filter((event) => event.city === city);
@@ -75,8 +72,20 @@ export default async function EventosPage({ searchParams }: PageProps<"/eventos"
           <div className={styles.heroContent}>
             <nav className={styles.breadcrumb} aria-label="Migas de pan">
               <Link href="/">Inicio</Link>
-              <span>/</span>
-              <span className={styles.breadcrumbCurrent}>Eventos</span>
+              <span aria-hidden="true">/</span>
+              {category ? (
+                <>
+                  <Link href="/eventos/">Eventos</Link>
+                  <span aria-hidden="true">/</span>
+                  <span className={styles.breadcrumbCurrent} aria-current="page">
+                    {category.label}
+                  </span>
+                </>
+              ) : (
+                <span className={styles.breadcrumbCurrent} aria-current="page">
+                  Eventos
+                </span>
+              )}
             </nav>
             <h1 className={styles.title}>
               Encuentra tu próxima <span className={styles.titleAccent}>experiencia</span>
@@ -146,11 +155,11 @@ export default async function EventosPage({ searchParams }: PageProps<"/eventos"
 
                 <label className={styles.filterField}>
                   <span>Categoría</span>
-                  <select name="category" defaultValue={category || "todas"}>
-                    <option value="todas">Todas las categorías</option>
-                    {categoryOptions.map((option) => (
-                      <option key={option} value={option.toLowerCase()}>
-                        {option}
+                  <select name="category" defaultValue={category?.slug ?? ""}>
+                    <option value="">Todas las categorías</option>
+                    {CATEGORIES.map((option) => (
+                      <option key={option.slug} value={option.slug}>
+                        {option.label}
                       </option>
                     ))}
                   </select>

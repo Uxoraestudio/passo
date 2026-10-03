@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Caveat } from "next/font/google";
 import { getSiteSettings } from "@/lib/site-settings";
+import PageTranslator from "@/components/PageTranslator";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -36,7 +37,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es" className={`${plusJakartaSans.variable} ${caveat.variable}`}>
       <head>{overrides && <style>{`:root { ${overrides} }`}</style>}</head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <PageTranslator />
+      </body>
     </html>
   );
 }

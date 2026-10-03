@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { applyLanguage, readLanguage } from "@/lib/translation";
 import styles from "./LanguageSwitcher.module.css";
 
 type Language = { code: string; label: string; flag: string };
@@ -16,6 +17,12 @@ export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(languages[0]);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const current = languages.find((language) => language.code === readLanguage());
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the language lives in a cookie only readable after mount
+    if (current) setSelected(current);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -36,7 +43,7 @@ export default function LanguageSwitcher() {
   }, [open]);
 
   return (
-    <div className={styles.container} ref={containerRef}>
+    <div className={`${styles.container} notranslate`} translate="no" ref={containerRef}>
       <button
         type="button"
         className={styles.trigger}
@@ -62,8 +69,10 @@ export default function LanguageSwitcher() {
               className={styles.option}
               data-active={selected.code === language.code}
               onClick={() => {
-                setSelected(language);
                 setOpen(false);
+                if (language.code === selected.code) return;
+                setSelected(language);
+                applyLanguage(language.code);
               }}
             >
               <span className={styles.flag}>{language.flag}</span>

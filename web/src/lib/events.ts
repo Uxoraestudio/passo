@@ -12,6 +12,7 @@ export type EventCardData = {
   venue: string;
   city: string;
   price: string;
+  category: string | null;
   tags: { label: string; variant: "primary" | "secondary" | "orange" }[];
 };
 
@@ -26,6 +27,7 @@ export type EventRow = {
   venue: string;
   city: string;
   event_date: string;
+  category: string | null;
   image_url: string | null;
   hero_image_url: string | null;
   banner_image_url: string | null;
@@ -84,6 +86,7 @@ export function toEventCardData(row: EventRow): EventCardData {
     venue: row.venue,
     city: row.city,
     price: formatPrice(row.price_base),
+    category: row.category ?? null,
     tags: statusTag(row.status),
   };
 }

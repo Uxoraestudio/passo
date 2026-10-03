@@ -23,6 +23,10 @@ const SWIPE_THRESHOLD = 48;
 const RING_RADIUS = 15;
 const RING_GAP_DEG = 10;
 
+function slideHref(slide: Slide) {
+  return slide.slug ? `/eventos/${slide.slug}` : "/eventos";
+}
+
 function polarPoint(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = (angleDeg * Math.PI) / 180;
   return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
@@ -47,7 +51,6 @@ export default function Hero({ slides }: { slides: Slide[] }) {
 
   const effectivePlaying = playing;
   const active = slides[current];
-  const activeHref = active?.slug ? `/eventos/${active.slug}` : "/eventos";
 
   useEffect(() => {
     progressRef.current = progress;
@@ -162,11 +165,18 @@ export default function Hero({ slides }: { slides: Slide[] }) {
         <div className={styles.gradient} />
       </div>
 
-      <div className={styles.content} key={current}>
-        <Link href={activeHref} className={styles.infoLink} aria-label={`Ver detalle de ${active.title}`}>
-          <span className={styles.eyebrow}>{active.eyebrow}</span>
-          <h2 className={styles.title}>{active.title}</h2>
-          <p className={styles.subtitle}>{active.subtitle}</p>
+      {slides.map((slide, index) => (
+      <div
+        key={slide.id}
+        className={styles.content}
+        data-active={index === current}
+        aria-hidden={index !== current}
+        inert={index !== current}
+      >
+        <Link href={slideHref(slide)} className={styles.infoLink} aria-label={`Ver detalle de ${slide.title}`}>
+          <span className={styles.eyebrow}>{slide.eyebrow}</span>
+          <h2 className={styles.title}>{slide.title}</h2>
+          <p className={styles.subtitle}>{slide.subtitle}</p>
           <div className={styles.meta}>
             <span className={styles.metaItem}>
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -178,7 +188,7 @@ export default function Hero({ slides }: { slides: Slide[] }) {
                   strokeLinejoin="round"
                 />
               </svg>
-              {active.date}
+              {slide.date}
             </span>
             <span className={styles.metaDot} aria-hidden="true" />
             <span className={styles.metaItem}>
@@ -195,12 +205,12 @@ export default function Hero({ slides }: { slides: Slide[] }) {
                   strokeWidth="1.3"
                 />
               </svg>
-              {active.venue}
+              {slide.venue}
             </span>
           </div>
         </Link>
         <div className={styles.ctaRow}>
-          <Link href={activeHref} className={styles.cta}>
+          <Link href={slideHref(slide)} className={styles.cta}>
             <span>Comprar entradas</span>
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
@@ -212,9 +222,10 @@ export default function Hero({ slides }: { slides: Slide[] }) {
               />
             </svg>
           </Link>
-          <span className={styles.price}>{active.price}</span>
+          <span className={styles.price}>{slide.price}</span>
         </div>
       </div>
+      ))}
 
       <div className={styles.bottomBar}>
         <div className={styles.segments} role="tablist" aria-label="Diapositivas del banner">

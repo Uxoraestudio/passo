@@ -24,6 +24,16 @@
   font-weight: 700;
 }
 
+.breadcrumb a {
+  transition: color 150ms ease;
+}
+
+.breadcrumb a:hover {
+  color: var(--color-purple);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .hero {
   position: relative;
   border-radius: 20px;

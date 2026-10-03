@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { CATEGORIES, categoryHref } from "@/lib/categories";
 import styles from "./CategoriesMenu.module.css";
 
-const categories = ["Música", "Deportes", "Teatro", "Comedia", "Festivales", "Danza", "Fútbol"];
-const ALL_HREF = "/eventos";
+const ALL_HREF = "/eventos/";
 
 export default function CategoriesMenu({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -57,15 +57,15 @@ export default function CategoriesMenu({ compact = false }: { compact?: boolean 
           <Link href={ALL_HREF} className={styles.option} role="menuitem" onClick={() => setOpen(false)}>
             Todos
           </Link>
-          {categories.map((category) => (
+          {CATEGORIES.map((category) => (
             <Link
-              key={category}
-              href={`/eventos?category=${encodeURIComponent(category.toLowerCase())}`}
+              key={category.slug}
+              href={categoryHref(category)}
               className={styles.option}
               role="menuitem"
               onClick={() => setOpen(false)}
             >
-              {category}
+              {category.label}
             </Link>
           ))}
         </div>

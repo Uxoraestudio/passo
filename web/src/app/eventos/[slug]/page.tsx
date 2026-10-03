@@ -10,6 +10,7 @@ import { pickImage, toEventCardData } from "@/lib/events";
 import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
 import { defaultEventDetail, eventDetails, genericFaqs, genericPolicies } from "@/lib/eventDetails";
 import { getSeoPage } from "@/lib/seo-settings";
+import { categoryForAdminValue, categoryHref } from "@/lib/categories";
 import styles from "./page.module.css";
 
 export async function generateMetadata({ params }: PageProps<"/eventos/[slug]">): Promise<Metadata> {
@@ -111,6 +112,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
   const event = toEventCardData(row);
   const detail = eventDetails[row.id] ?? defaultEventDetail(row);
 
+  const eventCategory = categoryForAdminValue(row.category);
   const isLollapalooza = row.id === "lollapalooza";
   const heroImage = isLollapalooza ? "/images/lollapalooza-hero.jpg" : pickImage(row.banner_image_url, row.image_url);
   const prices = detail.tiers.map((tier) => tier.price);
@@ -124,11 +126,19 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
       <Header />
       <main className={styles.main}>
         <nav className={styles.breadcrumb} aria-label="Migas de pan">
-          <span>Inicio</span>
-          <span>/</span>
-          <span>{detail.breadcrumbCategory}</span>
-          <span>/</span>
-          <span className={styles.breadcrumbCurrent}>{event.title}</span>
+          <Link href="/">Inicio</Link>
+          <span aria-hidden="true">/</span>
+          <Link href="/eventos/">Eventos</Link>
+          <span aria-hidden="true">/</span>
+          {eventCategory && (
+            <>
+              <Link href={categoryHref(eventCategory)}>{eventCategory.label}</Link>
+              <span aria-hidden="true">/</span>
+            </>
+          )}
+          <span className={styles.breadcrumbCurrent} aria-current="page">
+            {event.title}
+          </span>
         </nav>
 
         <section className={styles.hero}>

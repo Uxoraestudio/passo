@@ -40,6 +40,16 @@
   color: #fff;
 }
 
+.breadcrumb a {
+  transition: color 150ms ease;
+}
+
+.breadcrumb a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .title {
   font-weight: 800;
   font-size: 28px;
