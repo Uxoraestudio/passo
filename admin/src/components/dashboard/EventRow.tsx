@@ -8,14 +8,16 @@ import styles from "./EventRow.module.css";
 
 export default function EventRow({
   event,
+  revenue,
   onEdit,
   onDelete,
 }: {
   event: EventRecord;
+  revenue?: number | null;
   onEdit: (event: EventRecord) => void;
   onDelete: (event: EventRecord) => void;
 }) {
-  const p = derivePresentation(event);
+  const p = derivePresentation(event, revenue);
 
   return (
     <div className={styles.row}>

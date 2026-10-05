@@ -1,16 +1,299 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  max-width: 1600px;
-  padding: 24px 32px 112px;
-  background: #f8f9fa;
+.notice:empty {
+  display: none;
 }
 
-@media (max-width: 640px) {
-  .page {
-    padding: 20px 20px 96px;
-    gap: 16px;
-  }
+.notice {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.notice[data-tone="error"] {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.badge[data-admin="true"] {
+  background: #110d29;
+  color: #fff;
+}
+
+.linkDanger {
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b91c1c;
+  cursor: pointer;
+}
+
+.linkDanger:hover {
+  background: #fef2f2;
+}
+
+.sectionTitle {
+  margin-bottom: 14px;
+  font-weight: 800;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.roleCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-top: 4px solid var(--role);
+  background: #fff;
+}
+
+.roleTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.roleTop h3 {
+  flex: 1;
+  min-width: 0;
+  font-weight: 800;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.roleDot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--role);
+}
+
+.roleCount {
+  min-width: 24px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.roleCard p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.roleCard .roleSummary {
+  font-size: 12px;
+  color: #334155;
+}
+
+.roleActions {
+  display: flex;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.roleActions button:first-child {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+}
+
+.newRole {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6534f5;
+  cursor: pointer;
+}
+
+.newRole:hover {
+  border-color: #6534f5;
+  background: #faf8ff;
+}
+
+.linkDanger:focus-visible,
+.roleActions button:focus-visible,
+.newRole:focus-visible {
+  outline: 2px solid #6534f5;
+  outline-offset: 2px;
+}
+
+/* Dialog forms */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c1a2a;
+}
+
+.field input,
+.field select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5dff7;
+  background: #fafbfd;
+  font: inherit;
+  font-size: 14px;
+  color: #1c1a2a;
+}
+
+.colors {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+}
+
+.colors legend {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c1a2a;
+}
+
+.colors label {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--swatch);
+  cursor: pointer;
+}
+
+.colors input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.colors label:has(input:checked) {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--swatch);
+}
+
+.colors label:has(input:focus-visible) {
+  outline: 2px solid #ff782d;
+  outline-offset: 4px;
+}
+
+.matrix {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.matrix caption {
+  margin-bottom: 6px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c1a2a;
+}
+
+.matrix th,
+.matrix td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.matrix thead th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+}
+
+.matrix thead th:first-child,
+.matrix tbody th {
+  text-align: left;
+}
+
+.matrix tbody th {
+  font-weight: 600;
+  color: #1c1a2a;
+}
+
+.matrix td {
+  text-align: center;
+}
+
+.matrix input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6534f5;
+  cursor: pointer;
+}
+
+.hint {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7e6;
+  font-size: 12px;
+  color: #9a5b00;
+}
+
+.error {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b42318;
 }

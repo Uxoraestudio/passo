@@ -1,25 +1,6 @@
-import type { Metadata } from "next";
-import AuthGuard from "@/components/AuthGuard";
-import AppSidebar from "@/components/dashboard/AppSidebar";
-import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
-import ReportsContent from "@/components/dashboard/ReportsContent";
-import styles from "../inicio/page.module.css";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Reportes | Passo Admin",
-  description: "Reportes y analítica de rendimiento: recaudación, ocupación, curva de venta, liquidaciones por evento y conciliación bancaria.",
-};
-
+// Reportes ahora vive dentro de Ventas y reportes; la ruta se mantiene para enlaces antiguos.
 export default function ReportesPage() {
-  return (
-    <AuthGuard>
-      <div className={styles.shell}>
-        <AppSidebar />
-        <div className={styles.content}>
-          <DashboardTopbar />
-          <ReportsContent />
-        </div>
-      </div>
-    </AuthGuard>
-  );
+  redirect("/ventas/");
 }

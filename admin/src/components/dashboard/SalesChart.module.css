@@ -162,3 +162,34 @@
     display: none;
   }
 }
+
+.chartArea {
+  position: relative;
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* Labels are positioned over the plot width (the chart's 40px side padding ≈ 6.25%). */
+.xAxis {
+  position: relative;
+  display: block;
+  height: 17px;
+  margin: 0 6.25%;
+  padding: 0;
+}
+
+.xAxis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}

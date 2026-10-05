@@ -46,8 +46,12 @@ export type SectorInput = {
   label_x: number | null;
   label_y: number | null;
   is_active: boolean;
+  numbered: boolean;
   sort_order: number;
 };
+
+/** Thrown when a save would delete a sector that already has orders. */
+export class SectorInUseError extends Error {}
 
 export type EventSectorRecord = SectorInput & { id: string; event_id: string };
 
@@ -126,30 +130,47 @@ function eventPayload(input: EventInput) {
   };
 }
 
-async function replaceSectors(eventId: string, sectors: SectorInput[]) {
+// Sectors keep their ids across saves: orders, holds and tickets point at them,
+// so existing rows are updated in place and only removed sectors are deleted.
+async function syncSectors(eventId: string, sectors: SectorInput[]) {
   const supabase = createClient();
-  const { error: deleteError } = await supabase.from("event_sectors").delete().eq("event_id", eventId);
-  if (deleteError) throw deleteError;
+  const { data: existing, error: listError } = await supabase.from("event_sectors").select("id").eq("event_id", eventId);
+  if (listError) throw listError;
 
-  if (sectors.length === 0) return;
+  const kept = new Set(sectors.map((s) => s.id).filter(Boolean));
+  const removed = (existing ?? []).map((row) => row.id as string).filter((id) => !kept.has(id));
+  if (removed.length > 0) {
+    const { error } = await supabase.from("event_sectors").delete().in("id", removed);
+    if (error) throw error.code === "23503" ? new SectorInUseError(error.message) : error;
+  }
 
-  const { error: insertError } = await supabase.from("event_sectors").insert(
-    sectors.map((s, index) => ({
-      event_id: eventId,
-      name: s.name,
-      short_label: s.short_label,
-      capacity: s.capacity,
-      price: s.price,
-      color: s.color,
-      shape_rect: s.shape_rect,
-      shape_path: s.shape_path,
-      label_x: s.label_x,
-      label_y: s.label_y,
-      is_active: s.is_active,
-      sort_order: index,
-    }))
-  );
-  if (insertError) throw insertError;
+  const rows = sectors.map((s, index) => ({
+    ...(s.id ? { id: s.id } : {}),
+    event_id: eventId,
+    name: s.name,
+    short_label: s.short_label,
+    capacity: s.capacity,
+    price: s.price,
+    color: s.color,
+    shape_rect: s.shape_rect,
+    shape_path: s.shape_path,
+    label_x: s.label_x,
+    label_y: s.label_y,
+    is_active: s.is_active,
+    numbered: s.numbered,
+    sort_order: index,
+  }));
+
+  const updates = rows.filter((row) => "id" in row);
+  const inserts = rows.filter((row) => !("id" in row));
+  if (updates.length > 0) {
+    const { error } = await supabase.from("event_sectors").upsert(updates);
+    if (error) throw error;
+  }
+  if (inserts.length > 0) {
+    const { error } = await supabase.from("event_sectors").insert(inserts);
+    if (error) throw error;
+  }
 }
 
 export async function listEvents(): Promise<EventRecord[]> {
@@ -188,7 +209,7 @@ export async function createEvent(input: EventInput): Promise<string> {
     .single();
   if (error) throw error;
 
-  await replaceSectors(data.id, input.sectors);
+  await syncSectors(data.id, input.sectors);
   return data.id;
 }
 
@@ -197,7 +218,7 @@ export async function updateEvent(id: string, input: EventInput): Promise<void> 
   const { error } = await supabase.from("events").update(eventPayload(input)).eq("id", id);
   if (error) throw error;
 
-  await replaceSectors(id, input.sectors);
+  await syncSectors(id, input.sectors);
 }
 
 export async function deleteEvent(id: string): Promise<void> {

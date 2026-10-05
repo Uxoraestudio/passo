@@ -1,42 +1,36 @@
-export type SeatStatus = "available" | "occupied" | "accessible" | "selected";
+export type SeatStatus = "available" | "occupied" | "selected";
 
 export type Seat = {
   id: string;
   row: string;
   number: number;
-  status: "available" | "occupied" | "accessible";
+  status: "available" | "occupied";
 };
 
-const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-const SEATS_PER_ROW = 18;
-
-function seededRandom(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (h << 5) - h + seed.charCodeAt(i);
-    h |= 0;
-  }
-  return () => {
-    h = (h * 1103515245 + 12345) & 0x7fffffff;
-    return (h % 1000) / 1000;
-  };
+// Must match public.seat_label_valid in the database: rows A..Z, then AA..ZZ.
+export function rowLabel(index: number): string {
+  if (index < 26) return String.fromCharCode(65 + index);
+  return String.fromCharCode(64 + Math.floor(index / 26)) + String.fromCharCode(65 + (index % 26));
 }
 
-export function generateSeatMap(sectorId: string): Seat[][] {
-  const random = seededRandom(sectorId);
-  return ROWS.map((row, rowIndex) => {
+export function parseSeatLabel(label: string): { row: string; number: number } {
+  const match = /^([A-Z]{1,2})(\d+)$/.exec(label);
+  return match ? { row: match[1], number: Number(match[2]) } : { row: label, number: 0 };
+}
+
+/** Seats fill rows of `seatsPerRow` until the sector capacity is reached. */
+export function buildSeatRows(capacity: number, seatsPerRow: number, taken: ReadonlySet<string>): Seat[][] {
+  const perRow = Math.max(1, seatsPerRow);
+  const rowCount = Math.min(Math.ceil(capacity / perRow), 26 * 27);
+  const rows: Seat[][] = [];
+  for (let r = 0; r < rowCount; r++) {
+    const row = rowLabel(r);
     const seats: Seat[] = [];
-    for (let n = 1; n <= SEATS_PER_ROW; n++) {
-      const isEdge = n === 1 || n === SEATS_PER_ROW;
-      const isAccessibleRow = rowIndex === 0 || rowIndex === ROWS.length - 1;
-      let status: Seat["status"] = "available";
-      if (isEdge && isAccessibleRow) {
-        status = "accessible";
-      } else if (random() < 0.16) {
-        status = "occupied";
-      }
-      seats.push({ id: `${row}${n}`, row, number: n, status });
+    for (let n = 1; n <= perRow && r * perRow + n <= capacity; n++) {
+      const id = `${row}${n}`;
+      seats.push({ id, row, number: n, status: taken.has(id) ? "occupied" : "available" });
     }
-    return seats;
-  });
+    rows.push(seats);
+  }
+  return rows;
 }

@@ -100,3 +100,7 @@
     flex: 1 1 calc(50% - 10px);
   }
 }
+
+.delta[data-down="true"] {
+  color: #dc2626;
+}

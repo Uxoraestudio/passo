@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function ValidarTicketPage() {
   return (
-    <AuthGuard>
+    <AuthGuard module="validacion">
       <div className={styles.shell}>
         <AppSidebar />
         <div className={styles.content}>

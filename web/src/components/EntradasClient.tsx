@@ -7,49 +7,77 @@ import { useRouter } from "next/navigation";
 import VenueMap from "@/components/VenueMap";
 import type { EventCardData } from "@/lib/events";
 import type { EventDetail } from "@/lib/eventDetails";
+import type { SaleTier } from "@/lib/event-sale";
+import { startCheckout } from "@/lib/checkout-client";
 import styles from "@/app/eventos/[slug]/entradas/page.module.css";
 
-const MAX_TICKETS = 4;
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 
 export default function EntradasClient({
   event,
+  eventId,
   detail,
+  tiers,
   slug,
+  onSale,
+  closedReason,
+  maxPerOrder,
   initialTier,
   initialQty,
 }: {
   event: EventCardData;
+  eventId: string;
   detail: EventDetail;
+  tiers: SaleTier[];
   slug: string;
+  onSale: boolean;
+  closedReason: string | null;
+  maxPerOrder: number;
   initialTier: string | null;
   initialQty: number;
 }) {
   const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const [selections, setSelections] = useState<Record<string, number>>(() => {
-    if (initialTier && initialQty > 0) {
-      return { [initialTier]: Math.min(initialQty, MAX_TICKETS) };
+    const tier = tiers.find((t) => t.id === initialTier);
+    if (onSale && tier && initialQty > 0) {
+      return { [tier.id]: Math.min(initialQty, maxPerOrder, tier.available) };
     }
     return {};
   });
 
   const totalQty = useMemo(() => Object.values(selections).reduce((a, b) => a + b, 0), [selections]);
 
+  const canAdd = (tier: SaleTier) => {
+    if (!onSale || tier.available <= (selections[tier.id] ?? 0)) return false;
+    // Numbered seats are picked per sector on the next screen, so a numbered
+    // sector is bought on its own; switching sectors replaces the selection.
+    const others = Object.keys(selections).filter((id) => id !== tier.id);
+    const mixes = others.length > 0 && (tier.numbered || tiers.some((t) => others.includes(t.id) && t.numbered));
+    return mixes || totalQty < maxPerOrder;
+  };
+
   const updateQty = (tierId: string, delta: number) => {
+    const tier = tiers.find((t) => t.id === tierId);
+    if (!tier) return;
+    if (delta > 0 && !canAdd(tier)) return;
+    setCheckoutError("");
     setSelections((prev) => {
       const current = prev[tierId] ?? 0;
       const next = current + delta;
       if (next < 0) return prev;
-      if (delta > 0 && totalQty >= MAX_TICKETS) return prev;
-      const updated = { ...prev, [tierId]: next };
+      const others = Object.keys(prev).filter((id) => id !== tierId);
+      const mixes = delta > 0 && others.length > 0 && (tier.numbered || tiers.some((t) => others.includes(t.id) && t.numbered));
+      const updated = mixes ? { [tierId]: 1 } : { ...prev, [tierId]: next };
       if (next === 0) delete updated[tierId];
       return updated;
     });
   };
 
   const activeIds = Object.keys(selections).filter((id) => selections[id] > 0);
-  const lines = detail.tiers
+  const lines = tiers
     .filter((tier) => (selections[tier.id] ?? 0) > 0)
     .map((tier) => ({ tier, qty: selections[tier.id] }));
 
@@ -57,14 +85,27 @@ export default function EntradasClient({
   const fee = Math.round(subtotal * 0.1);
   const total = subtotal + fee;
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (lines.length === 0 || submitting) return;
     const numberedLine = lines.find((line) => line.tier.numbered);
     if (numberedLine) {
       router.push(`/eventos/${slug}/asientos?sector=${numberedLine.tier.id}&qty=${numberedLine.qty}`);
-    } else {
-      router.push(`/proximamente?title=${encodeURIComponent("Confirmación de compra")}`);
+      return;
+    }
+    setSubmitting(true);
+    setCheckoutError("");
+    const result = await startCheckout(
+      eventId,
+      lines.map((line) => ({ sectorId: line.tier.id, quantity: line.qty }))
+    );
+    if (!result.ok) {
+      setCheckoutError(result.error);
+      setSubmitting(false);
+      router.refresh();
     }
   };
+
+  const continueLabel = lines.some((line) => line.tier.numbered) ? "Elegir asientos" : "Ir a pagar";
 
   return (
     <main className={styles.main}>
@@ -133,10 +174,15 @@ export default function EntradasClient({
           <section className={styles.sectorCard}>
             <div className={styles.sectorHeader}>
               <h2>Selecciona tu sector</h2>
-              <span>Máximo {MAX_TICKETS} entradas por transacción para este evento.</span>
+              <span>Máximo {maxPerOrder} entradas por transacción para este evento.</span>
             </div>
+            {closedReason && (
+              <p className={styles.closedNotice} role="status">
+                {closedReason}
+              </p>
+            )}
             <div className={styles.sectorList}>
-              {detail.tiers.map((tier) => {
+              {tiers.map((tier) => {
                 const qty = selections[tier.id] ?? 0;
                 return (
                   <div key={tier.id} className={styles.sectorRow} data-active={qty > 0}>
@@ -147,8 +193,8 @@ export default function EntradasClient({
                           <span className={styles.sectorName}>{tier.name}</span>
                           {tier.badge && <span className={styles.sectorBadge}>{tier.badge}</span>}
                         </div>
-                        <span className={tier.status === "pocas" ? styles.statusLow : styles.statusOk}>
-                          {tier.status === "pocas" ? "Pocas unidades" : "Disponible"}
+                        <span className={tier.status !== "disponible" ? styles.statusLow : styles.statusOk}>
+                          {tier.status === "agotado" ? "Agotado" : tier.status === "pocas" ? "Pocas unidades" : "Disponible"}
                         </span>
                       </div>
                     </div>
@@ -166,7 +212,7 @@ export default function EntradasClient({
                       <button
                         type="button"
                         onClick={() => updateQty(tier.id, 1)}
-                        disabled={totalQty >= MAX_TICKETS}
+                        disabled={!canAdd(tier)}
                         aria-label={`Sumar ${tier.name}`}
                       >
                         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -235,8 +281,20 @@ export default function EntradasClient({
             <strong>{currency(total)}</strong>
           </div>
 
-          <button type="button" className={styles.continueButton} disabled={lines.length === 0} onClick={handleContinue}>
-            Continuar Compra
+          {checkoutError && (
+            <p className={styles.checkoutError} role="alert">
+              {checkoutError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            className={styles.continueButton}
+            disabled={lines.length === 0 || submitting}
+            aria-busy={submitting}
+            onClick={handleContinue}
+          >
+            {submitting ? "Reservando tus entradas…" : continueLabel}
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M11.6667 4.16667L17.5 10M17.5 10L11.6667 15.8333M17.5 10H2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -269,8 +327,8 @@ export default function EntradasClient({
             </span>
             <strong>{currency(total)}</strong>
           </div>
-          <button type="button" onClick={handleContinue}>
-            Continuar
+          <button type="button" onClick={handleContinue} disabled={submitting}>
+            {submitting ? "Reservando…" : continueLabel}
           </button>
         </div>
       )}

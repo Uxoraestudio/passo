@@ -6,13 +6,13 @@ import SalesContent from "@/components/dashboard/SalesContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Ventas | Passo Admin",
-  description: "Control de ventas y transacciones en tiempo real: ingresos, pedidos, medios de pago y auditoría de órdenes.",
+  title: "Ventas y reportes | Passo Admin",
+  description: "Ingresos, entradas vendidas y órdenes pagadas, con exportación a CSV.",
 };
 
 export default function VentasPage() {
   return (
-    <AuthGuard>
+    <AuthGuard module="ventas">
       <div className={styles.shell}>
         <AppSidebar />
         <div className={styles.content}>

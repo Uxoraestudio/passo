@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function EventosPage() {
   return (
-    <AuthGuard>
+    <AuthGuard module="eventos">
       <div className={styles.shell}>
         <AppSidebar />
         <div className={styles.content}>

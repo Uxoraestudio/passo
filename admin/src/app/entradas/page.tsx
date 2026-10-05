@@ -1,25 +1,6 @@
-import type { Metadata } from "next";
-import AuthGuard from "@/components/AuthGuard";
-import AppSidebar from "@/components/dashboard/AppSidebar";
-import DashboardTopbar from "@/components/dashboard/DashboardTopbar";
-import TicketsContent from "@/components/dashboard/TicketsContent";
-import styles from "../inicio/page.module.css";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Gestión de Entradas y Aforo | Passo Admin",
-  description: "Control de dispersión de tickets, rendimiento por fase y asignación de contingente técnico en tiempo real.",
-};
-
+// Las cortesías y la prensa ahora se emiten dentro de cada evento; la ruta se mantiene para enlaces antiguos.
 export default function EntradasPage() {
-  return (
-    <AuthGuard>
-      <div className={styles.shell}>
-        <AppSidebar />
-        <div className={styles.content}>
-          <DashboardTopbar />
-          <TicketsContent />
-        </div>
-      </div>
-    </AuthGuard>
-  );
+  redirect("/eventos/");
 }

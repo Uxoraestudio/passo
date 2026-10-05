@@ -19,6 +19,7 @@ export type SectorDraft = {
   label_x: number | null;
   label_y: number | null;
   is_active: boolean;
+  numbered: boolean;
 };
 
 function shapeCenter(s: SectorDraft): [number, number] {
@@ -91,6 +92,7 @@ export default function PerimetryEditor({
         label_x: null,
         label_y: null,
         is_active: true,
+        numbered: false,
       },
     ]);
   };
@@ -190,6 +192,15 @@ export default function PerimetryEditor({
                       {s.name}
                     </span>
                   )}
+                  <label className={styles.numberedToggle} title="El comprador elige fila y asiento">
+                    <input
+                      type="checkbox"
+                      checked={s.numbered}
+                      onChange={() => updateSector(s.key, { numbered: !s.numbered })}
+                      aria-label={`${label}: asientos numerados`}
+                    />
+                    Numerado
+                  </label>
                 </div>
                 <input
                   type="number"

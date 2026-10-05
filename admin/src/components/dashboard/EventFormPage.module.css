@@ -1685,3 +1685,62 @@
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }
+
+.numberedToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  background: #f3f1fa;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.numberedToggle:has(input:checked) {
+  background: #ede6ff;
+  color: #4b2bbf;
+}
+
+.numberedToggle input {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  accent-color: #6534f5;
+}
+
+/* Dialogs are also used outside the event form (Roles, cortesías): carry their own tokens and resets. */
+.overlay {
+  --ink: #1c1a2a;
+  --ink-strong: #110d29;
+  --muted: #625d75;
+  --line: #e5dff7;
+  --soft: #f6f5fa;
+  --field: #fafbfd;
+  --danger: #b42318;
+  --danger-bg: #fef3f2;
+  --danger-line: #f5c6c1;
+  color-scheme: light;
+  color: var(--ink);
+}
+
+:where(.overlay) :where(button) {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+}
+
+.overlay :where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+.modal[data-wide="true"] {
+  max-width: 640px;
+}

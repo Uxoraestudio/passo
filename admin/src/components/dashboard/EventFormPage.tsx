@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
 import {
   EVENTS_FLASH_KEY,
+  SectorInUseError,
   createEvent,
   getEvent,
   listEventSectors,
@@ -16,6 +17,7 @@ import {
 import { createVenue, getVenueById, listVenues, sectorCountFor, venueCapacity, type Venue } from "@/lib/venues-data";
 import { LAYOUTS } from "@/lib/venue-layouts";
 import ConfirmDialog from "./ConfirmDialog";
+import EventCourtesies from "./EventCourtesies";
 import EventImageField from "./EventImageField";
 import PerimetryEditor, { sectorIssue, type SectorDraft } from "./PerimetryEditor";
 import styles from "./EventFormPage.module.css";
@@ -157,6 +159,7 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
         label_x: null,
         label_y: null,
         is_active: true,
+        numbered: false,
       },
     ];
   }
@@ -172,12 +175,13 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
     label_x: t.labelX ?? null,
     label_y: t.labelY ?? null,
     is_active: true,
+    numbered: false,
   }));
 }
 
 function sectorsSignature(sectors: SectorDraft[]) {
   return JSON.stringify(
-    sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active])
+    sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active, s.numbered])
   );
 }
 
@@ -241,6 +245,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
   const [attemptLevel, setAttemptLevel] = useState<SaveLevel | null>(null);
   const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState<StepKey>("info");
+  // The courtesies block lives outside the form steps (it doesn't take part in saving).
+  const [inCourtesies, setInCourtesies] = useState(false);
 
   const pageRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -289,6 +295,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           label_x: s.label_x,
           label_y: s.label_y,
           is_active: s.is_active,
+          numbered: s.numbered ?? false,
         }));
         setLoadedEvent(event);
         setForm(loadedForm);
@@ -325,14 +332,21 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
+          if (entry.target.id === "s-cortesias") {
+            setInCourtesies(true);
+            return;
+          }
           const key = steps.find((s) => `s-${s.key}` === entry.target.id)?.key;
-          if (key) setActiveStep(key);
+          if (key) {
+            setActiveStep(key);
+            setInCourtesies(false);
+          }
         });
       },
       { rootMargin: "-35% 0px -60% 0px" }
     );
-    steps.forEach((s) => {
-      const el = document.getElementById(`s-${s.key}`);
+    [...steps.map((s) => `s-${s.key}`), "s-cortesias"].forEach((id) => {
+      const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
@@ -434,6 +448,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
 
   const scrollToStep = (key: StepKey) => {
     setActiveStep(key);
+    setInCourtesies(false);
     document.getElementById(`s-${key}`)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
   };
 
@@ -476,6 +491,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       label_x: s.label_x,
       label_y: s.label_y,
       is_active: s.is_active,
+      numbered: s.numbered,
       sort_order: i,
     })),
     capacity: loadedEvent?.capacity ?? 0,
@@ -510,9 +526,13 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       }
       leavingRef.current = true;
       router.push(thenHref);
-    } catch {
+    } catch (cause) {
       setLeaveTarget(null);
-      setSaveError("No pudimos guardar el evento. Revisa tu conexión e inténtalo de nuevo; tus cambios siguen aquí.");
+      setSaveError(
+        cause instanceof SectorInUseError
+          ? "No puedes quitar un sector que ya tiene entradas vendidas o reservadas. Desactívalo en vez de eliminarlo o de cambiar el recinto."
+          : "No pudimos guardar el evento. Revisa tu conexión e inténtalo de nuevo; tus cambios siguen aquí."
+      );
       setSaving(false);
     }
   };
@@ -696,10 +716,10 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               key={s.key}
               href={`#s-${s.key}`}
               className={styles.stepLink}
-              data-active={activeStep === s.key}
+              data-active={!inCourtesies && activeStep === s.key}
               data-done={doneSteps.has(s.key)}
               data-error={errorSteps.has(s.key)}
-              aria-current={activeStep === s.key ? "step" : undefined}
+              aria-current={!inCourtesies && activeStep === s.key ? "step" : undefined}
               onClick={(e) => {
                 e.preventDefault();
                 scrollToStep(s.key);
@@ -712,6 +732,24 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               {errorSteps.has(s.key) && <span className={styles.srOnly}> (tiene errores)</span>}
             </a>
           ))}
+          {mode === "edit" && (
+            <a
+              href="#s-cortesias"
+              className={styles.stepLink}
+              data-active={inCourtesies}
+              aria-current={inCourtesies ? "step" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                setInCourtesies(true);
+                document.getElementById("s-cortesias")?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+              }}
+            >
+              <span className={styles.stepNumber} aria-hidden="true">
+                <MaterialIcon decorative name="confirmation_number" />
+              </span>
+              Cortesías y prensa
+            </a>
+          )}
         </nav>
 
         <form className={styles.form} onSubmit={(e) => e.preventDefault()} noValidate>
@@ -1107,6 +1145,10 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </div>
             ))}
           </section>
+
+          {mode === "edit" && eventId && (
+            <EventCourtesies eventId={eventId} sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name }))} />
+          )}
         </form>
 
         <aside className={styles.aside} aria-label="Resumen del evento">

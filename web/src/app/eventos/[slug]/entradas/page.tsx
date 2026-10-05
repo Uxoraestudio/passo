@@ -5,7 +5,7 @@ import EntradasClient from "@/components/EntradasClient";
 import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
 import { requireUser } from "@/lib/auth-redirect";
-import { defaultEventDetail, eventDetails } from "@/lib/eventDetails";
+import { getEventSale } from "@/lib/event-sale";
 
 export default async function EntradasPage({
   params,
@@ -29,12 +29,23 @@ export default async function EntradasPage({
   await requireUser(`/eventos/${slug}/entradas/${returnSuffix}`);
 
   const event = toEventCardData(row);
-  const detail = eventDetails[row.id] ?? defaultEventDetail(row);
+  const sale = await getEventSale(row);
 
   return (
     <>
       <Header />
-      <EntradasClient event={event} detail={detail} slug={slug} initialTier={initialTier} initialQty={initialQty} />
+      <EntradasClient
+        event={event}
+        eventId={row.id}
+        detail={sale.detail}
+        tiers={sale.tiers}
+        slug={slug}
+        onSale={sale.onSale}
+        closedReason={sale.closedReason}
+        maxPerOrder={sale.maxPerOrder}
+        initialTier={initialTier}
+        initialQty={initialQty}
+      />
       <Footer />
     </>
   );

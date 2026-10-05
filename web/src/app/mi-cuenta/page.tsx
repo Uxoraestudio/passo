@@ -8,8 +8,8 @@ import AccountFavorites from "@/components/account/AccountFavorites";
 import AccountProfileForm from "@/components/account/AccountProfileForm";
 import AccountNotifications, { type NotificationPrefs } from "@/components/account/AccountNotifications";
 import { requireUser } from "@/lib/auth-redirect";
-import { getAllEvents, getPublishedEventRows } from "@/lib/events-data";
-import { buildDemoTickets } from "@/lib/account-tickets";
+import { getAllEvents } from "@/lib/events-data";
+import { getAccountTickets } from "@/lib/account-tickets";
 import { accountDisplayName, initialsOf } from "@/lib/account-user";
 import styles from "./page.module.css";
 
@@ -95,7 +95,7 @@ export default async function MiCuentaPage({ searchParams }: PageProps<"/mi-cuen
           </aside>
 
           <section className={styles.content} aria-label={title}>
-            {section === "entradas" && <MyTickets view={view} tickets={buildDemoTickets(await getPublishedEventRows())} />}
+            {section === "entradas" && <MyTickets view={view} tickets={await getAccountTickets()} />}
             {section === "favoritos" && <AccountFavorites events={await getAllEvents()} />}
             {section === "datos" && <AccountProfileForm initialName={name} email={email} />}
             {section === "pagos" && (

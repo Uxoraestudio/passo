@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
 import { EVENTS_FLASH_KEY, deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
+import { fetchRevenueByEvent } from "@/lib/admin-data";
+import { useCanEdit } from "@/lib/access";
 import EventsKpiRow from "./EventsKpiRow";
 import EventsFilterBar, { type FilterTab } from "./EventsFilterBar";
 import EventRow from "./EventRow";
@@ -22,6 +24,8 @@ export default function EventsContent() {
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [revenueByEvent, setRevenueByEvent] = useState<Record<string, number> | null>(null);
+  const canEdit = useCanEdit("eventos");
 
   const [tab, setTab] = useState<FilterTab>("todos");
   const [venue, setVenue] = useState("");
@@ -59,8 +63,11 @@ export default function EventsContent() {
       setLoading(true);
       setLoadError("");
       try {
-        const data = await listEvents();
-        if (active) setEvents(data);
+        const [data, revenue] = await Promise.all([listEvents(), fetchRevenueByEvent()]);
+        if (active) {
+          setEvents(data);
+          setRevenueByEvent(revenue);
+        }
       } catch {
         if (active) setLoadError("No pudimos cargar los eventos. Intenta recargar la página.");
       } finally {
@@ -165,14 +172,16 @@ export default function EventsContent() {
               <span>PDF</span>
             </button>
           </div>
-          <button type="button" className={styles.createButton} onClick={() => router.push("/eventos/nuevo")}>
-            <MaterialIcon name="add_circle" className={styles.createIcon} />
-            <span>Nuevo evento</span>
-          </button>
+          {canEdit && (
+            <button type="button" className={styles.createButton} onClick={() => router.push("/eventos/nuevo")}>
+              <MaterialIcon name="add_circle" className={styles.createIcon} />
+              <span>Nuevo evento</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <EventsKpiRow events={events} />
+      <EventsKpiRow events={events} revenue={revenueByEvent ? Object.values(revenueByEvent).reduce((a, b) => a + b, 0) : null} />
 
       <EventsFilterBar
         tab={tab}
@@ -191,7 +200,9 @@ export default function EventsContent() {
         ) : loadError ? (
           <div className={styles.empty}>{loadError}</div>
         ) : pageItems.length > 0 ? (
-          pageItems.map((event) => <EventRow key={event.id} event={event} onEdit={openEdit} onDelete={handleDelete} />)
+          pageItems.map((event) => (
+            <EventRow key={event.id} event={event} revenue={revenueByEvent ? (revenueByEvent[event.id] ?? 0) : null} onEdit={openEdit} onDelete={handleDelete} />
+          ))
         ) : (
           <div className={styles.empty}>
             {events.length === 0 ? "Aún no tienes eventos. Crea el primero." : "No se encontraron eventos con estos filtros."}

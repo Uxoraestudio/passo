@@ -5,34 +5,33 @@ import { usePathname } from "next/navigation";
 import {
   BarsIcon,
   CalendarIcon,
-  ClockIcon,
   GearIcon,
   HomeIcon,
   PaletteIcon,
   ScanIcon,
   SeoIcon,
   ShieldPersonIcon,
-  TicketIcon,
   UsersIcon,
 } from "@/components/icons";
+import { MODULES, allows, useAccess, type ModuleKey } from "@/lib/access";
 import styles from "./AppSidebar.module.css";
 
-const navItems = [
-  { href: "/inicio/", label: "Resumen", icon: HomeIcon },
-  { href: "/eventos/", label: "Eventos", icon: CalendarIcon },
-  { href: "/ventas/", label: "Ventas", icon: BarsIcon },
-  { href: "/entradas/", label: "Entradas", icon: TicketIcon },
-  { href: "/validar-ticket/", label: "Validación", icon: ScanIcon },
-  { href: "/clientes/", label: "Clientes", icon: UsersIcon },
-  { href: "/reportes/", label: "Reportes", icon: ClockIcon },
-  { href: "/roles/", label: "Roles", icon: ShieldPersonIcon },
-  { href: "/apariencia/", label: "Apariencia", icon: PaletteIcon },
-  { href: "/seo/", label: "SEO", icon: SeoIcon },
-  { href: "/configuracion/", label: "Configuración", icon: GearIcon },
-];
+const icons: Record<ModuleKey, typeof HomeIcon> = {
+  resumen: HomeIcon,
+  eventos: CalendarIcon,
+  ventas: BarsIcon,
+  validacion: ScanIcon,
+  clientes: UsersIcon,
+  roles: ShieldPersonIcon,
+  apariencia: PaletteIcon,
+  seo: SeoIcon,
+  configuracion: GearIcon,
+};
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const access = useAccess();
+  const navItems = MODULES.filter((m) => allows(access, m.key)).map((m) => ({ ...m, icon: icons[m.key] }));
 
   return (
     <aside className={styles.sidebar}>
@@ -48,7 +47,7 @@ export default function AppSidebar() {
       <nav className={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = item.href !== "#" && (pathname === item.href || pathname.startsWith(item.href));
+          const active = pathname === item.href || pathname.startsWith(item.href);
           return (
             <Link
               key={item.label}

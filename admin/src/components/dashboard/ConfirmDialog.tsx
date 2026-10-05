@@ -26,6 +26,8 @@ export default function ConfirmDialog({
   details,
   actions,
   busy = false,
+  kind = "alert",
+  wide = false,
   onClose,
 }: {
   open: boolean;
@@ -35,6 +37,9 @@ export default function ConfirmDialog({
   details?: string[];
   actions: DialogAction[];
   busy?: boolean;
+  /** "form" dialogs hold inputs and use role="dialog" instead of "alertdialog". */
+  kind?: "alert" | "form";
+  wide?: boolean;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -61,7 +66,7 @@ export default function ConfirmDialog({
         return;
       }
       if (e.key !== "Tab" || !dialog) return;
-      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>("button:not([disabled]), [href], input:not([disabled])"));
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])"));
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -88,7 +93,7 @@ export default function ConfirmDialog({
 
   return (
     <div className={styles.overlay} onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}>
-      <div ref={dialogRef} className={styles.modal} role="alertdialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} aria-busy={busy}>
+      <div ref={dialogRef} className={styles.modal} data-wide={wide} role={kind === "form" ? "dialog" : "alertdialog"} aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} aria-busy={busy}>
         <div className={styles.modalIcon} aria-hidden="true">
           <MaterialIcon decorative name={icon} />
         </div>

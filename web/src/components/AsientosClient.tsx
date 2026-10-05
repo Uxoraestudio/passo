@@ -1,50 +1,66 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { EventCardData } from "@/lib/events";
-import type { EventDetail, TicketTier } from "@/lib/eventDetails";
-import { generateSeatMap } from "@/lib/seatMap";
+import type { EventDetail } from "@/lib/eventDetails";
+import type { SaleTier } from "@/lib/event-sale";
+import { buildSeatRows, parseSeatLabel } from "@/lib/seatMap";
+import { startCheckout } from "@/lib/checkout-client";
 import styles from "@/app/eventos/[slug]/asientos/page.module.css";
 
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
-const RESERVATION_SECONDS = 10 * 60;
+const HOLD_MINUTES = 15;
 
 const steps = [{ label: "Entradas" }, { label: "Tus datos" }, { label: "Confirmación" }, { label: "Pago" }];
 
 export default function AsientosClient({
   event,
+  eventId,
   detail,
   slug,
   tier,
   qty,
+  takenSeats,
 }: {
   event: EventCardData;
+  eventId: string;
   detail: EventDetail;
   slug: string;
-  tier: TicketTier;
+  tier: SaleTier;
   qty: number;
+  takenSeats: string[];
 }) {
   const router = useRouter();
-  const rows = useMemo(() => generateSeatMap(tier.id), [tier.id]);
+  const rows = useMemo(
+    () => buildSeatRows(tier.capacity, tier.seatsPerRow, new Set(takenSeats)),
+    [tier.capacity, tier.seatsPerRow, takenSeats]
+  );
   const [selected, setSelected] = useState<string[]>([]);
   const [zoom, setZoom] = useState(1);
-  const [secondsLeft, setSecondsLeft] = useState(RESERVATION_SECONDS);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
-  const seconds = String(secondsLeft % 60).padStart(2, "0");
+  const handleCheckout = async () => {
+    if (selected.length !== qty || submitting) return;
+    setSubmitting(true);
+    setCheckoutError("");
+    const result = await startCheckout(eventId, [{ sectorId: tier.id, quantity: qty, seats: selected }]);
+    if (!result.ok) {
+      setCheckoutError(result.error);
+      setSubmitting(false);
+      if (result.code === "SEAT_TAKEN") {
+        setSelected([]);
+        router.refresh();
+      }
+    }
+  };
 
   const toggleSeat = (seatId: string, status: string) => {
-    if (status === "occupied") return;
+    if (status === "occupied" || submitting) return;
+    setCheckoutError("");
     setSelected((prev) => {
       if (prev.includes(seatId)) return prev.filter((s) => s !== seatId);
       if (prev.length >= qty) return prev;
@@ -74,7 +90,7 @@ export default function AsientosClient({
             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
             <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Tu selección se guarda por: {minutes}:{seconds}
+          Al continuar reservamos tus asientos por {HOLD_MINUTES} min
         </div>
       </div>
 
@@ -134,21 +150,10 @@ export default function AsientosClient({
                         data-status={isSelected ? "selected" : seat.status}
                         disabled={seat.status === "occupied"}
                         onClick={() => toggleSeat(seat.id, seat.status)}
-                        aria-label={`Asiento ${seat.id}, ${isSelected ? "seleccionado" : seat.status}`}
+                        aria-label={`Asiento ${seat.id}, ${isSelected ? "seleccionado" : seat.status === "occupied" ? "ocupado" : "disponible"}`}
                         aria-pressed={isSelected}
                       >
-                        {seat.status === "accessible" ? (
-                          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <circle cx="12" cy="4" r="1.6" fill="currentColor" />
-                            <path
-                              d="M12 7v4l4 2m-4-2-3 6m3-6H8"
-                              stroke="currentColor"
-                              strokeWidth="1.4"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        ) : isSelected ? (
+                        {isSelected ? (
                           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                             <path d="M16.667 5 7.5 14.167 3.333 10" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
@@ -197,10 +202,6 @@ export default function AsientosClient({
                 <i className={styles.legendOccupied} />
                 Ocupado
               </span>
-              <span>
-                <i className={styles.legendAccessible} />
-                Accesible
-              </span>
             </div>
           </div>
         </section>
@@ -228,7 +229,7 @@ export default function AsientosClient({
                       Entrada {index + 1} <span>{tier.name}</span>
                     </p>
                     <span>
-                      Fila {seatId[0]} · Asiento {seatId.slice(1)}
+                      Fila {parseSeatLabel(seatId).row} · Asiento {parseSeatLabel(seatId).number}
                     </span>
                   </div>
                   <span className={styles.selectionPrice}>{currency(tier.price)}</span>
@@ -256,13 +257,20 @@ export default function AsientosClient({
             <small>Impuestos incluidos</small>
           </div>
 
+          {checkoutError && (
+            <p className={styles.checkoutError} role="alert">
+              {checkoutError}
+            </p>
+          )}
+
           <button
             type="button"
             className={styles.continueButton}
-            disabled={!canContinue}
-            onClick={() => router.push(`/proximamente?title=${encodeURIComponent("Datos del comprador")}`)}
+            disabled={!canContinue || submitting}
+            aria-busy={submitting}
+            onClick={handleCheckout}
           >
-            Continuar a datos del comprador
+            {submitting ? "Reservando tus asientos…" : "Ir a pagar"}
             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path d="M11.6667 4.16667L17.5 10M17.5 10L11.6667 15.8333M17.5 10H2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -278,8 +286,8 @@ export default function AsientosClient({
               <path d="M8 11V8a4 4 0 118 0v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
             <div>
-              <p>Tus asientos están reservados temporalmente.</p>
-              <span>Finaliza tu compra dentro del tiempo restante para garantizar tu lugar.</span>
+              <p>Reserva temporal de {HOLD_MINUTES} minutos.</p>
+              <span>Al ir a pagar, tus asientos quedan bloqueados para ti mientras completas el pago en Flow.</span>
             </div>
           </div>
         </aside>

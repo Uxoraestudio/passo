@@ -3,7 +3,7 @@ export type TicketTier = {
   name: string;
   description: string;
   price: number;
-  status: "disponible" | "pocas";
+  status: "disponible" | "pocas" | "agotado";
   color: string;
   numbered: boolean;
   badge?: string;

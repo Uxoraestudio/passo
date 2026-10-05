@@ -36,6 +36,8 @@ export type EventRow = {
   sold: number;
   status: EventStatus;
   show_in_hero: boolean;
+  max_tickets_per_order?: number | null;
+  sale_start?: string | null;
 };
 
 export const FALLBACK_IMAGE = "/images/banner-crowd.jpg";

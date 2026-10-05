@@ -8,7 +8,8 @@ import EventSectorPanel from "@/components/EventSectorPanel";
 import EventCard from "@/components/EventCard";
 import { pickImage, toEventCardData } from "@/lib/events";
 import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
-import { defaultEventDetail, eventDetails, genericFaqs, genericPolicies } from "@/lib/eventDetails";
+import { genericFaqs, genericPolicies } from "@/lib/eventDetails";
+import { getEventSale } from "@/lib/event-sale";
 import { getSeoPage } from "@/lib/seo-settings";
 import { categoryForAdminValue, categoryHref } from "@/lib/categories";
 import styles from "./page.module.css";
@@ -110,7 +111,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
   }
 
   const event = toEventCardData(row);
-  const detail = eventDetails[row.id] ?? defaultEventDetail(row);
+  const { detail } = await getEventSale(row);
 
   const eventCategory = categoryForAdminValue(row.category);
   const isLollapalooza = row.id === "lollapalooza";

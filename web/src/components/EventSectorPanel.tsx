@@ -91,8 +91,8 @@ export default function EventSectorPanel({
                     <span className={styles.tierColorDot} style={{ background: tier.color }} aria-hidden="true" />
                     <span className={styles.tierName}>{tier.name}</span>
                     {tier.badge && <span className={styles.tierBadge}>{tier.badge}</span>}
-                    <span className={tier.status === "pocas" ? styles.badgeLow : styles.badgeOk}>
-                      {tier.status === "pocas" ? "Pocas un." : "Disponible"}
+                    <span className={tier.status !== "disponible" ? styles.badgeLow : styles.badgeOk}>
+                      {tier.status === "agotado" ? "Agotado" : tier.status === "pocas" ? "Pocas un." : "Disponible"}
                     </span>
                   </div>
                 </div>

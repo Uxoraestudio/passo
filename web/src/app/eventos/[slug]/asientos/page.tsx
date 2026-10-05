@@ -1,11 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AsientosClient from "@/components/AsientosClient";
 import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
 import { requireUser } from "@/lib/auth-redirect";
-import { defaultEventDetail, eventDetails } from "@/lib/eventDetails";
+import { getEventSale } from "@/lib/event-sale";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function AsientosPage({
   params,
@@ -14,23 +15,37 @@ export default async function AsientosPage({
   const { slug } = await params;
   const query = await searchParams;
   const row = await getEventRowBySlug(slug);
-  const detail = row ? (eventDetails[row.id] ?? defaultEventDetail(row)) : undefined;
-  const sectorId = typeof query?.sector === "string" ? query.sector : "";
-  const qty = Math.max(1, Number(typeof query?.qty === "string" ? query.qty : 1) || 1);
-  const tier = detail?.tiers.find((t) => t.id === sectorId);
-
-  if (!row || !detail || !tier) {
+  if (!row) {
     notFound();
   }
 
-  await requireUser(`/eventos/${slug}/asientos/?sector=${encodeURIComponent(sectorId)}&qty=${qty}`);
+  const sectorId = typeof query?.sector === "string" ? query.sector : "";
+  const requestedQty = Math.max(1, Number(typeof query?.qty === "string" ? query.qty : 1) || 1);
 
-  const event = toEventCardData(row);
+  await requireUser(`/eventos/${slug}/asientos/?sector=${encodeURIComponent(sectorId)}&qty=${requestedQty}`);
+
+  const sale = await getEventSale(row);
+  const tier = sale.tiers.find((t) => t.id === sectorId && t.numbered);
+  if (!tier || !sale.onSale) {
+    redirect(`/eventos/${slug}/entradas/`);
+  }
+
+  const supabase = await createClient();
+  const { data: taken } = await supabase.rpc("get_taken_seats", { p_sector_id: tier.id });
+  const qty = Math.min(requestedQty, sale.maxPerOrder, tier.available);
 
   return (
     <>
       <Header />
-      <AsientosClient event={event} detail={detail} slug={slug} tier={tier} qty={qty} />
+      <AsientosClient
+        event={toEventCardData(row)}
+        eventId={row.id}
+        detail={sale.detail}
+        slug={slug}
+        tier={tier}
+        qty={qty}
+        takenSeats={(taken ?? []) as string[]}
+      />
       <Footer />
     </>
   );

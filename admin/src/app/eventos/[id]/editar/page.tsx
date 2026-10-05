@@ -14,7 +14,7 @@ export default async function EditarEventoPage({ params }: PageProps<"/eventos/[
   const { id } = await params;
 
   return (
-    <AuthGuard>
+    <AuthGuard module="eventos" level="edit">
       <div className={styles.shell}>
         <AppSidebar />
         <div className={styles.content}>

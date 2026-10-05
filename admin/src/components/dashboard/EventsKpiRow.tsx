@@ -4,13 +4,13 @@ import styles from "./EventsKpiRow.module.css";
 
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 
-export default function EventsKpiRow({ events }: { events: EventRecord[] }) {
+export default function EventsKpiRow({ events, revenue }: { events: EventRecord[]; revenue: number | null }) {
   const total = events.length;
   const enVenta = events.filter((e) => e.status === "en-venta" || e.status === "casi-agotado").length;
   const aforoTotal = events.reduce((sum, e) => sum + e.capacity, 0);
   const aforoVendido = events.reduce((sum, e) => sum + e.sold, 0);
   const ocupacion = aforoTotal > 0 ? Math.round((aforoVendido / aforoTotal) * 100) : 0;
-  const recaudacion = events.reduce((sum, e) => sum + e.sold * e.price_base, 0);
+  const recaudacion = revenue ?? events.reduce((sum, e) => sum + e.sold * e.price_base, 0);
 
   const kpis = [
     {
@@ -45,13 +45,13 @@ export default function EventsKpiRow({ events }: { events: EventRecord[] }) {
     },
     {
       id: "recaudacion",
-      label: "Recaudación estimada",
+      label: revenue === null ? "Recaudación estimada" : "Recaudación",
       value: currency(recaudacion),
       icon: "account_balance_wallet",
       tone: "neutral",
       delta: `${aforoVendido.toLocaleString("es-CL")} vendidas`,
       deltaTone: "success",
-      caption: "Pesos Chilenos (CLP)",
+      caption: revenue === null ? "Precio base × vendidas" : "Ventas pagadas (CLP)",
     },
   ];
 

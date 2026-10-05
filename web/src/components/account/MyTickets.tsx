@@ -73,15 +73,6 @@ function EmptyState({ title, text }: { title: string; text: string }) {
   );
 }
 
-function DemoNotice() {
-  return (
-    <p className={styles.demoNotice}>
-      <span>Vista de ejemplo</span>
-      Estas entradas se generan con eventos reales de Passo para mostrar cómo se verán tus compras.
-    </p>
-  );
-}
-
 function CompactTicket({ ticket, onOpen }: { ticket: AccountTicket; onOpen?: () => void }) {
   const used = ticket.status === "usada";
   return (
@@ -143,7 +134,6 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
   if (view === "pasadas") {
     return past.length ? (
       <div className={styles.stack}>
-        <DemoNotice />
         <div className={styles.grid}>
           {past.map((ticket) => (
             <CompactTicket key={ticket.id} ticket={ticket} />
@@ -210,8 +200,6 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
 
   return (
     <div className={styles.stack}>
-      <DemoNotice />
-
       <article ref={featuredRef} className={styles.featured} data-qr={showQr} aria-label={`Entradas para ${featured.event.title}`}>
         <div className={styles.featuredMedia}>
           <div className={styles.poster} aria-hidden={showQr}>
@@ -226,7 +214,7 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
             <div className={styles.ticketPanel}>
               <p className={styles.ticketPanelTop}>
                 <span>Entrada {entry + 1} de {featured.quantity}</span>
-                <span className={styles.demoTag}>QR de demostración</span>
+                <span className={styles.demoTag}>QR provisional</span>
               </p>
               <DynamicQr seed={`${featured.orderCode}-${entry}`} label={`Código QR de la entrada ${entry + 1} para ${featured.event.title}`} />
               <p className={styles.ticketPanelSeat}>{seatLine(featured)}</p>

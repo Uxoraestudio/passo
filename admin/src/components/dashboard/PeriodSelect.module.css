@@ -1,0 +1,51 @@
+.select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.select select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 9px 34px 9px 38px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  color: #334155;
+  cursor: pointer;
+  color-scheme: light;
+}
+
+.select:focus-within {
+  outline: 2px solid #6534f5;
+  outline-offset: 2px;
+}
+
+.select select:focus {
+  outline: none;
+}
+
+.icon,
+.chevron {
+  position: absolute;
+  pointer-events: none;
+}
+
+.icon {
+  left: 14px;
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+}
+
+.chevron {
+  right: 12px;
+  width: 14px;
+  height: 14px;
+  color: #94a3b8;
+}

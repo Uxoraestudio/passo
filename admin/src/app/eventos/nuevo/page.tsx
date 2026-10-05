@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function NuevoEventoPage() {
   return (
-    <AuthGuard>
+    <AuthGuard module="eventos" level="edit">
       <div className={styles.shell}>
         <AppSidebar />
         <div className={styles.content}>

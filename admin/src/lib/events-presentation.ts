@@ -116,10 +116,11 @@ const statusLabels: Record<EventStatus, (percent: number) => string> = {
   finalizado: () => "✓ Finalizado",
 };
 
-export function derivePresentation(event: EventRecord) {
+/** `revenue` is the real paid-sales total; without it the metric falls back to an estimate. */
+export function derivePresentation(event: EventRecord, revenue?: number | null) {
   const percent = event.capacity > 0 ? Math.min(100, Math.round((event.sold / event.capacity) * 100)) : 0;
   const remaining = Math.max(0, event.capacity - event.sold);
-  const revenue = event.price_base * event.sold;
+  const realRevenue = typeof revenue === "number";
   const preset = statusPresentation[event.status];
 
   return {
@@ -129,8 +130,8 @@ export function derivePresentation(event: EventRecord) {
     progressValueLabel: `${event.sold.toLocaleString("es-CL")} / ${event.capacity.toLocaleString("es-CL")}`,
     footLeft: event.status === "finalizado" ? `Ocupación ${percent}%` : `Remanente: ${remaining.toLocaleString("es-CL")}`,
     metricLabel: event.status === "finalizado" ? "Recaudación final" : "Recaudación actual",
-    metricValue: formatCLP(revenue),
-    metricCaption: `Precio base: ${formatCLP(event.price_base)}`,
+    metricValue: formatCLP(realRevenue ? revenue : event.price_base * event.sold),
+    metricCaption: realRevenue ? `Ventas pagadas · desde ${formatCLP(event.price_base)}` : `Estimado · precio base ${formatCLP(event.price_base)}`,
     dateLabel: formatEventDate(event.event_date),
   };
 }
