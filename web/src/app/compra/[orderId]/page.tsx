@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PendingRefresh from "@/components/PendingRefresh";
 import { requireUser } from "@/lib/auth-redirect";
 import { createClient } from "@/lib/supabase/server";
 import { syncFlowPayment, type OrderStatus } from "@/lib/payments";
+import { getCheckoutOrder } from "@/lib/checkout-order";
+import TicketsConfirmed, { type IssuedTicket } from "@/components/checkout/TicketsConfirmed";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -79,6 +81,19 @@ async function loadOrder(orderId: string) {
   return data as OrderView | null;
 }
 
+async function loadTickets(orderId: string): Promise<IssuedTicket[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("tickets")
+    .select("id, code, sector_name, seat_label, holder_name, status")
+    .eq("order_id", orderId)
+    .order("seat_label", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  return ((data ?? []) as { id: string; code: string; sector_name: string; seat_label: string | null; holder_name: string | null; status: IssuedTicket["status"] }[]).map(
+    (t) => ({ id: t.id, code: t.code, sectorName: t.sector_name, seatLabel: t.seat_label, holderName: t.holder_name, status: t.status })
+  );
+}
+
 export default async function CompraPage({ params }: PageProps<"/compra/[orderId]">) {
   const { orderId } = await params;
   if (!UUID.test(orderId)) notFound();
@@ -95,6 +110,24 @@ export default async function CompraPage({ params }: PageProps<"/compra/[orderId
       order = (await loadOrder(orderId)) ?? order;
     } catch (cause) {
       console.error("Flow reconcile failed", cause);
+    }
+  }
+
+  // Reserved but not sent to Flow yet: the buyer is still filling in the details.
+  if (order.status === "pending" && !order.flow_token) {
+    redirect(`/compra/${orderId}/datos/`);
+  }
+
+  if (order.status === "paid") {
+    const [checkout, tickets] = await Promise.all([getCheckoutOrder(orderId), loadTickets(orderId)]);
+    if (checkout && tickets.length > 0) {
+      return (
+        <>
+          <Header />
+          <TicketsConfirmed order={checkout} tickets={tickets} />
+          <Footer />
+        </>
+      );
     }
   }
 

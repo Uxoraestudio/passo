@@ -89,5 +89,6 @@
 @media (min-width: 900px) {
   .panel {
     display: block;
+    min-height: 640px;
   }
 }

@@ -1,8 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createFlowPayment } from "@/lib/flow";
-import { HOLD_MINUTES, PAYMENT_WINDOW_SECONDS, orderErrorFor } from "@/lib/payments";
+import { SELECTION_HOLD_MINUTES, orderErrorFor } from "@/lib/payments";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SEAT = /^[A-Z]{1,2}[0-9]{1,3}$/;
@@ -55,7 +53,7 @@ export async function POST(request: NextRequest) {
   const { data: order, error } = await supabase.rpc("create_order", {
     p_event_id: input.eventId,
     p_items: input.items,
-    p_hold_minutes: HOLD_MINUTES,
+    p_hold_minutes: SELECTION_HOLD_MINUTES,
   });
   if (error || !order) {
     const failure = orderErrorFor(error?.message);
@@ -63,32 +61,6 @@ export async function POST(request: NextRequest) {
     return json(failure.status, { error: failure.message, code: failure.code });
   }
 
-  const admin = createAdminClient();
-  const { data: event } = await admin.from("events").select("title").eq("id", input.eventId).single();
-  const siteUrl = process.env.SITE_URL || request.nextUrl.origin;
-
-  try {
-    const payment = await createFlowPayment({
-      commerceOrder: order.code,
-      subject: `Entradas ${event?.title ?? "Passo"} · ${order.code}`,
-      amount: order.total,
-      email: order.buyer_email,
-      urlConfirmation: `${siteUrl}/api/flow/confirmacion/`,
-      urlReturn: `${siteUrl}/api/flow/retorno/`,
-      timeoutSeconds: PAYMENT_WINDOW_SECONDS,
-    });
-
-    const { error: attachError } = await admin.rpc("attach_flow_payment", {
-      p_order_id: order.id,
-      p_token: payment.token,
-      p_flow_order: payment.flowOrder,
-    });
-    if (attachError) throw attachError;
-
-    return json(200, { orderId: order.id, redirectUrl: payment.redirectUrl });
-  } catch (cause) {
-    console.error("Flow payment/create failed", cause);
-    await admin.rpc("fail_order_payment", { p_order_id: order.id, p_status: "cancelled" });
-    return json(502, { error: "No pudimos conectar con el medio de pago. Tus entradas no fueron cobradas; inténtalo de nuevo." });
-  }
+  // Payment starts later (/api/checkout/pagar) once the buyer has named every ticket.
+  return json(200, { orderId: order.id });
 }

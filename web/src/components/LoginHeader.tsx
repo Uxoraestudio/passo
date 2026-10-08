@@ -2,7 +2,14 @@ import Link from "next/link";
 import { getSiteSettings } from "@/lib/site-settings";
 import styles from "./LoginHeader.module.css";
 
-export default async function LoginHeader({ next = null }: { next?: string | null }) {
+type Hint = { text: string; linkLabel: string; href: string };
+
+export default async function LoginHeader({ next = null, hint }: { next?: string | null; hint?: Hint }) {
+  const { text, linkLabel, href } = hint ?? {
+    text: "¿No tienes cuenta?",
+    linkLabel: "Crear cuenta",
+    href: next ? `/registro/?next=${encodeURIComponent(next)}` : "/registro/",
+  };
   const settings = await getSiteSettings();
 
   return (
@@ -17,7 +24,7 @@ export default async function LoginHeader({ next = null }: { next?: string | nul
           )}
         </Link>
         <p className={styles.signupHint}>
-          ¿No tienes cuenta? <a href={next ? `/registro/?next=${encodeURIComponent(next)}` : "/registro/"}>Crear cuenta</a>
+          {text} <a href={href}>{linkLabel}</a>
         </p>
       </div>
     </header>

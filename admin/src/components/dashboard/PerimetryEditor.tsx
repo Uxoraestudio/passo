@@ -20,6 +20,7 @@ export type SectorDraft = {
   label_y: number | null;
   is_active: boolean;
   numbered: boolean;
+  seats_per_row: number | "";
 };
 
 function shapeCenter(s: SectorDraft): [number, number] {
@@ -34,11 +35,26 @@ function toAmount(raw: string): number | "" {
   return Number.isFinite(n) ? Math.max(0, n) : "";
 }
 
+function rowName(index: number) {
+  return index < 26 ? String.fromCharCode(65 + index) : String.fromCharCode(64 + Math.floor(index / 26)) + String.fromCharCode(65 + (index % 26));
+}
+
+// Mirrors how the public site lays out seats: rows of seats_per_row until capacity is reached.
+function seatingSummary(s: SectorDraft) {
+  const perRow = Number(s.seats_per_row);
+  const capacity = Number(s.capacity);
+  if (!(perRow >= 1) || !(capacity > 0)) return "El comprador elige fila y asiento en un plano generado con estos datos.";
+  const rows = Math.ceil(capacity / perRow);
+  const last = capacity - (rows - 1) * perRow;
+  return `${rows} ${rows === 1 ? "fila" : "filas"} (A–${rowName(rows - 1)})${last < perRow ? `, la última con ${last} asientos` : ""}.`;
+}
+
 export function sectorIssue(s: SectorDraft, isCustom: boolean): string | null {
   if (!s.is_active) return null;
   if (isCustom && !s.name.trim()) return "Falta el nombre";
   if (!(Number(s.capacity) > 0)) return "Falta la capacidad";
   if (!(Number(s.price) > 0)) return "Falta el precio";
+  if (s.numbered && !(Number(s.seats_per_row) >= 1 && Number(s.seats_per_row) <= 100)) return "Indica entre 1 y 100 asientos por fila";
   return null;
 }
 
@@ -93,6 +109,7 @@ export default function PerimetryEditor({
         label_y: null,
         is_active: true,
         numbered: false,
+        seats_per_row: 20,
       },
     ]);
   };
@@ -233,6 +250,26 @@ export default function PerimetryEditor({
                   </button>
                 )}
               </div>
+              {s.numbered && s.is_active && (
+                <div className={styles.seatingRow}>
+                  <label htmlFor={`seats-${s.key}`}>Asientos por fila</label>
+                  <input
+                    id={`seats-${s.key}`}
+                    type="number"
+                    min={1}
+                    max={100}
+                    step={1}
+                    inputMode="numeric"
+                    value={s.seats_per_row}
+                    aria-invalid={issue?.startsWith("Indica") ?? false}
+                    onChange={(e) => {
+                      const v = toAmount(e.target.value);
+                      updateSector(s.key, { seats_per_row: v === "" ? "" : Math.min(100, v) });
+                    }}
+                  />
+                  <span className={styles.seatingHint}>{seatingSummary(s)}</span>
+                </div>
+              )}
               {issue && <p className={styles.sectorError}>{issue}</p>}
             </div>
           );

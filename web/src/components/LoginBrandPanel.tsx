@@ -1,7 +1,20 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import styles from "./LoginBrandPanel.module.css";
 
-export default function LoginBrandPanel() {
+export default function LoginBrandPanel({
+  handwritten = "La vida se vive aquí.",
+  slogan = (
+    <>
+      TU LUGAR EN LO
+      <br />
+      EXTRAORDINARIO.
+    </>
+  ),
+}: {
+  handwritten?: ReactNode;
+  slogan?: ReactNode;
+}) {
   return (
     <div className={styles.panel}>
       <Image
@@ -17,13 +30,9 @@ export default function LoginBrandPanel() {
         <div className={styles.bracket} data-side="right" />
       </div>
       <div className={styles.taglines}>
-        <p className={styles.handwritten}>La vida se vive aquí.</p>
+        <p className={styles.handwritten}>{handwritten}</p>
         <div className={styles.dash} />
-        <h2 className={styles.slogan}>
-          TU LUGAR EN LO
-          <br />
-          EXTRAORDINARIO.
-        </h2>
+        <h2 className={styles.slogan}>{slogan}</h2>
       </div>
     </div>
   );

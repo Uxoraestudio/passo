@@ -8,7 +8,7 @@ import VenueMap from "@/components/VenueMap";
 import type { EventCardData } from "@/lib/events";
 import type { EventDetail } from "@/lib/eventDetails";
 import type { SaleTier } from "@/lib/event-sale";
-import { startCheckout } from "@/lib/checkout-client";
+import { reserveTickets } from "@/lib/checkout-client";
 import styles from "@/app/eventos/[slug]/entradas/page.module.css";
 
 const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
@@ -94,7 +94,7 @@ export default function EntradasClient({
     }
     setSubmitting(true);
     setCheckoutError("");
-    const result = await startCheckout(
+    const result = await reserveTickets(
       eventId,
       lines.map((line) => ({ sectorId: line.tier.id, quantity: line.qty }))
     );
@@ -102,10 +102,12 @@ export default function EntradasClient({
       setCheckoutError(result.error);
       setSubmitting(false);
       router.refresh();
+      return;
     }
+    router.push(`/compra/${result.orderId}/datos/`);
   };
 
-  const continueLabel = lines.some((line) => line.tier.numbered) ? "Elegir asientos" : "Ir a pagar";
+  const continueLabel = lines.some((line) => line.tier.numbered) ? "Elegir asientos" : "Continuar";
 
   return (
     <main className={styles.main}>

@@ -1744,3 +1744,45 @@
 .modal[data-wide="true"] {
   max-width: 640px;
 }
+
+.seatingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: -2px 0 8px 28px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f6f2ff;
+  font-size: 12px;
+  color: #4b2bbf;
+}
+
+.seatingRow label {
+  font-weight: 700;
+}
+
+.seatingRow input {
+  width: 72px;
+  padding: 6px 8px;
+  border: 1px solid #d6cbfc;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text, #111827);
+}
+
+.seatingRow input:focus {
+  outline: none;
+  border-color: #6534f5;
+  box-shadow: 0 0 0 3px #e4dcfd;
+}
+
+.seatingRow input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.seatingHint {
+  color: var(--muted);
+}

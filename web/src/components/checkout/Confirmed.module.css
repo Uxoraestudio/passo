@@ -1,0 +1,677 @@
+.main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px 72px;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.cover {
+  object-fit: cover;
+}
+
+/* Hero */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--color-purple);
+  color: #fff;
+  box-shadow: 0 0 0 8px #efe9ff, 0 18px 30px -12px var(--color-purple);
+  animation: pop 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.check svg {
+  width: 30px;
+  height: 30px;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: var(--color-gray-900);
+  text-wrap: balance;
+}
+
+.title span {
+  color: var(--color-orange);
+}
+
+.subtitle {
+  font-size: 14.5px;
+  color: var(--color-gray-500);
+  overflow-wrap: anywhere;
+}
+
+.subtitle strong {
+  font-weight: 700;
+  color: var(--color-purple);
+}
+
+.orderCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 9px 16px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+  font-size: 13.5px;
+  color: var(--color-gray-600);
+  transition: border-color 150ms ease;
+}
+
+.orderCode strong {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gray-900);
+}
+
+.orderCode:hover {
+  border-color: var(--color-purple);
+}
+
+.copyState {
+  display: inline-flex;
+  min-width: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-purple);
+}
+
+.copyState svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Layout */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tickets {
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 18px;
+}
+
+.sectionHead h2 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-gray-900);
+}
+
+.sectionHead p {
+  margin-top: 4px;
+  font-size: 13.5px;
+  color: var(--color-gray-500);
+}
+
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-orange);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 12px 20px -12px rgba(255, 120, 45, 0.9);
+  transition: transform 150ms ease;
+}
+
+.downloadButton:hover {
+  transform: translateY(-1px);
+}
+
+.downloadButton svg {
+  width: 17px;
+  height: 17px;
+}
+
+.ticketGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+/* Ticket */
+
+.ticket {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  background: #fff;
+  border: 1px solid var(--color-gray-100);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 24px 48px -32px rgba(36, 14, 92, 0.45);
+  overflow: hidden;
+}
+
+.ticketTop {
+  position: relative;
+  height: 170px;
+  color: #fff;
+  background: var(--color-dark-900);
+}
+
+.ticketImage {
+  object-fit: cover;
+}
+
+.ticketShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(101, 52, 245, 0.55), rgba(20, 9, 36, 0.92) 75%);
+}
+
+.ticketDate {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 46px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--color-gray-600);
+}
+
+.ticketDate strong {
+  font-size: 19px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-gray-900);
+}
+
+.ticketDate small {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--color-gray-400);
+}
+
+.ticketWhen {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 55%;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.ticketWhen strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ticketWhen small {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.ticketEvent {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.ticketEvent span {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--color-orange);
+}
+
+.ticketBody {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 18px 20px;
+  border-top: 2px dashed var(--color-gray-200);
+}
+
+/* Perforation notches where the stub meets the body. */
+.ticketBody::before,
+.ticketBody::after {
+  content: "";
+  position: absolute;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--background, #fff);
+  border: 1px solid var(--color-gray-100);
+}
+
+.ticketBody::before {
+  left: -12px;
+}
+
+.ticketBody::after {
+  right: -12px;
+}
+
+.ticketSeat {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.ticketSeat > div {
+  text-align: center;
+}
+
+.ticketSeat > div + div {
+  border-left: 1px solid var(--color-gray-100);
+}
+
+.ticketSeat dt {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-gray-400);
+}
+
+.ticketSeat dd {
+  margin-top: 2px;
+  padding: 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+  overflow-wrap: anywhere;
+}
+
+.qr {
+  width: 172px;
+  height: 172px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--color-gray-200);
+  background: #fff;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ticket[data-status="used"] .qr,
+.ticket[data-status="void"] .qr {
+  opacity: 0.25;
+}
+
+.holder {
+  margin-top: 4px;
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+  text-align: center;
+}
+
+.typeChip {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: #f2edfe;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-purple);
+}
+
+.shortCode {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gray-400);
+}
+
+.statusNote {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #b42318;
+}
+
+/* Sidebar */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.panel {
+  padding: 22px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--color-gray-100);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+}
+
+.panel h2 {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-gray-900);
+}
+
+.panelSub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-gray-500);
+}
+
+.readySteps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.readySteps li {
+  display: flex;
+  gap: 12px;
+}
+
+.readySteps li > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-purple);
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.readySteps strong {
+  display: block;
+  font-size: 14px;
+  color: var(--color-gray-900);
+}
+
+.readySteps small {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-gray-500);
+  overflow-wrap: anywhere;
+}
+
+.panelHeadRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.textLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-purple);
+  white-space: nowrap;
+}
+
+.textLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.eventMini {
+  display: flex;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.eventMiniThumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-dark-900);
+}
+
+.eventMiniTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
+.eventMiniMeta {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--color-gray-500);
+}
+
+.outlineButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-purple);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-purple);
+  transition: background 150ms ease;
+}
+
+.outlineButton:hover {
+  background: #f6f2ff;
+}
+
+.outlineButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.accountLink {
+  align-self: flex-end;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-purple);
+}
+
+.accountLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.orderCode:focus-visible,
+.downloadButton:focus-visible,
+.textLink:focus-visible,
+.outlineButton:focus-visible,
+.accountLink:focus-visible,
+.helpBanner:focus-visible {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 2px;
+}
+
+/* Help */
+
+.helpBanner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 16px;
+  margin-top: 36px;
+  padding: 20px 22px;
+  border-radius: 20px;
+  background: #f4f0ff;
+  border: 1px solid #e4dcfd;
+}
+
+.helpIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-purple);
+}
+
+.helpIcon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.helpText {
+  flex: 1;
+  min-width: 200px;
+}
+
+.helpText strong {
+  display: block;
+  font-size: 15px;
+  color: var(--color-gray-900);
+}
+
+.helpText small {
+  font-size: 13px;
+  color: var(--color-gray-500);
+}
+
+.helpCta {
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--color-purple);
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #fff;
+}
+
+@media (min-width: 640px) {
+  .main {
+    padding: 48px 32px 88px;
+  }
+
+  .title {
+    font-size: 38px;
+  }
+
+  .ticketGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .tickets {
+    flex: 1;
+  }
+
+  .sidebar {
+    width: 380px;
+    flex-shrink: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check {
+    animation: none;
+  }
+}
+
+@media print {
+  :global(header),
+  :global(footer),
+  .hero,
+  .sidebar,
+  .helpBanner,
+  .downloadButton,
+  .sectionHead p {
+    display: none !important;
+  }
+
+  .main {
+    padding: 0;
+  }
+
+  .ticketGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ticket {
+    break-inside: avoid;
+    box-shadow: none;
+    print-color-adjust: exact;
+  }
+}

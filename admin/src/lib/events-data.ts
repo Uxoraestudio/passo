@@ -47,6 +47,7 @@ export type SectorInput = {
   label_y: number | null;
   is_active: boolean;
   numbered: boolean;
+  seats_per_row: number;
   sort_order: number;
 };
 
@@ -158,6 +159,7 @@ async function syncSectors(eventId: string, sectors: SectorInput[]) {
     label_y: s.label_y,
     is_active: s.is_active,
     numbered: s.numbered,
+    seats_per_row: s.seats_per_row,
     sort_order: index,
   }));
 

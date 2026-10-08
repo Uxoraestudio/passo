@@ -3,8 +3,10 @@ import { FLOW_STATUS, getFlowPaymentStatus } from "@/lib/flow";
 
 export type OrderStatus = "pending" | "paid" | "rejected" | "cancelled" | "expired" | "refund_required";
 
-// Minutes the hold lasts in the database vs. how long Flow accepts the payment.
-// The hold outlives the Flow order so a payment Flow accepts is always backed by seats.
+// The selection is held while the buyer fills in their details; starting the
+// payment extends the hold once to HOLD_MINUTES. The hold outlives the Flow
+// order so a payment Flow accepts is always backed by seats.
+export const SELECTION_HOLD_MINUTES = 15;
 export const HOLD_MINUTES = 17;
 export const PAYMENT_WINDOW_SECONDS = 15 * 60;
 
@@ -22,6 +24,12 @@ const orderErrors: Record<string, { status: number; message: string }> = {
   SEAT_INVALID: { status: 400, message: "Uno de los asientos no existe en este sector." },
   SEAT_TAKEN: { status: 409, message: "Alguien acaba de tomar uno de tus asientos. Elige otro." },
   SOLD_OUT: { status: 409, message: "No quedan suficientes entradas en ese sector." },
+  ORDER_NOT_FOUND: { status: 404, message: "No encontramos tu reserva." },
+  ORDER_EXPIRED: { status: 409, message: "Se acabó el tiempo de tu reserva. Vuelve a elegir tus entradas." },
+  PAYMENT_ALREADY_STARTED: { status: 409, message: "Ya iniciaste el pago de esta compra. Revisa su estado antes de volver a pagar." },
+  DETAILS_MISSING: { status: 400, message: "Completa los datos del comprador y de cada asistente antes de pagar." },
+  DETAILS_INVALID: { status: 400, message: "Revisa los datos ingresados: hay campos incompletos o no válidos." },
+  DUPLICATE_DOCUMENT: { status: 400, message: "Cada entrada debe quedar a nombre de una persona distinta (RUT o pasaporte repetido)." },
 };
 
 export function orderErrorFor(message: string | undefined) {

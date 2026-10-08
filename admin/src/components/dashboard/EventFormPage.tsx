@@ -160,6 +160,7 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
         label_y: null,
         is_active: true,
         numbered: false,
+        seats_per_row: 20,
       },
     ];
   }
@@ -176,12 +177,13 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
     label_y: t.labelY ?? null,
     is_active: true,
     numbered: false,
+    seats_per_row: 20,
   }));
 }
 
 function sectorsSignature(sectors: SectorDraft[]) {
   return JSON.stringify(
-    sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active, s.numbered])
+    sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active, s.numbered, s.seats_per_row])
   );
 }
 
@@ -296,6 +298,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           label_y: s.label_y,
           is_active: s.is_active,
           numbered: s.numbered ?? false,
+          seats_per_row: s.seats_per_row ?? 20,
         }));
         setLoadedEvent(event);
         setForm(loadedForm);
@@ -492,6 +495,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       label_y: s.label_y,
       is_active: s.is_active,
       numbered: s.numbered,
+      seats_per_row: Number(s.seats_per_row) || 20,
       sort_order: i,
     })),
     capacity: loadedEvent?.capacity ?? 0,
