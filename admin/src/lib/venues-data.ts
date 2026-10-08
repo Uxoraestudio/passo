@@ -11,6 +11,9 @@ export type Venue = {
   gradient: string | null;
   is_custom: boolean;
   base_shapes: BaseShape[];
+  address?: string | null;
+  /** Latest published seat map (venue_maps), if the venue has one. */
+  published_map_id?: string | null;
 };
 
 export async function listVenues(): Promise<Venue[]> {
@@ -40,6 +43,7 @@ export async function createVenue(input: { name: string; city: string; address?:
       gradient: null,
       is_custom: true,
       base_shapes: [],
+      address: input.address?.trim() || null,
     })
     .select("*")
     .single();

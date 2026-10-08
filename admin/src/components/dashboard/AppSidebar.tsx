@@ -12,6 +12,7 @@ import {
   SeoIcon,
   ShieldPersonIcon,
   UsersIcon,
+  VenueIcon,
 } from "@/components/icons";
 import { MODULES, allows, useAccess, type ModuleKey } from "@/lib/access";
 import styles from "./AppSidebar.module.css";
@@ -31,7 +32,11 @@ const icons: Record<ModuleKey, typeof HomeIcon> = {
 export default function AppSidebar() {
   const pathname = usePathname();
   const access = useAccess();
-  const navItems = MODULES.filter((m) => allows(access, m.key)).map((m) => ({ ...m, icon: icons[m.key] }));
+  // Recintos (venue plans) lives under the "eventos" permission, right after Eventos.
+  const navItems = MODULES.filter((m) => allows(access, m.key)).flatMap((m) => {
+    const item = { key: m.key as string, href: m.href as string, label: m.label as string, icon: icons[m.key] };
+    return m.key === "eventos" ? [item, { key: "recintos", href: "/recintos/", label: "Recintos", icon: VenueIcon }] : [item];
+  });
 
   return (
     <aside className={styles.sidebar}>
@@ -50,7 +55,7 @@ export default function AppSidebar() {
           const active = pathname === item.href || pathname.startsWith(item.href);
           return (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href}
               className={styles.navLink}
               data-active={active}

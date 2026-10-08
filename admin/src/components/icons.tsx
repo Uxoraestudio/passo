@@ -542,3 +542,17 @@ export function SeoIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function VenueIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M2.5 15.8333V7.5L10 3.33333L17.5 7.5V15.8333M2.5 15.8333H17.5M2.5 15.8333V17.5H17.5V15.8333M6.66667 15.8333V11.6667H13.3333V15.8333M5.83333 9.16667H14.1667"
+        stroke="currentColor"
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
