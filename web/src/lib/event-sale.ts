@@ -58,7 +58,8 @@ function closedReasonFor(row: EventRow, hasTiers: boolean, now: number): string 
       minute: "2-digit",
       timeZone: "America/Santiago",
     }).format(new Date(row.sale_start));
-    return `La venta comienza el ${opens}.`;
+    // es-CL writes "10:30 a. m." — avoid a doubled period at the end.
+    return `La venta comienza el ${opens}${opens.endsWith(".") ? "" : "."}`;
   }
   if (!hasTiers) return "Las entradas para este evento aún no están a la venta.";
   return null;
