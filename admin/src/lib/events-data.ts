@@ -27,6 +27,8 @@ export type EventRecord = {
   status: EventStatus;
   show_in_hero: boolean;
   sale_start: string | null;
+  /** Published venue plan copied into this event, if any. */
+  venue_map_id: string | null;
   max_tickets_per_order: number;
   qr_validation: boolean;
   age_restriction: boolean;
@@ -49,12 +51,17 @@ export type SectorInput = {
   numbered: boolean;
   seats_per_row: number;
   sort_order: number;
+  /** Set when the sector comes from a published venue plan (venue_sections.id). */
+  source_section_id?: string | null;
 };
 
 /** Thrown when a save would delete a sector that already has orders. */
 export class SectorInUseError extends Error {}
 
-export type EventSectorRecord = SectorInput & { id: string; event_id: string };
+/** Thrown when the event's plan can't change because it already sold or reserved seats. */
+export class PlanLockedError extends Error {}
+
+export type EventSectorRecord = SectorInput & { id: string; event_id: string; polygon: [number, number][] | null };
 
 export type EventInput = {
   title: string;
@@ -79,6 +86,8 @@ export type EventInput = {
   qr_validation: boolean;
   age_restriction: boolean;
   sectors: SectorInput[];
+  /** Published venue plan the event uses; its sectors then come from the plan. */
+  venue_map_id: string | null;
   // Used only when `sectors` is empty (events created before sectors existed).
   capacity: number;
   price_base: number;
@@ -196,6 +205,33 @@ export async function getEvent(id: string): Promise<EventRecord | null> {
   return data;
 }
 
+// Sectors of an event that uses a venue plan are created by copying the plan
+// (snapshot); afterwards only their price and on/off state are edited, matched
+// by the plan section they came from.
+async function applyPlan(eventId: string, mapId: string, previousMapId: string | null, sectors: SectorInput[]) {
+  const supabase = createClient();
+  if (previousMapId !== mapId) {
+    const { error } = await supabase.rpc("snapshot_venue_map_to_event", { p_event_id: eventId, p_map_id: mapId });
+    if (error) throw error.message?.includes("EVENT_HAS_SALES") ? new PlanLockedError(error.message) : error;
+  }
+  await Promise.all(
+    sectors
+      .filter((s) => s.source_section_id)
+      .map(async (s) => {
+        const { error } = await supabase
+          .from("event_sectors")
+          .update({ price: s.price, is_active: s.is_active, sort_order: s.sort_order })
+          .eq("event_id", eventId)
+          .eq("source_section_id", s.source_section_id!);
+        if (error) throw error;
+      })
+  );
+  // The snapshot counts every section; capacity and base price follow the sectors on sale.
+  const { capacity, price_base } = computeCapacityAndPrice(sectors);
+  const { error } = await supabase.from("events").update({ capacity, price_base }).eq("id", eventId);
+  if (error) throw error;
+}
+
 export async function createEvent(input: EventInput): Promise<string> {
   const supabase = createClient();
   const {
@@ -211,16 +247,28 @@ export async function createEvent(input: EventInput): Promise<string> {
     .single();
   if (error) throw error;
 
-  await syncSectors(data.id, input.sectors);
+  if (input.venue_map_id) await applyPlan(data.id, input.venue_map_id, null, input.sectors);
+  else await syncSectors(data.id, input.sectors);
   return data.id;
 }
 
 export async function updateEvent(id: string, input: EventInput): Promise<void> {
   const supabase = createClient();
-  const { error } = await supabase.from("events").update(eventPayload(input)).eq("id", id);
+  const { data: previous, error: readError } = await supabase.from("events").select("venue_map_id").eq("id", id).single();
+  if (readError) throw readError;
+
+  const { error } = await supabase
+    .from("events")
+    .update({
+      ...eventPayload(input),
+      // Leaving a plan: the event goes back to hand-made sectors.
+      ...(input.venue_map_id ? {} : { venue_map_id: null, seat_map_snapshot_at: null }),
+    })
+    .eq("id", id);
   if (error) throw error;
 
-  await syncSectors(id, input.sectors);
+  if (input.venue_map_id) await applyPlan(id, input.venue_map_id, previous?.venue_map_id ?? null, input.sectors);
+  else await syncSectors(id, input.sectors);
 }
 
 export async function deleteEvent(id: string): Promise<void> {

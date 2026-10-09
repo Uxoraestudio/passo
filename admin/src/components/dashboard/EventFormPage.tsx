@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
 import {
   EVENTS_FLASH_KEY,
+  PlanLockedError,
   SectorInUseError,
   createEvent,
   getEvent,
@@ -20,6 +21,9 @@ import ConfirmDialog from "./ConfirmDialog";
 import EventCourtesies from "./EventCourtesies";
 import EventImageField from "./EventImageField";
 import PerimetryEditor, { sectorIssue, type SectorDraft } from "./PerimetryEditor";
+import PlanSectorsEditor from "./PlanSectorsEditor";
+import { getVenueMap } from "@/lib/venue-maps-data";
+import { sectionCapacity, type VenueMap } from "@/lib/venue-map-types";
 import styles from "./EventFormPage.module.css";
 
 const statusOptions: { value: EventStatus; label: string; hint: string; editOnly?: boolean }[] = [
@@ -181,16 +185,40 @@ function sectorsFromVenue(venue: Venue): SectorDraft[] {
   }));
 }
 
+/** Sectors for an event that uses a published plan. Prices carry over by sector name (e.g. when moving to a newer version). */
+function sectorsFromPlan(plan: VenueMap, previous: SectorDraft[] = []): SectorDraft[] {
+  return plan.sections.map((sec) => {
+    const before = previous.find((p) => p.name.trim().toLowerCase() === sec.name.trim().toLowerCase());
+    return {
+      key: sec.id,
+      name: sec.name,
+      short_label: sec.shortLabel ?? sec.name,
+      capacity: sectionCapacity(sec),
+      price: before?.price ?? "",
+      color: sec.color,
+      shape_rect: null,
+      shape_path: null,
+      label_x: null,
+      label_y: null,
+      is_active: before?.is_active ?? true,
+      numbered: sec.kind === "SEATED",
+      seats_per_row: 20,
+      source_section_id: sec.id,
+      polygon: sec.polygon,
+    };
+  });
+}
+
 function sectorsSignature(sectors: SectorDraft[]) {
   return JSON.stringify(
     sectors.map((s) => [s.name, s.short_label, s.capacity, s.price, s.color, s.shape_rect, s.shape_path, s.label_x, s.label_y, s.is_active, s.numbered, s.seats_per_row])
   );
 }
 
-function partsOf(form: FormState, venueId: string | null, sectors: SectorDraft[]): Record<keyof typeof areaLabels, string> {
+function partsOf(form: FormState, venueId: string | null, sectors: SectorDraft[], planId: string | null = null): Record<keyof typeof areaLabels, string> {
   return {
     info: JSON.stringify([form.title, form.subtitle, form.category, form.artist, form.description]),
-    venue: JSON.stringify([venueId, form.address]),
+    venue: JSON.stringify([venueId, form.address, planId]),
     map: sectorsSignature(sectors),
     fecha: JSON.stringify([form.date, form.time, form.doorsOpen]),
     img: JSON.stringify([form.hero_image_url, form.banner_image_url, form.image_url]),
@@ -229,6 +257,11 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
   const [form, setForm] = useState<FormState>(emptyForm);
   const [venue, setVenue] = useState<Venue | null>(null);
   const [sectors, setSectors] = useState<SectorDraft[]>([]);
+  // Published venue plan the event uses (sectors then come from it).
+  const [plan, setPlan] = useState<VenueMap | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
+  const [planError, setPlanError] = useState("");
+  const planRequest = useRef(0);
   const [baseline, setBaseline] = useState(() => (eventId ? null : partsOf(emptyForm(), null, [])));
 
   const [venues, setVenues] = useState<Venue[]>([]);
@@ -281,7 +314,10 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           setLoadState("not-found");
           return;
         }
-        const v = event.venue_id ? await getVenueById(event.venue_id) : null;
+        const [v, eventPlan] = await Promise.all([
+          event.venue_id ? getVenueById(event.venue_id) : Promise.resolve(null),
+          event.venue_map_id ? getVenueMap(event.venue_map_id) : Promise.resolve(null),
+        ]);
         if (!active) return;
         const loadedForm = formFromEvent(event);
         const loadedSectors: SectorDraft[] = rows.map((s) => ({
@@ -299,12 +335,17 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           is_active: s.is_active,
           numbered: s.numbered ?? false,
           seats_per_row: s.seats_per_row ?? 20,
+          source_section_id: s.source_section_id ?? null,
+          polygon: s.polygon ?? null,
         }));
+        // Sectors left inactive by an older plan version stay out of the plan view.
+        const shownSectors = eventPlan ? loadedSectors.filter((s) => s.source_section_id && eventPlan.sections.some((sec) => sec.id === s.source_section_id)) : loadedSectors;
         setLoadedEvent(event);
         setForm(loadedForm);
         setVenue(v);
-        setSectors(loadedSectors);
-        setBaseline(partsOf(loadedForm, v?.id ?? null, loadedSectors));
+        setPlan(eventPlan);
+        setSectors(shownSectors);
+        setBaseline(partsOf(loadedForm, v?.id ?? null, shownSectors, eventPlan?.id ?? null));
         setLoadState("ready");
       } catch {
         if (active) setLoadState("error");
@@ -355,7 +396,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     return () => observer.disconnect();
   }, [loadState]);
 
-  const current = useMemo(() => partsOf(form, venue?.id ?? null, sectors), [form, venue, sectors]);
+  const current = useMemo(() => partsOf(form, venue?.id ?? null, sectors, plan?.id ?? null), [form, venue, sectors, plan]);
   const changedAreas = useMemo(
     () => (baseline ? (Object.keys(current) as (keyof typeof areaLabels)[]).filter((k) => current[k] !== baseline[k]) : []),
     [current, baseline]
@@ -497,7 +538,9 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       numbered: s.numbered,
       seats_per_row: Number(s.seats_per_row) || 20,
       sort_order: i,
+      source_section_id: s.source_section_id ?? null,
     })),
+    venue_map_id: plan?.id ?? null,
     capacity: loadedEvent?.capacity ?? 0,
     price_base: loadedEvent?.price_base ?? 0,
   });
@@ -535,7 +578,9 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       setSaveError(
         cause instanceof SectorInUseError
           ? "No puedes quitar un sector que ya tiene entradas vendidas o reservadas. Desactívalo en vez de eliminarlo o de cambiar el recinto."
-          : "No pudimos guardar el evento. Revisa tu conexión e inténtalo de nuevo; tus cambios siguen aquí."
+          : cause instanceof PlanLockedError
+            ? "Este evento ya tiene entradas vendidas o reservadas, así que no puede cambiar de plano. Puedes seguir editando precios y sectores a la venta."
+            : "No pudimos guardar el evento. Revisa tu conexión e inténtalo de nuevo; tus cambios siguen aquí."
       );
       setSaving(false);
     }
@@ -557,16 +602,45 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     router.push(target);
   };
 
+  /** Loads a published plan into the form; prices carry over from `keepPrices`. */
+  const loadPlan = async (mapId: string, keepPrices: SectorDraft[] = []) => {
+    const request = ++planRequest.current;
+    setPlanLoading(true);
+    setPlanError("");
+    try {
+      const m = await getVenueMap(mapId);
+      if (request !== planRequest.current) return;
+      setPlan(m);
+      setSectors(sectorsFromPlan(m, keepPrices));
+    } catch {
+      if (request === planRequest.current) setPlanError("No pudimos cargar el plano del recinto. Revisa tu conexión e inténtalo de nuevo.");
+    } finally {
+      if (request === planRequest.current) setPlanLoading(false);
+    }
+  };
+
   const applyVenue = (v: Venue) => {
     setVenue(v);
-    setSectors(sectorsFromVenue(v));
     setShowCustomForm(false);
     setPendingVenue(null);
+    setSaveError("");
+    if (v.published_map_id) {
+      setPlan(null);
+      setSectors([]);
+      loadPlan(v.published_map_id);
+    } else {
+      planRequest.current++;
+      setPlan(null);
+      setPlanLoading(false);
+      setPlanError("");
+      setSectors(sectorsFromVenue(v));
+    }
   };
 
   const selectVenue = (v: Venue) => {
     if (venue?.id === v.id) return;
-    const touched = venue ? sectorsSignature(sectors) !== sectorsSignature(sectorsFromVenue(venue)) : sectors.length > 0;
+    const pristine = plan ? sectorsFromPlan(plan) : venue ? sectorsFromVenue(venue) : [];
+    const touched = venue ? sectorsSignature(sectors) !== sectorsSignature(pristine) : sectors.length > 0;
     if (touched) {
       setPendingVenue(v);
       return;
@@ -896,7 +970,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                       <span className={styles.venueCity}>{v.city}</span>
                       <div className={styles.venueTags}>
                         <span className={styles.venueTag}>{v.is_custom ? "Personalizado" : v.type}</span>
-                        {!v.is_custom && (
+                        {v.published_map_id && <span className={styles.planBadge}>Con plano</span>}
+                        {!v.is_custom && !v.published_map_id && (
                           <>
                             <span className={styles.venueTag}>{(venueCapacity(v) ?? 0).toLocaleString("es-CL")} pers.</span>
                             <span className={styles.venueTag}>{sectorCountFor(v)} sectores</span>
@@ -988,11 +1063,51 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 <h2 className={styles.secTitle} id="h-map" tabIndex={-1}>
                   Perimetría y entradas
                 </h2>
-                <p className={styles.secDesc}>Activa los sectores que se venderán y define la capacidad y el precio de cada uno. El aforo total se calcula solo.</p>
+                <p className={styles.secDesc}>
+                  {plan
+                    ? "Los sectores y su capacidad vienen del plano del recinto. Elige cuáles se venden y define el precio de cada uno."
+                    : "Activa los sectores que se venderán y define la capacidad y el precio de cada uno. El aforo total se calcula solo."}
+                </p>
               </div>
             </div>
             {invalid("map") && <p className={styles.fieldError}>Cada sector activo necesita capacidad y precio mayores a cero.</p>}
-            <PerimetryEditor venue={venue} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+            {plan && venue?.published_map_id && venue.published_map_id !== plan.id && (
+              <div className={styles.planUpdate} role="status">
+                <span>Este recinto tiene una versión más reciente del plano publicada.</span>
+                <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => loadPlan(venue.published_map_id!, sectors)} disabled={planLoading}>
+                  Usar la versión nueva
+                </button>
+              </div>
+            )}
+            {!plan && !planLoading && venue?.published_map_id && (
+              <div className={styles.planUpdate} role="status">
+                <span>
+                  {venue.name} ya tiene un plano publicado. Úsalo para que los sectores, la capacidad y los asientos salgan del plano; los precios de los sectores con el
+                  mismo nombre se mantienen.
+                </span>
+                <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => loadPlan(venue.published_map_id!, sectors)}>
+                  Usar el plano
+                </button>
+              </div>
+            )}
+            {planError ? (
+              <div className={styles.planUpdate} role="alert">
+                <span>{planError}</span>
+                {venue?.published_map_id && (
+                  <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => loadPlan(venue.published_map_id!, sectors)}>
+                    Reintentar
+                  </button>
+                )}
+              </div>
+            ) : planLoading ? (
+              <p className={styles.secDesc} aria-busy="true">
+                Cargando el plano del recinto…
+              </p>
+            ) : plan ? (
+              <PlanSectorsEditor plan={plan} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+            ) : (
+              <PerimetryEditor venue={venue} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+            )}
           </section>
 
           <section className={styles.sec} id="s-fecha" aria-labelledby="h-fecha">

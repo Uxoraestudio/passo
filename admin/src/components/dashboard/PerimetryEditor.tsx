@@ -21,6 +21,9 @@ export type SectorDraft = {
   is_active: boolean;
   numbered: boolean;
   seats_per_row: number | "";
+  /** Plan section this sector was copied from; its capacity and shape come from the plan. */
+  source_section_id?: string | null;
+  polygon?: [number, number][] | null;
 };
 
 function shapeCenter(s: SectorDraft): [number, number] {
