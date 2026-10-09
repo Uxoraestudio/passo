@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { pickImage } from "@/lib/events";
-import { parseSeatLabel } from "@/lib/seatMap";
+import { describeSeat } from "@/lib/seatMap";
 import type { OrderStatus } from "@/lib/payments";
 
 const TIME_ZONE = "America/Santiago";
@@ -98,9 +98,7 @@ function datePart(iso: string, options: Intl.DateTimeFormatOptions) {
 }
 
 export function seatText(label: string | null) {
-  if (!label) return "Acceso general";
-  const { row, number } = parseSeatLabel(label);
-  return `Fila ${row} · Asiento ${number}`;
+  return label ? describeSeat(label) : "Acceso general";
 }
 
 export async function getCheckoutOrder(orderId: string, now = Date.now()): Promise<CheckoutOrder | null> {
@@ -119,6 +117,29 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
   const expired = row.status === "pending" && new Date(row.expires_at).getTime() <= now;
   const status: OrderStatus = expired ? "expired" : row.status;
 
+  // Plan seats carry their own row and number; grid seats are parsed from the label.
+  const seatedSectors = row.order_items.filter((item) => item.seat_labels.length > 0).map((item) => item.sector_id);
+  const planSeats = new Map<string, { row: string | null; number: number | null }>();
+  if (seatedSectors.length > 0) {
+    const { data: seats } = await supabase
+      .from("event_seats")
+      .select("sector_id, label, row_label, number")
+      .in("sector_id", seatedSectors)
+      .in("label", row.order_items.flatMap((item) => item.seat_labels));
+    for (const s of (seats ?? []) as { sector_id: string; label: string; row_label: string | null; number: number | null }[]) {
+      planSeats.set(`${s.sector_id}:${s.label}`, { row: s.row_label, number: s.number });
+    }
+  }
+  const describe = (sectorId: string, label: string) => {
+    const seat = planSeats.get(`${sectorId}:${label}`);
+    return seat ? describeSeat(label, seat.row, seat.number) : seatText(label);
+  };
+  /** Short seat code for summaries ("H7"); plan labels may carry a sector prefix. */
+  const shortSeat = (sectorId: string, label: string) => {
+    const seat = planSeats.get(`${sectorId}:${label}`);
+    return seat?.row && seat.number != null ? `${seat.row}${seat.number}` : label;
+  };
+
   const slots: CheckoutTicketSlot[] = row.order_items.flatMap((item): CheckoutTicketSlot[] =>
     item.seat_labels.length > 0
       ? [...item.seat_labels]
@@ -128,7 +149,7 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
             sectorId: item.sector_id,
             sectorName: item.sector_name,
             seatLabel: seat,
-            seatText: seatText(seat),
+            seatText: describe(item.sector_id, seat),
             unitPrice: item.unit_price,
           }))
       : Array.from({ length: item.quantity }, (_, i) => ({
@@ -180,7 +201,7 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
       sectorName: item.sector_name,
       quantity: item.quantity,
       unitPrice: item.unit_price,
-      seats: item.seat_labels,
+      seats: item.seat_labels.map((label) => shortSeat(item.sector_id, label)),
     })),
     slots,
     attendees: [...row.order_attendees]

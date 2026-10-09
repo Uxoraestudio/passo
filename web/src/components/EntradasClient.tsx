@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import VenueMap from "@/components/VenueMap";
+import PlanMap from "@/components/PlanMap";
+import type { EventPlan } from "@/lib/seat-plan-types";
 import type { EventCardData } from "@/lib/events";
 import type { EventDetail } from "@/lib/eventDetails";
 import type { SaleTier } from "@/lib/event-sale";
@@ -24,6 +26,7 @@ export default function EntradasClient({
   maxPerOrder,
   initialTier,
   initialQty,
+  plan = null,
 }: {
   event: EventCardData;
   eventId: string;
@@ -35,6 +38,7 @@ export default function EntradasClient({
   maxPerOrder: number;
   initialTier: string | null;
   initialQty: number;
+  plan?: EventPlan | null;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -161,7 +165,17 @@ export default function EntradasClient({
               </div>
             </div>
             <div className={styles.mapWrap}>
-              <VenueMap tiers={detail.tiers} activeIds={activeIds} onSelect={(id) => updateQty(id, (selections[id] ?? 0) > 0 ? 0 : 1)} />
+              {plan ? (
+                <PlanMap
+                  plan={plan}
+                  activeIds={activeIds}
+                  soldOutIds={tiers.filter((t) => t.status === "agotado").map((t) => t.id)}
+                  onSelect={(id) => updateQty(id, (selections[id] ?? 0) > 0 ? 0 : 1)}
+                  label="Plano del recinto: elige un sector"
+                />
+              ) : (
+                <VenueMap tiers={detail.tiers} activeIds={activeIds} onSelect={(id) => updateQty(id, (selections[id] ?? 0) > 0 ? 0 : 1)} />
+              )}
             </div>
             <div className={styles.legend}>
               {detail.tiers.map((tier) => (

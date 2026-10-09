@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { SELECTION_HOLD_MINUTES, orderErrorFor } from "@/lib/payments";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const SEAT = /^[A-Z]{1,2}[0-9]{1,3}$/;
+// Same rule as venue_seats.label: grid seats ("A12") and plan seats ("PB-A12", "1-12").
+const SEAT = /^[A-Za-z0-9][A-Za-z0-9._-]{0,23}$/;
 
 type CheckoutItem = { sector_id: string; quantity: number; seats: string[] };
 

@@ -7,6 +7,7 @@ import { getEventRowBySlug } from "@/lib/events-data";
 import { requireUser } from "@/lib/auth-redirect";
 import { getEventSale } from "@/lib/event-sale";
 import { createClient } from "@/lib/supabase/server";
+import { getEventPlan } from "@/lib/seat-plan";
 
 export default async function AsientosPage({
   params,
@@ -31,7 +32,11 @@ export default async function AsientosPage({
   }
 
   const supabase = await createClient();
-  const { data: taken } = await supabase.rpc("get_taken_seats", { p_sector_id: tier.id });
+  const [{ data: taken }, plan] = await Promise.all([
+    supabase.rpc("get_taken_seats", { p_sector_id: tier.id }),
+    row.venue_map_id ? getEventPlan(row.id) : Promise.resolve(null),
+  ]);
+  const planSector = plan?.sectors.find((s) => s.id === tier.id && s.seats.length > 0);
   const qty = Math.min(requestedQty, sale.maxPerOrder, tier.available);
 
   return (
@@ -45,6 +50,7 @@ export default async function AsientosPage({
         tier={tier}
         qty={qty}
         takenSeats={(taken ?? []) as string[]}
+        plan={plan && planSector ? { map: plan, sector: planSector } : null}
       />
       <Footer />
     </>

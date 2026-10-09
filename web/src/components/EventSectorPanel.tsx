@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { TicketTier } from "@/lib/eventDetails";
 import VenueMap from "@/components/VenueMap";
+import PlanMap from "@/components/PlanMap";
+import type { EventPlan } from "@/lib/seat-plan-types";
 import pageStyles from "@/app/eventos/[slug]/page.module.css";
 import styles from "./EventSectorPanel.module.css";
 
@@ -13,7 +15,9 @@ export default function EventSectorPanel({
   aboutLead,
   aboutText,
   children,
+  plan = null,
 }: {
+  plan?: EventPlan | null;
   tiers: TicketTier[];
   slug: string;
   aboutLead: string;
@@ -39,7 +43,11 @@ export default function EventSectorPanel({
             </p>
           </div>
           <div className={pageStyles.venueMapWrap}>
-            <VenueMap tiers={tiers} interactive={false} />
+            {plan ? (
+              <PlanMap plan={plan} soldOutIds={tiers.filter((t) => t.status === "agotado").map((t) => t.id)} />
+            ) : (
+              <VenueMap tiers={tiers} interactive={false} />
+            )}
           </div>
           <div className={pageStyles.legend}>
             {tiers.map((tier) => (

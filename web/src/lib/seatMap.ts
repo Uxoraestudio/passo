@@ -13,9 +13,25 @@ export function rowLabel(index: number): string {
   return String.fromCharCode(64 + Math.floor(index / 26)) + String.fromCharCode(65 + (index % 26));
 }
 
-export function parseSeatLabel(label: string): { row: string; number: number } {
-  const match = /^([A-Z]{1,2})(\d+)$/.exec(label);
-  return match ? { row: match[1], number: Number(match[2]) } : { row: label, number: 0 };
+/**
+ * Row and seat number from a seat label, or null when the label can't be read
+ * unambiguously. Handles the grid format ("A12") and venue-plan labels with a
+ * hyphen-separated prefix or numeric rows ("PB-A12", "1-12", "PB-1-12").
+ */
+export function parseSeatLabel(label: string): { row: string; number: number } | null {
+  const patterns = [/^([A-Z]{1,2})(\d+)$/, /^(\d{1,3})-(\d+)$/, /^.+-([A-Z]{1,2})(\d+)$/, /^.+-(\d{1,3})-(\d+)$/];
+  for (const pattern of patterns) {
+    const match = pattern.exec(label);
+    if (match) return { row: match[1], number: Number(match[2]) };
+  }
+  return null;
+}
+
+/** "Fila A · Asiento 12" when the label can be read, "Asiento PIA1" otherwise. */
+export function describeSeat(label: string, row?: string | null, number?: number | null): string {
+  if (row && number != null) return `Fila ${row} · Asiento ${number}`;
+  const parsed = parseSeatLabel(label);
+  return parsed ? `Fila ${parsed.row} · Asiento ${parsed.number}` : `Asiento ${label}`;
 }
 
 /** Seats fill rows of `seatsPerRow` until the sector capacity is reached. */

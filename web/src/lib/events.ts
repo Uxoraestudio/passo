@@ -36,6 +36,8 @@ export type EventRow = {
   sold: number;
   status: EventStatus;
   show_in_hero: boolean;
+  /** Venue plan copied into the event, when it sells from a plan. */
+  venue_map_id?: string | null;
   max_tickets_per_order?: number | null;
   sale_start?: string | null;
 };

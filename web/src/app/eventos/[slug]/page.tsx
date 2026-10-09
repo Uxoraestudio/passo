@@ -10,6 +10,7 @@ import { pickImage, toEventCardData } from "@/lib/events";
 import { getAllEvents, getEventRowBySlug } from "@/lib/events-data";
 import { genericFaqs, genericPolicies } from "@/lib/eventDetails";
 import { getEventSale } from "@/lib/event-sale";
+import { getEventPlan } from "@/lib/seat-plan";
 import { getSeoPage } from "@/lib/seo-settings";
 import { categoryForAdminValue, categoryHref } from "@/lib/categories";
 import styles from "./page.module.css";
@@ -111,7 +112,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
   }
 
   const event = toEventCardData(row);
-  const { detail } = await getEventSale(row);
+  const [{ detail }, plan] = await Promise.all([getEventSale(row), row.venue_map_id ? getEventPlan(row.id) : Promise.resolve(null)]);
 
   const eventCategory = categoryForAdminValue(row.category);
   const isLollapalooza = row.id === "lollapalooza";
@@ -192,7 +193,7 @@ export default async function EventDetailPage({ params }: PageProps<"/eventos/[s
           </div>
         </section>
 
-        <EventSectorPanel tiers={detail.tiers} slug={slug} aboutLead={detail.aboutLead} aboutText={detail.aboutText}>
+        <EventSectorPanel tiers={detail.tiers} slug={slug} aboutLead={detail.aboutLead} aboutText={detail.aboutText} plan={plan}>
           {isLollapalooza && (
             <section className={styles.sectionCard}>
               <div className={styles.sectionHeader}>

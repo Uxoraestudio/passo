@@ -1,0 +1,95 @@
+.frame {
+  overflow: auto;
+  max-height: min(70vh, 640px);
+  border-radius: 16px;
+  background: #110d29;
+}
+
+.svg {
+  display: block;
+  min-width: 100%;
+  height: auto;
+}
+
+.otherSector {
+  fill: rgba(255, 255, 255, 0.06);
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1.5;
+}
+
+.currentSector {
+  fill: var(--sector);
+  fill-opacity: 0.16;
+  stroke: var(--sector);
+  stroke-width: 2;
+}
+
+/* Borders keep their on-screen width whatever the plan size or zoom. */
+.seat circle,
+.otherSector,
+.currentSector {
+  vector-effect: non-scaling-stroke;
+}
+
+.seat circle {
+  stroke-width: 1.5;
+  transition: fill 120ms ease, transform 120ms ease;
+}
+
+.seat[data-status="available"] {
+  cursor: pointer;
+}
+
+.seat[data-status="available"] circle {
+  fill: #fff;
+  stroke: var(--seat);
+}
+
+.seat[data-status="available"]:hover circle {
+  fill: var(--seat);
+}
+
+.seat[data-status="selected"] {
+  cursor: pointer;
+}
+
+.seat[data-status="selected"] circle {
+  fill: #ff782d;
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.seat[data-status="taken"] circle {
+  fill: #475569;
+  stroke: #334155;
+}
+
+.seat[data-kind="ACCESSIBLE"][data-status="available"] circle {
+  fill: #dbeafe;
+  stroke: #2563eb;
+}
+
+.seat[data-kind="OBSTRUCTED"][data-status="available"] circle {
+  stroke-dasharray: 2 2;
+}
+
+.seat:focus-visible {
+  outline: none;
+}
+
+.seat:focus-visible circle {
+  stroke: #ff782d;
+  stroke-width: 3.5;
+}
+
+.mark {
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seat circle {
+    transition: none;
+  }
+}

@@ -6,6 +6,7 @@ import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
 import { requireUser } from "@/lib/auth-redirect";
 import { getEventSale } from "@/lib/event-sale";
+import { getEventPlan } from "@/lib/seat-plan";
 
 export default async function EntradasPage({
   params,
@@ -29,7 +30,7 @@ export default async function EntradasPage({
   await requireUser(`/eventos/${slug}/entradas/${returnSuffix}`);
 
   const event = toEventCardData(row);
-  const sale = await getEventSale(row);
+  const [sale, plan] = await Promise.all([getEventSale(row), row.venue_map_id ? getEventPlan(row.id) : Promise.resolve(null)]);
 
   return (
     <>
@@ -45,6 +46,7 @@ export default async function EntradasPage({
         maxPerOrder={sale.maxPerOrder}
         initialTier={initialTier}
         initialQty={initialQty}
+        plan={plan}
       />
       <Footer />
     </>

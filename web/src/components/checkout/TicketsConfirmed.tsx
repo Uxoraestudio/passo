@@ -91,7 +91,8 @@ export default async function TicketsConfirmed({ order, tickets }: { order: Chec
                       </div>
                       <div>
                         <dt>Asiento</dt>
-                        <dd>{seat?.number ?? "—"}</dd>
+                        {/* Plan labels that can't be split into row/number are shown whole. */}
+                        <dd>{seat?.number ?? ticket.seatLabel ?? "—"}</dd>
                       </div>
                     </dl>
 

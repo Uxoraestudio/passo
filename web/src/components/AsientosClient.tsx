@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import type { EventCardData } from "@/lib/events";
 import type { EventDetail } from "@/lib/eventDetails";
 import type { SaleTier } from "@/lib/event-sale";
-import { buildSeatRows, parseSeatLabel } from "@/lib/seatMap";
+import { buildSeatRows, describeSeat } from "@/lib/seatMap";
+import type { EventPlan, PlanSeat, PlanSector } from "@/lib/seat-plan-types";
+import PlanSeatPicker from "./PlanSeatPicker";
 import { reserveTickets } from "@/lib/checkout-client";
 import styles from "@/app/eventos/[slug]/asientos/page.module.css";
 
@@ -15,6 +17,8 @@ const currency = (value: number) => `$${value.toLocaleString("es-CL")}`;
 const HOLD_MINUTES = 15;
 const ZOOM_MIN = 0.7;
 const ZOOM_MAX = 1.4;
+// The plan view starts framed on the sector and can zoom further in.
+const PLAN_ZOOM_MAX = 3;
 
 const steps = ["Entradas", "Tus datos", "Confirmación", "Pago"];
 
@@ -36,6 +40,7 @@ export default function AsientosClient({
   tier,
   qty,
   takenSeats,
+  plan = null,
 }: {
   event: EventCardData;
   eventId: string;
@@ -44,7 +49,16 @@ export default function AsientosClient({
   tier: SaleTier;
   qty: number;
   takenSeats: string[];
+  /** When the event uses a venue plan, seats come from it instead of the grid. */
+  plan?: { map: EventPlan; sector: PlanSector } | null;
 }) {
+  const zoomMax = plan ? PLAN_ZOOM_MAX : ZOOM_MAX;
+  const zoomMin = plan ? 1 : ZOOM_MIN;
+  const planSeats = useMemo(() => new Map((plan?.sector.seats ?? []).map((seat) => [seat.label, seat])), [plan]);
+  const seatName = (label: string) => {
+    const seat = planSeats.get(label);
+    return describeSeat(label, seat?.rowLabel, seat?.number);
+  };
   const router = useRouter();
   const rows = useMemo(
     () => buildSeatRows(tier.capacity, tier.seatsPerRow, new Set(takenSeats)),
@@ -180,6 +194,15 @@ export default function AsientosClient({
             <span className={styles.numberedChip}>Asignación numerada</span>
           </div>
 
+          {plan ? (
+            <PlanSeatPicker
+              plan={plan.map}
+              sector={plan.sector}
+              selected={selected}
+              zoom={zoom}
+              onToggle={(seat: PlanSeat) => toggleSeat(seat.label, seat.state === "AVAILABLE" ? "available" : "occupied")}
+            />
+          ) : (
           <div className={styles.mapScroll} ref={mapScrollRef}>
             <div className={styles.mapCanvas} style={{ zoom }}>
               <div className={styles.stage} aria-hidden="true">
@@ -234,13 +257,14 @@ export default function AsientosClient({
               </div>
             </div>
           </div>
+          )}
 
           <div className={styles.mapFooter}>
             <div className={styles.zoomControls}>
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - 0.1).toFixed(1)))}
-                disabled={zoom <= ZOOM_MIN}
+                onClick={() => setZoom((z) => Math.max(zoomMin, +(z - (plan ? 0.25 : 0.1)).toFixed(2)))}
+                disabled={zoom <= zoomMin}
                 aria-label="Alejar"
               >
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -250,8 +274,8 @@ export default function AsientosClient({
               <span aria-live="polite">{Math.round(zoom * 100)}%</span>
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + 0.1).toFixed(1)))}
-                disabled={zoom >= ZOOM_MAX}
+                onClick={() => setZoom((z) => Math.min(zoomMax, +(z + (plan ? 0.25 : 0.1)).toFixed(2)))}
+                disabled={zoom >= zoomMax}
                 aria-label="Acercar"
               >
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -304,7 +328,7 @@ export default function AsientosClient({
             ) : (
               <ol className={styles.selectionList}>
                 {selected.map((seatId, index) => {
-                  const seat = parseSeatLabel(seatId);
+                  const where = seatName(seatId);
                   return (
                     <li key={seatId} className={styles.selectionItem}>
                       <span className={styles.selectionIndex}>{index + 1}</span>
@@ -313,9 +337,7 @@ export default function AsientosClient({
                           Entrada {index + 1}
                           <span className={styles.selectionTier}>{tier.name}</span>
                         </p>
-                        <p className={styles.selectionSeat}>
-                          Fila {seat.row} · Asiento {seat.number}
-                        </p>
+                        <p className={styles.selectionSeat}>{where}</p>
                       </div>
                       <div className={styles.selectionAside}>
                         <span className={styles.selectionPrice}>{currency(tier.price)}</span>
@@ -323,7 +345,7 @@ export default function AsientosClient({
                           type="button"
                           className={styles.removeButton}
                           onClick={() => toggleSeat(seatId, "available")}
-                          aria-label={`Quitar fila ${seat.row}, asiento ${seat.number}`}
+                          aria-label={`Quitar ${where.toLowerCase()}`}
                         >
                           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
                             <path d="m4.5 4.5 7 7m0-7-7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
