@@ -4,12 +4,13 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Shape, Stage, Text, Transformer } from "react-konva";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { ElementKind, Point, VenueMapContent } from "@/lib/venue-map-types";
+import type { ElementKind, Point, Seat, VenueMapContent } from "@/lib/venue-map-types";
 import { MaterialIcon } from "@/components/icons";
 import { bounds, distance, flatWorld, nearestEdge, rectFromCorners, rectsIntersect, snapVec, toNorm, toWorld, type Vec } from "../geometry";
-import { insertVertex, moveVertex, removeVertex, transformSection, translateItems, updateElement, type SelectionItem } from "../contentOps";
+import { insertVertex, moveVertex, parseSeatRef, removeVertex, seatRef, transformSection, translateItems, updateElement, type SelectionItem } from "../contentOps";
 import { elementKindOf, type Layers, type Tool } from "../editorTypes";
-import { ElementShape, SectionShape } from "./Shapes";
+import { ElementShape, SeatsShape, SectionShape } from "./Shapes";
+import { seatRadiusPx } from "../seatGenerator";
 import styles from "../VenueEditor.module.css";
 
 export type EditorCanvasProps = {
@@ -27,6 +28,8 @@ export type EditorCanvasProps = {
   onElementPlaced: (kind: ElementKind, at: Point) => void;
   onCalibrationPoints: (a: Point, b: Point) => void;
   onCancelTool: () => void;
+  /** Seats proposed by the generator, drawn on top until applied. */
+  preview?: { seats: Seat[]; color: string; sectionId: string } | null;
 };
 
 type View = { scale: number; x: number; y: number };
@@ -152,7 +155,7 @@ export default function EditorCanvas(props: EditorCanvasProps) {
     if (!tr || !stage) return;
     const nodes = editable
       ? selection
-          .filter((s) => s.kind === "section" || content.elements.find((e) => e.id === s.id)?.geometry.shape !== "point")
+          .filter((s) => s.kind === "section" || (s.kind === "element" && content.elements.find((e) => e.id === s.id)?.geometry.shape !== "point"))
           .map((s) => stage.findOne(`#${s.id}`))
           .filter((n): n is Konva.Node => Boolean(n))
       : [];
@@ -258,8 +261,24 @@ export default function EditorCanvas(props: EditorCanvasProps) {
       return;
     }
     if (tool === "select") {
-      const item = itemFromTarget(e.target);
-      if (!item) return;
+      const hit = itemFromTarget(e.target);
+      if (!hit) return;
+      // Inside a section that is already active, a click picks the nearest seat.
+      let item: SelectionItem = hit;
+      const active = hit.kind === "section" && selection.some((s) => s.id === hit.id || (s.kind === "seat" && parseSeatRef(s.id).sectionId === hit.id));
+      const section = active ? content.sections.find((s) => s.id === hit.id) : undefined;
+      if (section && section.seats.length > 0) {
+        let best: Seat | null = null;
+        let bestDist = seatRadius * 1.6;
+        for (const seat of section.seats) {
+          const d = Math.hypot(seat.x * size.width - raw.x, seat.y * size.height - raw.y);
+          if (d < bestDist) {
+            best = seat;
+            bestDist = d;
+          }
+        }
+        if (best) item = { kind: "seat", id: seatRef(section.id, best.label) };
+      }
       if (e.evt.shiftKey) {
         onSelect(selection.some((s) => s.id === item.id) ? selection.filter((s) => s.id !== item.id) : [...selection, item]);
       } else if (!selection.some((s) => s.id === item.id) || selection.length > 1) {
@@ -364,7 +383,17 @@ export default function EditorCanvas(props: EditorCanvasProps) {
     onCommit(moveVertex(content, sectionId, index, toNorm(p, size)));
   };
 
-  const seatRadius = content.scaleMPerPx ? 0.24 / content.scaleMPerPx : Math.max(2.5, Math.min(size.width, size.height) / 320);
+  const seatRadius = seatRadiusPx(size, content.scaleMPerPx);
+  const selectedSeats = useMemo(() => {
+    const out: Seat[] = [];
+    for (const item of selection) {
+      if (item.kind !== "seat") continue;
+      const { sectionId, label } = parseSeatRef(item.id);
+      const seat = content.sections.find((s) => s.id === sectionId)?.seats.find((x) => x.label === label);
+      if (seat) out.push(seat);
+    }
+    return out;
+  }, [selection, content.sections]);
   const isSelected = (id: string) => selection.some((s) => s.id === id);
   const cursor = panning ? "grab" : tool === "select" ? "default" : "crosshair";
   const drawing = (tool === "section" || tool === "calibrate") && draft.length > 0;
@@ -434,7 +463,8 @@ export default function EditorCanvas(props: EditorCanvasProps) {
                 size={size}
                 scale={view.scale}
                 selected={isSelected(s.id)}
-                showSeats={layers.seats.visible}
+                // While the generator previews a section, its current seats are hidden.
+                showSeats={layers.seats.visible && props.preview?.sectionId !== s.id}
                 seatRadius={seatRadius}
                 draggable={editable && !layers.sections.locked}
                 listening={tool === "select" && !panning && !layers.sections.locked}
@@ -519,6 +549,29 @@ export default function EditorCanvas(props: EditorCanvasProps) {
                 fill="#2563eb"
               />
             </Group>
+          )}
+
+          {props.preview && props.preview.seats.length > 0 && (
+            <Group listening={false} opacity={0.9}>
+              <SeatsShape seats={props.preview.seats} color={props.preview.color} size={size} radius={seatRadius} />
+            </Group>
+          )}
+
+          {selectedSeats.length > 0 && (
+            <Shape
+              listening={false}
+              perfectDrawEnabled={false}
+              sceneFunc={(ctx) => {
+                const c = ctx._context;
+                c.strokeStyle = "#ff782d";
+                c.lineWidth = 2.5 / view.scale;
+                for (const seat of selectedSeats) {
+                  c.beginPath();
+                  c.arc(seat.x * size.width, seat.y * size.height, seatRadius + 3 / view.scale, 0, Math.PI * 2);
+                  c.stroke();
+                }
+              }}
+            />
           )}
 
           {marquee && (

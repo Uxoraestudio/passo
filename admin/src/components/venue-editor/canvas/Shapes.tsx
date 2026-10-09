@@ -12,7 +12,7 @@ const MARKER_LETTER: Partial<Record<MapElement["kind"], string>> = { ENTRANCE: "
 const SEAT_FILL: Record<Seat["kind"], string | null> = { NORMAL: null, ACCESSIBLE: "#2563eb", OBSTRUCTED: "#94a3b8" };
 
 /** All seats of a section drawn by one canvas shape: fast even with thousands of seats. */
-const SeatsShape = memo(function SeatsShape({ seats, color, size, radius }: { seats: Seat[]; color: string; size: Size; radius: number }) {
+export const SeatsShape = memo(function SeatsShape({ seats, color, size, radius }: { seats: Seat[]; color: string; size: Size; radius: number }) {
   return (
     <Shape
       listening={false}

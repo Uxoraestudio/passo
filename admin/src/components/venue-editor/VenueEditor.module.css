@@ -13,7 +13,7 @@
   color-scheme: light;
 }
 
-.editor :where(button) {
+:where(.editor) :where(button) {
   background: none;
   border: 0;
   padding: 0;
@@ -27,7 +27,7 @@
   outline-offset: 2px;
 }
 
-.editor :where(button):disabled {
+:where(.editor) :where(button):disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
@@ -59,9 +59,10 @@
   background: var(--soft);
 }
 
+/* Grows, but wraps the actions onto a new line before squeezing the venue name. */
 .titleBlock {
   min-width: 0;
-  flex: 1;
+  flex: 1 1 220px;
 }
 
 .titleBlock h1 {
@@ -683,4 +684,87 @@
     border-top: 1px solid var(--line);
     max-height: 45vh;
   }
+}
+
+.warn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fef3f2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #b42318;
+}
+
+.sectionMeta[data-empty="true"] {
+  font-weight: 700;
+  color: #b42318;
+}
+
+/* ---------- Seat generator ---------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 0 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+.group legend {
+  padding: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.inputSuffix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inputSuffix small {
+  flex-shrink: 0;
+}
+
+.segmented {
+  display: flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--soft);
+}
+
+.segmented button {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.segmented button[aria-checked="true"] {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(15, 14, 36, 0.12);
+}
+
+.summary {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #047857;
+}
+
+.summary[data-error="true"] {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.summary b {
+  font-size: 13px;
 }

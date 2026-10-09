@@ -3,7 +3,7 @@
 import { useRef, type ReactNode } from "react";
 import { MaterialIcon } from "@/components/icons";
 import { mapCapacity, sectionCapacity, type ElementKind, type MapElement, type Section, type VenueMapContent } from "@/lib/venue-map-types";
-import { deleteItems, ELEMENT_COLORS, ELEMENT_LABELS, updateElement, updateSection, type SelectionItem } from "./contentOps";
+import { deleteItems, ELEMENT_COLORS, ELEMENT_LABELS, parseSeatRef, seatRef, updateElement, updateSeats, updateSection, type SelectionItem } from "./contentOps";
 import { MAP_IMAGE_TYPES } from "@/lib/venue-maps-data";
 import styles from "./VenueEditor.module.css";
 
@@ -70,10 +70,13 @@ type Props = {
   onCommit: (content: VenueMapContent) => void;
   onSelect: (selection: SelectionItem[]) => void;
   onUploadImage: (file: File) => void;
+  onOpenGenerator: (sectionId: string) => void;
 };
 
 export default function PropertiesPanel(props: Props) {
   const { content, selection, readOnly, onCommit, onSelect } = props;
+
+  if (selection.length > 0 && selection.every((s) => s.kind === "seat")) return <SeatProps {...props} />;
 
   if (selection.length > 1) {
     return (
@@ -157,8 +160,12 @@ function MapProps({ content, readOnly, uploading, onCommit, onUploadImage, onPic
                 <button type="button" onClick={() => onPickSection(s.id)}>
                   <span className={styles.swatch} style={{ background: s.color }} aria-hidden="true" />
                   <span className={styles.sectionName}>{s.name}</span>
-                  <span className={styles.sectionMeta}>
-                    {sectionCapacity(s).toLocaleString("es-CL")} {s.kind === "GENERAL_ADMISSION" ? "pers." : "asientos"}
+                  <span className={styles.sectionMeta} data-empty={sectionCapacity(s) === 0}>
+                    {sectionCapacity(s) === 0
+                      ? s.kind === "GENERAL_ADMISSION"
+                        ? "sin capacidad"
+                        : "sin asientos"
+                      : `${sectionCapacity(s).toLocaleString("es-CL")} ${s.kind === "GENERAL_ADMISSION" ? "pers." : "asientos"}`}
                   </span>
                 </button>
               </li>
@@ -188,7 +195,7 @@ function MapProps({ content, readOnly, uploading, onCommit, onUploadImage, onPic
   );
 }
 
-function SectionProps({ content, readOnly, onCommit, section }: Props & { section: Section }) {
+function SectionProps({ content, readOnly, onCommit, onOpenGenerator, section }: Props & { section: Section }) {
   const set = (patch: Partial<Section>) => onCommit(updateSection(content, section.id, patch));
   const area = content.scaleMPerPx ? polygonAreaPx(section, content.imageWidth, content.imageHeight) * content.scaleMPerPx ** 2 : null;
   return (
@@ -244,11 +251,24 @@ function SectionProps({ content, readOnly, onCommit, section }: Props & { sectio
             maxLength={8}
             disabled={readOnly}
             onCommit={(v) => set({ seatPrefix: v.trim() })}
-            hint={`Ej: «PB-» numera PB-A1, PB-A2… Los asientos se generan en la Fase 3.`}
+            hint="Ej: «PB-» numera PB-A1, PB-A2…"
           />
-          <p className={styles.muted}>
-            {section.seats.length.toLocaleString("es-CL")} asientos en {section.rows.length} filas.
-          </p>
+          {section.seats.length === 0 ? (
+            <p className={styles.warn} role="note">
+              Este sector aún no tiene asientos, así que no tiene capacidad y el plano no se puede publicar. Créalos con «Generar asientos».
+            </p>
+          ) : (
+            <p className={styles.muted}>
+              {section.seats.length.toLocaleString("es-CL")} asientos en {section.rows.length} filas
+              {section.seats.some((x) => x.manual) ? ` · ${section.seats.filter((x) => x.manual).length} editados a mano` : ""}. Haz clic en un asiento para editarlo.
+            </p>
+          )}
+          {!readOnly && (
+            <button type="button" className={styles.primaryButton} onClick={() => onOpenGenerator(section.id)}>
+              <MaterialIcon decorative name="event_seat" />
+              {section.seats.length ? "Regenerar asientos" : "Generar asientos"}
+            </button>
+          )}
         </>
       )}
       <p className={styles.muted}>
@@ -318,6 +338,75 @@ function ElementProps({ content, readOnly, onCommit, element }: Props & { elemen
         <button type="button" className={styles.dangerButton} onClick={() => onCommit(deleteItems(content, [{ kind: "element", id: element.id }]))}>
           <MaterialIcon decorative name="delete" />
           Eliminar
+        </button>
+      )}
+    </section>
+  );
+}
+
+const SEAT_KIND_LABELS = { NORMAL: "Normal", ACCESSIBLE: "Accesible (silla de ruedas)", OBSTRUCTED: "Visión reducida" } as const;
+
+function SeatProps({ content, selection, readOnly, onCommit, onSelect }: Props) {
+  const refs = selection.map((s) => parseSeatRef(s.id));
+  const seats = refs
+    .map(({ sectionId, label }) => content.sections.find((x) => x.id === sectionId)?.seats.find((x) => x.label === label))
+    .filter((x): x is NonNullable<typeof x> => Boolean(x));
+  if (seats.length === 0) return null;
+  const single = seats.length === 1 ? seats[0] : null;
+  const section = content.sections.find((x) => x.id === refs[0].sectionId);
+  const same = <K extends "kind" | "baseStatus">(key: K) => (seats.every((x) => x[key] === seats[0][key]) ? seats[0][key] : "");
+  const set = (patch: Parameters<typeof updateSeats>[2]) => onCommit(updateSeats(content, selection, patch));
+
+  return (
+    <section className={styles.panelCard} aria-labelledby="asiento-titulo">
+      <h3 id="asiento-titulo" className={styles.panelTitle}>
+        <MaterialIcon decorative name="event_seat" />
+        {single ? `Asiento ${single.label}` : `${seats.length} asientos`}
+      </h3>
+      <p className={styles.muted}>
+        {section?.name}
+        {single?.rowLabel ? ` · fila ${single.rowLabel}` : ""}. Mayús + clic agrega asientos a la selección; las flechas los mueven.
+      </p>
+      {single && (
+        <CommitField
+          label="Etiqueta"
+          value={single.label}
+          maxLength={24}
+          disabled={readOnly}
+          hint="Así aparece en la entrada. Debe ser única en el sector."
+          onCommit={(v) => {
+            const label = v.trim();
+            if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,23}$/.test(label)) return;
+            if (!section || section.seats.some((x) => x.label === label)) return;
+            onCommit(updateSeats(content, selection, { label }));
+            onSelect([{ kind: "seat", id: seatRef(section.id, label) }]);
+          }}
+        />
+      )}
+      <label className={styles.field}>
+        <span>Tipo</span>
+        <select value={same("kind")} disabled={readOnly} onChange={(e) => set({ kind: e.target.value as keyof typeof SEAT_KIND_LABELS })}>
+          {!same("kind") && <option value="">Varios</option>}
+          {(Object.keys(SEAT_KIND_LABELS) as (keyof typeof SEAT_KIND_LABELS)[]).map((k) => (
+            <option key={k} value={k}>
+              {SEAT_KIND_LABELS[k]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={styles.field}>
+        <span>Estado base</span>
+        <select value={same("baseStatus")} disabled={readOnly} onChange={(e) => set({ baseStatus: e.target.value as "AVAILABLE" | "BLOCKED" })}>
+          {!same("baseStatus") && <option value="">Varios</option>}
+          <option value="AVAILABLE">Disponible</option>
+          <option value="BLOCKED">Bloqueado (no se vende)</option>
+        </select>
+      </label>
+      <p className={styles.hint}>Los asientos que edites quedan marcados como «editados a mano»: al regenerar el sector se conservan.</p>
+      {!readOnly && (
+        <button type="button" className={styles.dangerButton} onClick={() => onCommit(deleteItems(content, selection))}>
+          <MaterialIcon decorative name="delete" />
+          Eliminar {single ? "asiento" : `${seats.length} asientos`}
         </button>
       )}
     </section>

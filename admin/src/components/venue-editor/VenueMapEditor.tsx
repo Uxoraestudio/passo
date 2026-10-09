@@ -19,7 +19,9 @@ import {
 } from "@/lib/venue-maps-data";
 import { mapCapacity, type ElementKind, type Point, type VenueMap, type VenueMapContent, type VenueMapSummary } from "@/lib/venue-map-types";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
-import { addElement, addSection, deleteItems, translateItems, type SelectionItem } from "./contentOps";
+import { addElement, addSection, applyGeneration, deleteItems, parseSeatRef, translateItems, updateSection, type SelectionItem } from "./contentOps";
+import { defaultParams, generateSeats, mergeWithManual, seatRadiusPx, type GeneratorParams } from "./seatGenerator";
+import SeatGeneratorPanel from "./SeatGeneratorPanel";
 import { defaultLayers, type Layers, type Tool } from "./editorTypes";
 import { scaleFromCalibration } from "./geometry";
 import { useMapHistory } from "./useMapHistory";
@@ -73,6 +75,7 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
   const [selection, setSelection] = useState<SelectionItem[]>([]);
   const [tool, setTool] = useState<Tool>("select");
   const [layers, setLayers] = useState<Layers>(defaultLayers);
+  const [generator, setGenerator] = useState<{ sectionId: string; params: GeneratorParams; prefix: string } | null>(null);
   const [gridStep, setGridStep] = useState(50);
   const [snap, setSnap] = useState(false);
 
@@ -82,6 +85,8 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
   const [confirm, setConfirm] = useState<null | { kind: "publish" } | { kind: "switch"; mapId: string } | { kind: "discard" }>(null);
 
   const readOnly = !canEdit || map?.status !== "draft";
+  // Sections the database would refuse to publish: seated without seats, or GA without capacity.
+  const blockers = content.sections.filter((s) => (s.kind === "SEATED" ? s.seats.length === 0 : !(Number(s.capacity) > 0)));
   const dirty = content !== saved;
   const imageUrl = useMemo(() => (content.imagePath ? venueMapImageUrl(content.imagePath) : null), [content.imagePath]);
 
@@ -294,9 +299,54 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
   }, [dirty]);
 
   // Drop selections that no longer exist (after undo, delete…).
-  const liveSelection = selection.filter((s) =>
-    s.kind === "section" ? content.sections.some((x) => x.id === s.id) : content.elements.some((x) => x.id === s.id)
+  const liveSelection = selection.filter((s) => {
+    if (s.kind === "section") return content.sections.some((x) => x.id === s.id);
+    if (s.kind === "element") return content.elements.some((x) => x.id === s.id);
+    const { sectionId, label } = parseSeatRef(s.id);
+    return content.sections.find((x) => x.id === sectionId)?.seats.some((x) => x.label === label) ?? false;
+  });
+
+  // --- Seat generator (live preview until applied)
+  const size = { width: content.imageWidth, height: content.imageHeight };
+  const stageElement = content.elements.find((e) => e.kind === "STAGE");
+  const stagePoint: Point | null = stageElement
+    ? stageElement.geometry.shape === "polygon"
+      ? stageElement.geometry.points[0]
+      : stageElement.geometry.shape === "point"
+        ? [stageElement.geometry.x, stageElement.geometry.y]
+        : [stageElement.geometry.x + stageElement.geometry.w / 2, stageElement.geometry.y + stageElement.geometry.h / 2]
+    : null;
+  const genSection = generator ? content.sections.find((s) => s.id === generator.sectionId) : undefined;
+  const seatRadius = seatRadiusPx({ width: content.imageWidth, height: content.imageHeight }, content.scaleMPerPx);
+  const genResult = useMemo(
+    () => (genSection && generator ? generateSeats(generator.params, genSection.polygon, { width: content.imageWidth, height: content.imageHeight }, generator.prefix) : null),
+    [genSection, generator, content.imageWidth, content.imageHeight]
   );
+  const genMerged = useMemo(
+    () =>
+      genSection && genResult
+        ? mergeWithManual(genSection.seats, genSection.rows, genResult, seatRadius * 1.8, { width: content.imageWidth, height: content.imageHeight })
+        : null,
+    [genSection, genResult, seatRadius, content.imageWidth, content.imageHeight]
+  );
+
+  const openGenerator = (sectionId: string) => {
+    const section = content.sections.find((s) => s.id === sectionId);
+    if (!section) return;
+    const saved = section.generator as Partial<GeneratorParams> | null;
+    const base = defaultParams(section.polygon, size, content.scaleMPerPx, stagePoint);
+    setGenerator({ sectionId, params: saved && typeof saved.rows === "number" ? { ...base, ...saved } : base, prefix: section.seatPrefix });
+    setTool("select");
+  };
+
+  const applyGenerator = () => {
+    if (!generator || !genMerged) return;
+    // Prefix and seats change together: one undo step, labels always match the sector prefix.
+    commit(applyGeneration(updateSection(content, generator.sectionId, { seatPrefix: generator.prefix }), generator.sectionId, genMerged.rows, genMerged.seats, generator.params));
+    setSelection([{ kind: "section", id: generator.sectionId }]);
+    flash("ok", `${genMerged.seats.length.toLocaleString("es-CL")} asientos aplicados. Recuerda guardar.`);
+    setGenerator(null);
+  };
 
   if (load.state === "loading") return <div className={styles.stateCard}>Cargando recinto…</div>;
   if (load.state === "error")
@@ -409,6 +459,7 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
               </div>
             )}
             <EditorCanvas
+              preview={genMerged ? { seats: genMerged.seats, color: "#ff782d", sectionId: generator!.sectionId } : null}
               content={content}
               imageUrl={imageUrl}
               selection={liveSelection}
@@ -436,15 +487,34 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
             />
           </div>
           <aside className={styles.sidePanel} aria-label="Propiedades y capas">
-            <PropertiesPanel
-              content={content}
-              selection={liveSelection}
-              readOnly={readOnly}
-              uploading={busy === "upload"}
-              onCommit={commit}
-              onSelect={setSelection}
-              onUploadImage={uploadImage}
-            />
+            {generator && genSection && genResult && genMerged ? (
+              <SeatGeneratorPanel
+                section={genSection}
+                params={generator.params}
+                prefix={generator.prefix}
+                result={genResult}
+                dropped={genMerged.dropped}
+                manualCount={genSection.seats.filter((s) => s.manual).length}
+                size={size}
+                scaleMPerPx={content.scaleMPerPx}
+                stage={stagePoint}
+                onChange={(params) => setGenerator({ ...generator, params })}
+                onPrefix={(prefix) => setGenerator({ ...generator, prefix })}
+                onApply={applyGenerator}
+                onCancel={() => setGenerator(null)}
+              />
+            ) : (
+              <PropertiesPanel
+                content={content}
+                selection={liveSelection}
+                readOnly={readOnly}
+                uploading={busy === "upload"}
+                onCommit={commit}
+                onSelect={setSelection}
+                onUploadImage={uploadImage}
+                onOpenGenerator={openGenerator}
+              />
+            )}
             <LayersPanel
               layers={layers}
               onChange={setLayers}
@@ -486,7 +556,30 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
       </ConfirmDialog>
 
       <ConfirmDialog
-        open={confirm?.kind === "publish"}
+        open={confirm?.kind === "publish" && blockers.length > 0}
+        icon="info"
+        title="Todavía no se puede publicar"
+        onClose={() => setConfirm(null)}
+        details={blockers.map((s) => `${s.name}: ${s.kind === "SEATED" ? "no tiene asientos" : "no tiene capacidad"}`)}
+        actions={[
+          {
+            label: "Ir al primer sector",
+            variant: "soft",
+            onClick: () => {
+              setSelection([{ kind: "section", id: blockers[0].id }]);
+              setConfirm(null);
+            },
+          },
+          { label: "Entendido", variant: "primary", onClick: () => setConfirm(null), autoFocus: true },
+        ]}
+      >
+        <p>
+          Cada sector necesita capacidad. Los sectores «con asientos numerados» la obtienen de sus asientos, que se crearán con el generador de asientos (próxima etapa). Si quieres publicar ahora, cambia esos sectores a «Entrada general» e indica cuántas personas caben.
+        </p>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirm?.kind === "publish" && blockers.length === 0}
         icon="publish"
         title={`¿Publicar la versión ${map?.version ?? ""}?`}
         busy={busy === "publish" || busy === "save"}
