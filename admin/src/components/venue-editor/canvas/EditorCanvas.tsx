@@ -11,6 +11,7 @@ import { insertVertex, moveVertex, parseSeatRef, removeVertex, seatRef, transfor
 import { elementKindOf, type Layers, type Tool } from "../editorTypes";
 import { ElementShape, SeatsShape, SectionShape } from "./Shapes";
 import { seatRadiusPx } from "../seatGenerator";
+import { useSettled } from "@/lib/useSettled";
 import styles from "../VenueEditor.module.css";
 
 export type EditorCanvasProps = {
@@ -384,6 +385,8 @@ export default function EditorCanvas(props: EditorCanvasProps) {
   };
 
   const seatRadius = seatRadiusPx(size, content.scaleMPerPx);
+  // Seat bitmaps are redrawn for the zoom once it settles, not on every frame.
+  const settledScale = useSettled(view.scale);
   const selectedSeats = useMemo(() => {
     const out: Seat[] = [];
     for (const item of selection) {
@@ -466,6 +469,7 @@ export default function EditorCanvas(props: EditorCanvasProps) {
                 // While the generator previews a section, its current seats are hidden.
                 showSeats={layers.seats.visible && props.preview?.sectionId !== s.id}
                 seatRadius={seatRadius}
+                cacheScale={settledScale}
                 draggable={editable && !layers.sections.locked}
                 listening={tool === "select" && !panning && !layers.sections.locked}
               />

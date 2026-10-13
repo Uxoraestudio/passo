@@ -7,6 +7,8 @@ import type { KonvaEventObject } from "konva/lib/Node";
 import type { EventSeat, EventSeatMap, EventSeatSector, PriceZone } from "@/lib/event-seats-data";
 import { MaterialIcon } from "@/components/icons";
 import { SEAT_COLORS } from "./seatStats";
+import { cacheSeats, drawSeats, seatBounds } from "../venue-editor/canvas/seatDrawing";
+import { useSettled } from "@/lib/useSettled";
 import { centroid, flatWorld, rectFromCorners, toWorld, type Size, type Vec } from "../venue-editor/geometry";
 import { ElementShape } from "../venue-editor/canvas/Shapes";
 import { seatRadiusPx } from "../venue-editor/seatGenerator";
@@ -40,39 +42,40 @@ function useHtmlImage(url: string | null) {
  * Seats of one sector in a single canvas shape. Fill tells the price (zone
  * colour, or white = sector price); sold, held and blocked seats are drawn over it.
  */
-const SectorSeats = memo(function SectorSeats({ sector, zones, size, radius }: { sector: EventSeatSector; zones: Map<string, PriceZone>; size: Size; radius: number }) {
+const SectorSeats = memo(function SectorSeats({
+  sector,
+  zones,
+  size,
+  radius,
+  cacheScale,
+}: {
+  sector: EventSeatSector;
+  zones: Map<string, PriceZone>;
+  size: Size;
+  radius: number;
+  cacheScale: number;
+}) {
+  const ref = useRef<Konva.Shape>(null);
+  const bounds = useMemo(() => seatBounds(sector.seats.map((s) => ({ x: s.x * size.width, y: s.y * size.height })), radius), [sector.seats, size, radius]);
+  // Kept as a bitmap at the settled zoom: panning and zooming only move it.
+  useEffect(() => cacheSeats(ref.current, bounds, cacheScale), [bounds, zones, sector.color, cacheScale]);
   return (
     <Shape
+      ref={ref}
       listening={false}
       perfectDrawEnabled={false}
-      sceneFunc={(ctx) => {
-        const c = ctx._context;
-        const line = radius * 0.28;
-        for (const seat of sector.seats) {
-          const x = seat.x * size.width;
-          const y = seat.y * size.height;
+      sceneFunc={(ctx) =>
+        drawSeats(ctx._context, sector.seats, (seat) => ({ x: seat.x * size.width, y: seat.y * size.height }), radius, (seat) => {
           const zone = seat.zoneId ? zones.get(seat.zoneId) : undefined;
-          c.beginPath();
-          c.arc(x, y, radius, 0, Math.PI * 2);
-          c.fillStyle =
-            seat.state === "BLOCKED" ? SEAT_COLORS.blocked : seat.state === "SOLD" ? SEAT_COLORS.sold : seat.state === "HELD" ? SEAT_COLORS.held : (zone?.color ?? "#ffffff");
-          c.fill();
-          c.lineWidth = seat.kind === "ACCESSIBLE" ? line * 1.8 : line;
-          c.strokeStyle = seat.kind === "ACCESSIBLE" ? SEAT_COLORS.accessible : (zone?.color ?? sector.color);
-          c.setLineDash(seat.kind === "OBSTRUCTED" ? [radius * 0.5, radius * 0.4] : []);
-          c.stroke();
-          if (seat.state === "BLOCKED") {
-            c.setLineDash([]);
-            c.strokeStyle = SEAT_COLORS.blockedMark;
-            c.lineWidth = line * 1.2;
-            c.beginPath();
-            c.moveTo(x - radius * 0.55, y - radius * 0.55);
-            c.lineTo(x + radius * 0.55, y + radius * 0.55);
-            c.stroke();
-          }
-        }
-        c.setLineDash([]);
-      }}
+          if (seat.state === "BLOCKED") return { fill: SEAT_COLORS.blocked, stroke: zone?.color ?? sector.color, slash: SEAT_COLORS.blockedMark };
+          return {
+            fill: seat.state === "SOLD" ? SEAT_COLORS.sold : seat.state === "HELD" ? SEAT_COLORS.held : (zone?.color ?? "#ffffff"),
+            stroke: seat.kind === "ACCESSIBLE" ? SEAT_COLORS.accessible : (zone?.color ?? sector.color),
+            lineWidth: radius * (seat.kind === "ACCESSIBLE" ? 0.5 : 0.28),
+            dash: seat.kind === "OBSTRUCTED" ? [radius * 0.5, radius * 0.4] : undefined,
+          };
+        })
+      }
     />
   );
 });
@@ -106,6 +109,7 @@ export default function SeatsCanvas({
   const [marquee, setMarquee] = useState<{ from: Vec; to: Vec; mode: SelectMode } | null>(null);
   const [hover, setHover] = useState<{ seat: EventSeat; at: Vec } | null>(null);
   const panning = panMode || spacePan;
+  const settledScale = useSettled(view.scale);
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -270,7 +274,7 @@ export default function SeatsCanvas({
           </Layer>
 
           <Layer listening={false}>
-            {map.sectors.map((s) => (s.seats.length > 0 ? <SectorSeats key={s.id} sector={s} zones={zones} size={size} radius={radius} /> : null))}
+            {map.sectors.map((s) => (s.seats.length > 0 ? <SectorSeats key={s.id} sector={s} zones={zones} size={size} radius={radius} cacheScale={settledScale} /> : null))}
             {/* Names would hide seats, so only sectors without seats are labelled. */}
             {map.sectors.map((s) => {
               if (s.seats.length > 0) return null;

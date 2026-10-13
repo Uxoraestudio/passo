@@ -57,6 +57,9 @@ const contentOf = (m: VenueMap): VenueMapContent => ({
   elements: m.elements,
 });
 
+/** Idle time after the last edit before the draft saves itself. */
+const AUTOSAVE_MS = 3000;
+
 const isTyping = (e: KeyboardEvent) =>
   e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName));
 
@@ -83,6 +86,9 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
   const [notice, setNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [calibration, setCalibration] = useState<{ a: Point; b: Point; meters: string } | null>(null);
   const [confirm, setConfirm] = useState<null | { kind: "publish" } | { kind: "switch"; mapId: string } | { kind: "discard" }>(null);
+  // Autosave keeps quiet on success; a failure pauses it until the next edit.
+  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
+  const [autoSaveFailed, setAutoSaveFailed] = useState<VenueMapContent | null>(null);
 
   const readOnly = !canEdit || map?.status !== "draft";
   // Sections the database would refuse to publish: seated without seats, or GA without capacity.
@@ -102,6 +108,8 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
       const c = contentOf(full);
       reset(c);
       setSaved(c);
+      setAutoSavedAt(null);
+      setAutoSaveFailed(null);
       setSelection([]);
       setTool("select");
     },
@@ -134,21 +142,46 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
   const refreshVersions = async () => setVersions(await listVenueMaps(venueId));
 
   // --- Actions
-  const save = useCallback(async () => {
-    if (!map || readOnly || busy) return false;
-    setBusy("save");
-    try {
-      const summary = await saveVenueMap(map.id, content);
-      setSaved(content);
-      flash("ok", `Plano guardado · ${summary.sections} ${summary.sections === 1 ? "sector" : "sectores"} · capacidad ${summary.capacity.toLocaleString("es-CL")}.`);
-      return true;
-    } catch (e) {
-      flash("error", e instanceof VenueMapError ? e.message : "No pudimos guardar el plano. Tus cambios siguen en pantalla; inténtalo de nuevo.");
-      return false;
-    } finally {
-      setBusy(null);
-    }
-  }, [map, readOnly, busy, content, flash]);
+  const save = useCallback(
+    async (mode: "manual" | "auto" = "manual") => {
+      if (!map || readOnly || busy) return false;
+      // The snapshot being saved: edits made while saving stay unsaved.
+      const snapshot = content;
+      setBusy("save");
+      try {
+        const summary = await saveVenueMap(map.id, snapshot);
+        setSaved(snapshot);
+        setAutoSaveFailed(null);
+        if (mode === "auto") setAutoSavedAt(new Date());
+        else {
+          setAutoSavedAt(null);
+          flash("ok", `Plano guardado · ${summary.sections} ${summary.sections === 1 ? "sector" : "sectores"} · capacidad ${summary.capacity.toLocaleString("es-CL")}.`);
+        }
+        return true;
+      } catch (e) {
+        if (mode === "auto") setAutoSaveFailed(snapshot);
+        flash(
+          "error",
+          e instanceof VenueMapError
+            ? e.message
+            : mode === "auto"
+              ? "No pudimos guardar automáticamente. Tus cambios siguen en pantalla; pulsa Guardar para reintentar."
+              : "No pudimos guardar el plano. Tus cambios siguen en pantalla; inténtalo de nuevo."
+        );
+        return false;
+      } finally {
+        setBusy(null);
+      }
+    },
+    [map, readOnly, busy, content, flash]
+  );
+
+  // Draft autosave: a few seconds after the last edit.
+  useEffect(() => {
+    if (!dirty || readOnly || busy || autoSaveFailed === content) return;
+    const id = window.setTimeout(() => save("auto"), AUTOSAVE_MS);
+    return () => window.clearTimeout(id);
+  }, [content, dirty, readOnly, busy, autoSaveFailed, save]);
 
   const publish = async () => {
     if (!map) return;
@@ -402,14 +435,22 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
                 <MaterialIcon decorative name="redo" />
               </button>
               <span className={styles.saveState} aria-live="polite">
-                {busy === "save" ? "Guardando…" : dirty ? "Cambios sin guardar" : "Todo guardado"}
+                {busy === "save"
+                  ? "Guardando…"
+                  : dirty
+                    ? autoSaveFailed
+                      ? "Cambios sin guardar"
+                      : "Guardando en unos segundos…"
+                    : autoSavedAt
+                      ? `Guardado automáticamente · ${autoSavedAt.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" })}`
+                      : "Todo guardado"}
               </span>
               {map?.status === "draft" && (
                 <button type="button" className={styles.secondaryButton} onClick={() => setConfirm({ kind: "discard" })} disabled={!!busy}>
                   Descartar borrador
                 </button>
               )}
-              <button type="button" className={styles.secondaryButton} onClick={save} disabled={!dirty || !!busy}>
+              <button type="button" className={styles.secondaryButton} onClick={() => save()} disabled={!dirty || !!busy}>
                 Guardar
               </button>
               <button type="button" className={styles.primaryButton} onClick={() => setConfirm({ kind: "publish" })} disabled={!!busy || content.sections.length === 0}>

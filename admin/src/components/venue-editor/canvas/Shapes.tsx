@@ -1,41 +1,51 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
+import type Konva from "konva";
 import { Circle, Ellipse, Group, Line, Rect, Shape, Text } from "react-konva";
 import type { MapElement, Section, Seat } from "@/lib/venue-map-types";
 import { centroid, flatWorld, toWorld, type Size } from "../geometry";
 import { ELEMENT_COLORS } from "../contentOps";
+import { cacheSeats, drawSeats, seatBounds, type DotStyle } from "./seatDrawing";
 
 
 const MARKER_LETTER: Partial<Record<MapElement["kind"], string>> = { ENTRANCE: "E", EXIT: "S", BATHROOM: "B" };
 
 const SEAT_FILL: Record<Seat["kind"], string | null> = { NORMAL: null, ACCESSIBLE: "#2563eb", OBSTRUCTED: "#94a3b8" };
+const BLOCKED_STYLE: DotStyle = { fill: "#cbd5e1", slash: "#475569" };
 
-/** All seats of a section drawn by one canvas shape: fast even with thousands of seats. */
-export const SeatsShape = memo(function SeatsShape({ seats, color, size, radius }: { seats: Seat[]; color: string; size: Size; radius: number }) {
+/**
+ * All seats of a section drawn by one canvas shape: fast even with thousands of
+ * seats. With `cacheScale` (the settled zoom) it is kept as a bitmap.
+ */
+export const SeatsShape = memo(function SeatsShape({
+  seats,
+  color,
+  size,
+  radius,
+  cacheScale,
+}: {
+  seats: Seat[];
+  color: string;
+  size: Size;
+  radius: number;
+  cacheScale?: number;
+}) {
+  const ref = useRef<Konva.Shape>(null);
+  const bounds = useMemo(() => seatBounds(seats.map((s) => ({ x: s.x * size.width, y: s.y * size.height })), radius), [seats, size, radius]);
+  useEffect(() => {
+    if (cacheScale) cacheSeats(ref.current, bounds, cacheScale);
+  }, [bounds, color, cacheScale]);
   return (
     <Shape
+      ref={ref}
       listening={false}
       perfectDrawEnabled={false}
-      sceneFunc={(ctx) => {
-        const c = ctx._context;
-        for (const seat of seats) {
-          const x = seat.x * size.width;
-          const y = seat.y * size.height;
-          c.beginPath();
-          c.arc(x, y, radius, 0, Math.PI * 2);
-          c.fillStyle = seat.baseStatus === "BLOCKED" ? "#cbd5e1" : (SEAT_FILL[seat.kind] ?? color);
-          c.fill();
-          if (seat.baseStatus === "BLOCKED") {
-            c.strokeStyle = "#475569";
-            c.lineWidth = radius * 0.35;
-            c.beginPath();
-            c.moveTo(x - radius * 0.6, y - radius * 0.6);
-            c.lineTo(x + radius * 0.6, y + radius * 0.6);
-            c.stroke();
-          }
-        }
-      }}
+      sceneFunc={(ctx) =>
+        drawSeats(ctx._context, seats, (seat) => ({ x: seat.x * size.width, y: seat.y * size.height }), radius, (seat) =>
+          seat.baseStatus === "BLOCKED" ? BLOCKED_STYLE : { fill: SEAT_FILL[seat.kind] ?? color }
+        )
+      }
     />
   );
 });
@@ -47,6 +57,7 @@ export function SectionShape({
   selected,
   showSeats,
   seatRadius,
+  cacheScale,
   draggable,
   listening,
 }: {
@@ -56,6 +67,7 @@ export function SectionShape({
   selected: boolean;
   showSeats: boolean;
   seatRadius: number;
+  cacheScale: number;
   draggable: boolean;
   listening: boolean;
 }) {
@@ -75,7 +87,7 @@ export function SectionShape({
         strokeWidth={(selected ? 3 : 1.5) / scale}
         dash={section.kind === "GENERAL_ADMISSION" ? [8 / scale, 5 / scale] : undefined}
       />
-      {showSeats && section.seats.length > 0 && <SeatsShape seats={section.seats} color={section.color} size={size} radius={seatRadius} />}
+      {showSeats && section.seats.length > 0 && <SeatsShape seats={section.seats} color={section.color} size={size} radius={seatRadius} cacheScale={cacheScale} />}
       <Text
         x={at.x}
         y={at.y}
