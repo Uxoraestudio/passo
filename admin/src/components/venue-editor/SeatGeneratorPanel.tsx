@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { MaterialIcon } from "@/components/icons";
 import type { Point, Section } from "@/lib/venue-map-types";
-import { GENERATOR_LIMITS, rotationTowards, type GeneratorParams, type GeneratorResult } from "./seatGenerator";
+import { alignToSection, GENERATOR_LIMITS, rotationTowards, type GeneratorParams, type GeneratorResult } from "./seatGenerator";
 import { centroid, type Size } from "./geometry";
 import styles from "./VenueEditor.module.css";
 
@@ -174,7 +174,7 @@ export default function SeatGeneratorPanel(props: Props) {
           <button
             type="button"
             className={styles.secondaryButton}
-            onClick={() => set({ rotation: rotationTowards(params.center ?? centroid(section.polygon), stage, size) })}
+            onClick={() => set({ rotation: alignToSection(rotationTowards(params.center ?? centroid(section.polygon), stage, size), section.polygon, size) })}
           >
             <MaterialIcon decorative name="explore" />
             Orientar hacia el escenario

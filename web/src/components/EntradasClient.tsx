@@ -88,6 +88,8 @@ export default function EntradasClient({
   const subtotal = lines.reduce((sum, line) => sum + line.tier.price * line.qty, 0);
   const fee = Math.round(subtotal * 0.1);
   const total = subtotal + fee;
+  // Sectors with price zones: the final price depends on the seats chosen next.
+  const from = lines.some((line) => line.tier.priceMax) ? "Desde " : "";
 
   const handleContinue = async () => {
     if (lines.length === 0 || submitting) return;
@@ -215,7 +217,10 @@ export default function EntradasClient({
                       </div>
                     </div>
                     <div className={styles.sectorPrice}>
-                      <span>{currency(tier.price)}</span>
+                      <span>
+                        {tier.priceMax && <small>Desde</small>}
+                        {currency(tier.price)}
+                      </span>
                       <small>+ cargo por servicio</small>
                     </div>
                     <div className={styles.stepper}>
@@ -273,9 +278,9 @@ export default function EntradasClient({
                 <div key={tier.id} className={styles.summaryLine}>
                   <span>
                     {qty}x {tier.name}
-                    <small>{currency(tier.price)} c/u</small>
+                    <small>{tier.priceMax ? `Desde ${currency(tier.price)} a ${currency(tier.priceMax)}` : `${currency(tier.price)} c/u`}</small>
                   </span>
-                  <span>{currency(tier.price * qty)}</span>
+                  <span>{tier.priceMax ? "Desde " : ""}{currency(tier.price * qty)}</span>
                 </div>
               ))}
               <div className={styles.summaryLine}>
@@ -294,7 +299,10 @@ export default function EntradasClient({
               <span>Monto Total a pagar</span>
               <small>Impuestos y tasas incluidos</small>
             </div>
-            <strong>{currency(total)}</strong>
+            <strong>
+              {from}
+              {currency(total)}
+            </strong>
           </div>
 
           {checkoutError && (
@@ -341,7 +349,10 @@ export default function EntradasClient({
             <span>
               {totalQty} entrada{totalQty > 1 ? "s" : ""}
             </span>
-            <strong>{currency(total)}</strong>
+            <strong>
+              {from}
+              {currency(total)}
+            </strong>
           </div>
           <button type="button" onClick={handleContinue} disabled={submitting}>
             {submitting ? "Reservando…" : continueLabel}

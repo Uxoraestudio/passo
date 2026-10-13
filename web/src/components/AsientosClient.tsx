@@ -103,7 +103,13 @@ export default function AsientosClient({
     });
   };
 
-  const subtotal = tier.price * selected.length;
+  // Plan seats may have their own price (price zones); grid seats cost the sector's.
+  const priceOf = (label: string) => planSeats.get(label)?.price ?? tier.price;
+  const subtotal = selected.reduce((sum, label) => sum + priceOf(label), 0);
+  const sectorZones = plan
+    ? plan.map.zones.filter((z) => plan.sector.seats.some((seat) => seat.zoneId === z.id && seat.state === "AVAILABLE"))
+    : [];
+  const unzonedFree = plan ? plan.sector.seats.some((seat) => !seat.zoneId && seat.state === "AVAILABLE") : false;
   const fee = Math.round(subtotal * 0.1);
   const total = subtotal + fee;
   const canContinue = selected.length === qty;
@@ -259,6 +265,23 @@ export default function AsientosClient({
           </div>
           )}
 
+          {sectorZones.length > 0 && (
+            <ul className={styles.zoneLegend} aria-label="Precios por zona">
+              {sectorZones.map((z) => (
+                <li key={z.id}>
+                  <i style={{ borderColor: z.color }} aria-hidden="true" />
+                  {z.name} <b>{currency(z.price)}</b>
+                </li>
+              ))}
+              {unzonedFree && (
+                <li>
+                  <i style={{ borderColor: tier.color }} aria-hidden="true" />
+                  Resto del sector <b>{currency(plan?.sector.seats.find((seat) => !seat.zoneId)?.price ?? tier.price)}</b>
+                </li>
+              )}
+            </ul>
+          )}
+
           <div className={styles.mapFooter}>
             <div className={styles.zoomControls}>
               <button
@@ -340,7 +363,7 @@ export default function AsientosClient({
                         <p className={styles.selectionSeat}>{where}</p>
                       </div>
                       <div className={styles.selectionAside}>
-                        <span className={styles.selectionPrice}>{currency(tier.price)}</span>
+                        <span className={styles.selectionPrice}>{currency(priceOf(seatId))}</span>
                         <button
                           type="button"
                           className={styles.removeButton}

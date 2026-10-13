@@ -230,6 +230,10 @@ async function applyPlan(eventId: string, mapId: string, previousMapId: string |
   const { capacity, price_base } = computeCapacityAndPrice(sectors);
   const { error } = await supabase.from("events").update({ capacity, price_base }).eq("id", eventId);
   if (error) throw error;
+  // Price zones can make a seat cheaper than its sector: the "desde" price comes
+  // from the database. It only affects the card, so a failure doesn't stop the save.
+  const { error: priceError } = await supabase.rpc("refresh_event_price_base", { p_event_id: eventId });
+  if (priceError) console.warn("refresh_event_price_base", priceError.message);
 }
 
 export async function createEvent(input: EventInput): Promise<string> {

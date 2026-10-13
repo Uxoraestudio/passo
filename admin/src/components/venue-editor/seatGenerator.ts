@@ -146,6 +146,33 @@ export function rotationTowards(from: Point, to: Point, size: Size): number {
   return ((deg % 360) + 360) % 360;
 }
 
+/**
+ * Squares a rotation to the section's own sides: rows run parallel (or at a
+ * right angle) to its longest edge, picking the orientation closest to `rotation`.
+ * Facing the target directly leaves rows a few degrees off a straight sector,
+ * which looks crooked.
+ */
+export function alignToSection(rotation: number, polygon: Point[], size: Size): number {
+  let edge = 0;
+  let longest = 0;
+  polygon.forEach(([x, y], i) => {
+    const [nx, ny] = polygon[(i + 1) % polygon.length];
+    const dx = (nx - x) * size.width;
+    const dy = (ny - y) * size.height;
+    const len = Math.hypot(dx, dy);
+    if (len > longest) {
+      longest = len;
+      edge = (Math.atan2(dy, dx) * 180) / Math.PI;
+    }
+  });
+  if (longest === 0) return rotation;
+  // Rows run along the block's x axis, so any multiple of 90° from the edge works.
+  const base = ((edge % 90) + 90) % 90;
+  const snapped = base + Math.round((rotation - base) / 90) * 90;
+  const deg = Math.round(snapped * 10) / 10;
+  return ((deg % 360) + 360) % 360;
+}
+
 // ---------------------------------------------------------------------------
 // Generator
 // ---------------------------------------------------------------------------
@@ -257,13 +284,14 @@ export function seatRadiusPx(size: Size, scaleMPerPx: number | null) {
 
 /**
  * Sensible starting parameters. The block faces `target` (the stage, or the
- * centre of the plan when there is no stage element), and rows/seats are sized
+ * centre of the plan when there is no stage element), squared to the section's
+ * sides so rows run straight; rows/seats are sized
  * along the section's own axes once rotated, never closer than the drawn seat.
  */
 export function defaultParams(polygon: Point[], size: Size, scaleMPerPx: number | null, target: Point | null): GeneratorParams {
   const center = centroid(polygon);
   const facing = target ?? [0.5, 0.5];
-  const rotation = rotationTowards(center, facing, size);
+  const rotation = alignToSection(rotationTowards(center, facing, size), polygon, size);
   // Extent of the section in the block's frame: x along the rows, y from front to back.
   const a = (rotation * Math.PI) / 180;
   const ux = { x: Math.cos(a), y: Math.sin(a) };

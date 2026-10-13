@@ -57,7 +57,7 @@ export default function OrderSummary({ order, title, children }: { order: Checko
                 {line.quantity}× {line.sectorName}
                 <small>
                   {line.seats.length > 0
-                    ? `Asientos ${[...line.seats].sort((a, b) => a.localeCompare(b, "es", { numeric: true })).join(", ")}`
+                    ? `${line.seats.length === 1 ? "Asiento" : "Asientos"} ${[...line.seats].sort((a, b) => a.localeCompare(b, "es", { numeric: true })).join(", ")}`
                     : "Acceso general"}
                   {" · "}
                   {currency(line.unitPrice)} c/u

@@ -3,6 +3,8 @@ export type TicketTier = {
   name: string;
   description: string;
   price: number;
+  /** Highest seat price when the sector has price zones; price is then the lowest ("desde"). */
+  priceMax?: number;
   status: "disponible" | "pocas" | "agotado";
   color: string;
   numbered: boolean;

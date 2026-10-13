@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { MaterialIcon } from "@/components/icons";
 import {
   EVENTS_FLASH_KEY,
@@ -1104,7 +1105,25 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 Cargando el plano del recinto…
               </p>
             ) : plan ? (
-              <PlanSectorsEditor plan={plan} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+              <>
+                <PlanSectorsEditor plan={plan} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
+                <div className={styles.seatsLink}>
+                  <MaterialIcon decorative name="event_seat" />
+                  <div>
+                    <b>Zonas de precio y bloqueos</b>
+                    <span>
+                      {eventId && loadedEvent?.venue_map_id === plan.id
+                        ? "Cobra distinto dentro de un sector (VIP, preferencial…), bloquea asientos para producción o prensa y marca los accesibles."
+                        : "Guarda el evento con este plano para definir zonas de precio por asiento y bloqueos."}
+                    </span>
+                  </div>
+                  {eventId && loadedEvent?.venue_map_id === plan.id && (
+                    <Link href={`/eventos/${eventId}/asientos/`} className={`${styles.btn} ${styles.btnSoft}`}>
+                      Abrir asientos
+                    </Link>
+                  )}
+                </div>
+              </>
             ) : (
               <PerimetryEditor venue={venue} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
             )}

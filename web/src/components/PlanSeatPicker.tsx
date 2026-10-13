@@ -53,6 +53,7 @@ const Seat = memo(function Seat({
   const available = seat.state === "AVAILABLE";
   const status = selected ? "selected" : available ? "available" : "taken";
   const where = seat.rowLabel && seat.number != null ? `Fila ${seat.rowLabel}, asiento ${seat.number}` : `Asiento ${seat.label}`;
+  const price = available ? `, $${seat.price.toLocaleString("es-CL")}` : "";
   const onKey = (e: KeyboardEvent<SVGGElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -68,7 +69,7 @@ const Seat = memo(function Seat({
       tabIndex={available ? 0 : -1}
       aria-disabled={!available}
       aria-pressed={selected}
-      aria-label={`${where}${seat.kind === "ACCESSIBLE" ? ", accesible" : seat.kind === "OBSTRUCTED" ? ", visión reducida" : ""}, ${selected ? "seleccionado" : stateText[seat.state]}`}
+      aria-label={`${where}${seat.kind === "ACCESSIBLE" ? ", accesible" : seat.kind === "OBSTRUCTED" ? ", visión reducida" : ""}${price}, ${selected ? "seleccionado" : stateText[seat.state]}`}
       onClick={available ? () => onToggle(seat) : undefined}
       onKeyDown={available ? onKey : undefined}
       style={{ ["--seat" as string]: color }}
@@ -113,6 +114,7 @@ export default function PlanSeatPicker({
   }, [sector, w, h, r]);
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
+  const zoneColors = useMemo(() => new Map(plan.zones.map((z) => [z.id, z.color])), [plan.zones]);
 
   return (
     <div className={styles.frame}>
@@ -132,7 +134,17 @@ export default function PlanSeatPicker({
           ))}
         <polygon points={sector.polygon.map(([x, y]) => `${x * w},${y * h}`).join(" ")} className={styles.currentSector} style={{ ["--sector" as string]: sector.color }} />
         {sector.seats.map((seat) => (
-          <Seat key={seat.label} seat={seat} r={r} w={w} h={h} selected={selectedSet.has(seat.label)} color={sector.color} onToggle={onToggle} />
+          <Seat
+            key={seat.label}
+            seat={seat}
+            r={r}
+            w={w}
+            h={h}
+            selected={selectedSet.has(seat.label)}
+            // Seats with a price zone wear its colour, so the buyer can tell prices apart.
+            color={(seat.zoneId && zoneColors.get(seat.zoneId)) || sector.color}
+            onToggle={onToggle}
+          />
         ))}
       </svg>
     </div>

@@ -2,11 +2,6 @@ import { createClient } from "@/lib/supabase/client";
 import {
   contentToWire,
   mapFromWire,
-  type ElementGeometry,
-  type ElementKind,
-  type Point,
-  type SeatKind,
-  type SeatState,
   type VenueMap,
   type VenueMapContent,
   type VenueMapSummary,
@@ -148,177 +143,12 @@ export async function deleteVenueMapDraft(mapId: string) {
 }
 
 // ---------------------------------------------------------------------------
-// Event seat map
+// Event snapshot (price zones and seat states live in event-seats-data.ts)
 // ---------------------------------------------------------------------------
-
-export type PriceZone = { id: string; name: string; color: string; price: number };
-
-export type EventSeat = {
-  rowLabel: string | null;
-  label: string;
-  number: number | null;
-  x: number;
-  y: number;
-  kind: SeatKind;
-  state: SeatState;
-  priceZoneId: string | null;
-};
-
-export type EventSector = {
-  id: string;
-  name: string;
-  shortLabel: string | null;
-  numbered: boolean;
-  capacity: number;
-  price: number;
-  color: string;
-  polygon: Point[];
-  labelPoint: Point | null;
-  priceZoneId: string | null;
-  seats: EventSeat[];
-};
-
-export type EventSeatMap = {
-  eventId: string;
-  mapId: string;
-  version: number;
-  imagePath: string | null;
-  imageWidth: number;
-  imageHeight: number;
-  elements: { kind: ElementKind; geometry: ElementGeometry; rotation: number; label: string | null; color: string | null }[];
-  priceZones: PriceZone[];
-  sectors: EventSector[];
-};
-
-type WireEventSeat = [string | null, string, number | null, number, number, SeatKind, SeatState, string | null];
 
 /** Copies a published plan into the event (its own snapshot). */
 export async function snapshotVenueMapToEvent(eventId: string, mapId: string): Promise<{ sectors: number; seats: number; capacity: number }> {
   const { data, error } = await createClient().rpc("snapshot_venue_map_to_event", { p_event_id: eventId, p_map_id: mapId });
   if (error || !data) throw toError(error, "No pudimos asociar el plano al evento.");
   return data;
-}
-
-/** The event's plan with the live state of each seat, or null if it has no plan. */
-export async function getEventSeatMap(eventId: string): Promise<EventSeatMap | null> {
-  const { data, error } = await createClient().rpc("get_event_seat_map", { p_event_id: eventId });
-  if (error) throw toError(error, "No pudimos cargar el plano del evento.");
-  if (!data) return null;
-  const w = data as {
-    event_id: string;
-    map_id: string;
-    version: number;
-    image_path: string | null;
-    image_width: number;
-    image_height: number;
-    elements: { kind: ElementKind; shape: ElementGeometry["shape"]; geometry: Record<string, unknown>; rotation: number; label: string | null; color: string | null }[];
-    price_zones: PriceZone[];
-    sectors: {
-      id: string;
-      name: string;
-      short_label: string | null;
-      numbered: boolean;
-      capacity: number;
-      price: number | string;
-      color: string;
-      polygon: Point[];
-      label_point: Point | null;
-      price_zone_id: string | null;
-      seats: WireEventSeat[];
-    }[];
-  };
-  const mapped = mapFromWire({
-    id: w.map_id,
-    venue_id: "",
-    version: w.version,
-    status: "published",
-    image_path: w.image_path,
-    image_width: w.image_width,
-    image_height: w.image_height,
-    scale_m_per_px: null,
-    calibration: null,
-    notes: null,
-    updated_at: "",
-    published_at: null,
-    sections: [],
-    elements: w.elements,
-  });
-  return {
-    eventId: w.event_id,
-    mapId: w.map_id,
-    version: w.version,
-    imagePath: w.image_path,
-    imageWidth: w.image_width,
-    imageHeight: w.image_height,
-    elements: mapped.elements,
-    priceZones: w.price_zones,
-    sectors: w.sectors.map((s) => ({
-      id: s.id,
-      name: s.name,
-      shortLabel: s.short_label,
-      numbered: s.numbered,
-      capacity: s.capacity,
-      price: Number(s.price),
-      color: s.color,
-      polygon: s.polygon,
-      labelPoint: s.label_point,
-      priceZoneId: s.price_zone_id,
-      seats: s.seats.map(([rowLabel, label, number, x, y, kind, state, priceZoneId]) => ({
-        rowLabel,
-        label,
-        number,
-        x: Number(x),
-        y: Number(y),
-        kind,
-        state,
-        priceZoneId,
-      })),
-    })),
-  };
-}
-
-// ---------------------------------------------------------------------------
-// Price zones and seat status (event level)
-// ---------------------------------------------------------------------------
-
-// Labels go in the URL filter, so large selections are sent in batches.
-const LABEL_BATCH = 200;
-
-async function updateSeats(sectorId: string, labels: string[], patch: Record<string, unknown>, failure: string) {
-  const supabase = createClient();
-  for (let i = 0; i < labels.length; i += LABEL_BATCH) {
-    const { error } = await supabase.from("event_seats").update(patch).eq("sector_id", sectorId).in("label", labels.slice(i, i + LABEL_BATCH));
-    if (error) throw new VenueMapError(failure, error.code ?? "UNKNOWN", null);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-
-export async function savePriceZone(eventId: string, zone: Omit<PriceZone, "id"> & { id?: string }): Promise<PriceZone> {
-  const supabase = createClient();
-  const payload = { event_id: eventId, name: zone.name.trim(), color: zone.color, price: Math.max(0, Math.round(zone.price)) };
-  const query = zone.id
-    ? supabase.from("event_price_zones").update(payload).eq("id", zone.id)
-    : supabase.from("event_price_zones").insert(payload);
-  const { data, error } = await query.select("id, name, color, price").single();
-  if (error || !data) {
-    throw new VenueMapError(error?.code === "23505" ? "Ya existe una zona con ese nombre." : "No pudimos guardar la zona de precio.", error?.code ?? "UNKNOWN", null);
-  }
-  return data;
-}
-
-export async function deletePriceZone(zoneId: string) {
-  const { error } = await createClient().from("event_price_zones").delete().eq("id", zoneId);
-  if (error) throw new VenueMapError("No pudimos eliminar la zona de precio.", error.code ?? "UNKNOWN", null);
-}
-
-/** Blocks or unblocks seats of one sector (production, press, courtesies…). */
-export async function setSeatsBlocked(sectorId: string, labels: string[], blocked: boolean, reason: string | null = null) {
-  await updateSeats(sectorId, labels, { base_status: blocked ? "BLOCKED" : "AVAILABLE", block_reason: blocked ? reason : null }, "No pudimos actualizar los asientos.");
-}
-
-/** Assigns a price zone to seats of one sector (null removes it). */
-export async function setSeatsPriceZone(sectorId: string, labels: string[], zoneId: string | null) {
-  await updateSeats(sectorId, labels, { price_zone_id: zoneId }, "No pudimos asignar la zona de precio.");
 }

@@ -26,7 +26,7 @@ export default function EventSectorPanel({
 }) {
   const prices = tiers.map((tier) => tier.price);
   const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  const maxPrice = Math.max(...tiers.map((tier) => tier.priceMax ?? tier.price));
   const priceRange = minPrice === maxPrice ? currency(minPrice) : `${currency(minPrice)} - ${currency(maxPrice)}`;
 
   return (
@@ -105,7 +105,10 @@ export default function EventSectorPanel({
                   </div>
                 </div>
                 <div className={styles.tierPrice}>
-                  <span>{currency(tier.price)}</span>
+                  <span>
+                    {tier.priceMax && <small>Desde</small>}
+                    {currency(tier.price)}
+                  </span>
                   <small>+ cargo por servicio</small>
                 </div>
               </div>

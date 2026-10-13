@@ -186,3 +186,8 @@
   color: var(--color-gray-400);
   text-align: center;
 }
+
+/* "Desde" before the price of a sector with price zones. */
+.tierPrice span small {
+  margin-right: 4px;
+}

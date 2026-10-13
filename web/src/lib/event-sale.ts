@@ -26,7 +26,7 @@ type SectorRow = {
 
 const getSaleData = cache(async (eventId: string) => {
   const supabase = await createClient();
-  const [{ data: sectors }, { data: availability }] = await Promise.all([
+  const [{ data: sectors }, { data: availability }, { data: prices }] = await Promise.all([
     supabase
       .from("event_sectors")
       .select("id, name, capacity, price, color, numbered, seats_per_row")
@@ -34,11 +34,16 @@ const getSaleData = cache(async (eventId: string) => {
       .eq("is_active", true)
       .order("sort_order"),
     supabase.rpc("get_sector_availability", { p_event_id: eventId }),
+    // Seats with price zones: the cheapest and the most expensive free seat.
+    supabase.rpc("get_sector_prices", { p_event_id: eventId }),
   ]);
   const taken = new Map<string, number>(
     ((availability ?? []) as { sector_id: string; taken: number }[]).map((a) => [a.sector_id, a.taken])
   );
-  return ((sectors ?? []) as SectorRow[]).map((s) => ({ ...s, taken: taken.get(s.id) ?? 0 }));
+  const range = new Map<string, { min: number; max: number }>(
+    ((prices ?? []) as { sector_id: string; min_price: number; max_price: number }[]).map((p) => [p.sector_id, { min: p.min_price, max: p.max_price }])
+  );
+  return ((sectors ?? []) as SectorRow[]).map((s) => ({ ...s, taken: taken.get(s.id) ?? 0, range: range.get(s.id) }));
 });
 
 function tierStatus(available: number, capacity: number): TicketTier["status"] {
@@ -76,7 +81,8 @@ export async function getEventSale(row: EventRow, now = Date.now()): Promise<Eve
       id: s.id,
       name: s.name,
       description: numbered ? "Asiento numerado" : "Acceso general",
-      price: Number(s.price),
+      price: s.range ? s.range.min : Number(s.price),
+      priceMax: s.range && s.range.max > s.range.min ? s.range.max : undefined,
       status: tierStatus(available, s.capacity),
       color: s.color,
       numbered,

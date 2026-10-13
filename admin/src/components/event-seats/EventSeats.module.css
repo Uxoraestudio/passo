@@ -1,0 +1,346 @@
+/* Seats, price zones and blocks of an event. Shares the venue editor's shell
+   (top bar, canvas, side panel) and adds its own panels. */
+
+.body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 3;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(17, 13, 41, 0.92);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  transform: translate(-50%, calc(-100% - 12px));
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.panButton[aria-pressed="true"] {
+  background: #fff1ea;
+  color: #c2410c;
+}
+
+.legend {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 8px 12px;
+  list-style: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 6px 20px -8px rgba(15, 14, 36, 0.25);
+  font-size: 11px;
+  font-weight: 700;
+  color: #625d75;
+  pointer-events: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--dot-stroke, transparent);
+  background: var(--dot, #fff);
+}
+
+.dot[data-blocked="true"] {
+  background: linear-gradient(135deg, transparent 42%, #475569 42%, #475569 58%, transparent 58%), #cbd5e1;
+}
+
+/* ---------- Selection ---------- */
+
+.selectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bigCount {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.linkButton {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--purple);
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+}
+
+.quickRow {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.quickRow > :first-child {
+  flex: 1;
+}
+
+.actionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.actionGroup h3 {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.zoneButtons {
+  display: grid;
+  gap: 6px;
+}
+
+.zoneButton {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.zoneButton:hover:not(:disabled) {
+  border-color: #cfc6ee;
+  background: #faf9ff;
+}
+
+.zoneButton[aria-pressed="true"] {
+  border-color: var(--purple);
+  box-shadow: inset 0 0 0 1px var(--purple);
+}
+
+.zoneButton span:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zoneButton small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.buttonRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.buttonRow > * {
+  flex: 1;
+}
+
+/* ---------- Zones ---------- */
+
+.zoneList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zoneItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.zoneInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.zoneInfo b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.zoneInfo small {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.zonePrice {
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.zoneActions {
+  display: flex;
+}
+
+.smallIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.smallIcon:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.smallIcon :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+/* ---------- Summary ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+}
+
+.table th {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.table tfoot td {
+  border-bottom: 0;
+  font-weight: 800;
+}
+
+.cellName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 120px;
+  font-weight: 700;
+}
+
+.cellName span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.off {
+  color: var(--muted);
+}
+
+@media (max-width: 1100px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+/* Narrow screens (.page.page outranks the editor shell whatever the CSS order): the plan keeps a fixed height and the panels flow below it,
+   with the page scrolling instead of a cramped inner panel. */
+@media (max-width: 860px) {
+  .page.page {
+    height: auto;
+  }
+
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 420px auto;
+  }
+
+  .body > aside {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    max-height: none;
+    overflow: visible;
+  }
+
+  .tooltip {
+    white-space: normal;
+  }
+}
+
+.zoneForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}

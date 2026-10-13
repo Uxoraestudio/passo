@@ -588,6 +588,40 @@
   background: var(--color-gray-100);
 }
 
+/* Prices by zone, under the plan (seats wear their zone's colour). */
+
+.zoneLegend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.zoneLegend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-gray-600);
+}
+
+.zoneLegend i {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2.5px solid;
+  background: #fff;
+}
+
+.zoneLegend b {
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
 /* Summary */
 
 .sidebar {

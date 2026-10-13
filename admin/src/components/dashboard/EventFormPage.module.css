@@ -1855,3 +1855,46 @@
   overflow: visible;
   line-height: 1.25;
 }
+
+.seatsLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.seatsLink > :global(.material-symbols-outlined) {
+  flex-shrink: 0;
+  font-size: 24px;
+  color: var(--purple, #6534f5);
+}
+
+.seatsLink > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.seatsLink > div span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.seatsLink > a {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .seatsLink {
+    flex-wrap: wrap;
+  }
+}

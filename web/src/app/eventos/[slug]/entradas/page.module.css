@@ -660,3 +660,9 @@
   line-height: 1.45;
   color: #b42318;
 }
+
+/* "Desde" before the price of a sector with price zones. */
+.sectorPrice span small {
+  margin-right: 4px;
+  font-weight: 600;
+}

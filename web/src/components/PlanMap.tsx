@@ -107,7 +107,7 @@ export default function PlanMap({
             data-interactive={interactive}
             role={interactive ? "button" : undefined}
             tabIndex={interactive ? 0 : undefined}
-            aria-label={interactive ? `${s.name}${s.price ? `, desde $${s.price.toLocaleString("es-CL")}` : ""}` : undefined}
+            aria-label={interactive ? `${s.name}${s.price ? `, desde $${s.price.toLocaleString("es-CL")}` : ""}${s.priceMax ? ` hasta $${s.priceMax.toLocaleString("es-CL")}` : ""}` : undefined}
             aria-pressed={interactive ? activeIds.includes(s.id) : undefined}
             onClick={interactive ? () => onSelect?.(s.id) : undefined}
             onKeyDown={interactive ? (e) => onKey(e, s.id) : undefined}
@@ -117,7 +117,7 @@ export default function PlanMap({
               {name}
             </text>
             <text x={cx * w} y={cy * h + size * 0.75} className={styles.sectorMeta} style={{ fontSize: size * 0.8 }} transform={transform}>
-              {soldOut ? "Agotado" : s.price ? `$${s.price.toLocaleString("es-CL")}` : ""}
+              {soldOut ? "Agotado" : s.price ? `${s.priceMax ? "Desde " : ""}$${s.price.toLocaleString("es-CL")}` : ""}
             </text>
           </g>
         );
