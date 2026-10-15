@@ -8,7 +8,8 @@ import { requireUser } from "@/lib/auth-redirect";
 import { createClient } from "@/lib/supabase/server";
 import { syncFlowPayment, type OrderStatus } from "@/lib/payments";
 import { getCheckoutOrder } from "@/lib/checkout-order";
-import TicketsConfirmed, { type IssuedTicket } from "@/components/checkout/TicketsConfirmed";
+import TicketsConfirmed from "@/components/checkout/TicketsConfirmed";
+import { loadOrderTickets } from "@/lib/order-tickets";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -81,18 +82,6 @@ async function loadOrder(orderId: string) {
   return data as OrderView | null;
 }
 
-async function loadTickets(orderId: string): Promise<IssuedTicket[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("tickets")
-    .select("id, code, sector_name, seat_label, holder_name, status")
-    .eq("order_id", orderId)
-    .order("seat_label", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
-  return ((data ?? []) as { id: string; code: string; sector_name: string; seat_label: string | null; holder_name: string | null; status: IssuedTicket["status"] }[]).map(
-    (t) => ({ id: t.id, code: t.code, sectorName: t.sector_name, seatLabel: t.seat_label, holderName: t.holder_name, status: t.status })
-  );
-}
 
 export default async function CompraPage({ params }: PageProps<"/compra/[orderId]">) {
   const { orderId } = await params;
@@ -119,7 +108,7 @@ export default async function CompraPage({ params }: PageProps<"/compra/[orderId
   }
 
   if (order.status === "paid") {
-    const [checkout, tickets] = await Promise.all([getCheckoutOrder(orderId), loadTickets(orderId)]);
+    const [checkout, tickets] = await Promise.all([getCheckoutOrder(orderId), loadOrderTickets(orderId)]);
     if (checkout && tickets.length > 0) {
       return (
         <>

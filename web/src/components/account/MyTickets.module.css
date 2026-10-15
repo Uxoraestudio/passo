@@ -133,13 +133,13 @@
   font-weight: 700;
 }
 
-.demoTag {
+.voidTag {
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  background: #fee2e2;
   font-size: 10.5px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
+  font-weight: 800;
+  color: #b91c1c;
 }
 
 .qrFigure {
@@ -158,18 +158,10 @@
   box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6), 0 0 0 6px rgba(255, 255, 255, 0.12);
 }
 
-.qrSvg {
+.qrTile svg {
+  display: block;
   width: 100%;
   height: 100%;
-  fill: #140924;
-  animation: qrSwap 500ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes qrSwap {
-  from {
-    opacity: 0.2;
-    filter: blur(3px);
-  }
 }
 
 .qrCaption {
@@ -181,22 +173,6 @@
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
   font-variant-numeric: tabular-nums;
-}
-
-.qrTrack {
-  width: 120px;
-  height: 3px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-
-.qrProgress {
-  display: block;
-  height: 100%;
-  background: var(--color-orange);
-  transform-origin: left;
-  transition: transform 1s linear;
 }
 
 .ticketPanelSeat {
@@ -698,9 +674,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .poster,
-  .ticketPanel,
-  .qrSvg,
-  .qrProgress {
+  .ticketPanel {
     animation: none;
     transition: none;
   }

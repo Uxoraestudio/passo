@@ -33,13 +33,14 @@ export function CopyOrderCode({ code }: { code: string }) {
   );
 }
 
-export function PrintTicketsButton() {
+/** Opens the printable tickets (print or save as PDF) in a new tab. */
+export function PrintTicketsButton({ orderId }: { orderId: string }) {
   return (
-    <button type="button" className={styles.downloadButton} onClick={() => window.print()}>
+    <a href={`/compra/${orderId}/imprimir/?auto=1`} target="_blank" rel="noopener" className={styles.downloadButton}>
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <path d="M10 3.5v9m0 0-3.5-3.5M10 12.5l3.5-3.5M4 15.5h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       Descargar entradas
-    </button>
+    </a>
   );
 }

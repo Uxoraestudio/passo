@@ -1,0 +1,189 @@
+/* Printable tickets: black on white, nothing that depends on background graphics. */
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  color: #140924;
+  background: #fff;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 14px;
+}
+
+.printButton {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #ff782d;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.printButton:focus-visible {
+  outline: 2px solid #140924;
+  outline-offset: 2px;
+}
+
+.ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border: 1.5px solid #140924;
+  border-radius: 14px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.ticket[data-status="void"],
+.ticket[data-status="used"] {
+  border-style: dashed;
+  color: #64748b;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed #140924;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.logo {
+  display: block;
+  height: 22px;
+  width: auto;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.count {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 48mm minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.qr {
+  width: 48mm;
+  height: 48mm;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.facts dt {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.facts dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.facts .seat {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.facts .code {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.void {
+  margin: 0;
+  font-weight: 800;
+}
+
+.note {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .qr {
+    margin: 0 auto;
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+@media print {
+  .toolbar {
+    display: none;
+  }
+
+  .sheet {
+    max-width: none;
+    padding: 0;
+    gap: 10mm;
+  }
+}

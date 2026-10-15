@@ -1,20 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import QRCode from "qrcode";
 import type { CheckoutOrder } from "@/lib/checkout-order";
-import { seatText } from "@/lib/checkout-order";
-import { parseSeatLabel } from "@/lib/seatMap";
+import { ticketQrSvg, type IssuedTicket } from "@/lib/order-tickets";
 import { CopyOrderCode, PrintTicketsButton } from "./PurchaseActions";
 import styles from "./Confirmed.module.css";
 
-export type IssuedTicket = {
-  id: string;
-  code: string;
-  sectorName: string;
-  seatLabel: string | null;
-  holderName: string | null;
-  status: "valid" | "used" | "void";
-};
 
 function mapsUrl(order: CheckoutOrder) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${order.event.venue}, ${order.event.city}, Chile`)}`;
@@ -22,9 +12,7 @@ function mapsUrl(order: CheckoutOrder) {
 
 export default async function TicketsConfirmed({ order, tickets }: { order: CheckoutOrder; tickets: IssuedTicket[] }) {
   // The QR carries the ticket's unguessable code; the short code below is for humans.
-  const qrs = await Promise.all(
-    tickets.map((t) => QRCode.toString(t.code, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#140924", light: "#ffffff" } }))
-  );
+  const qrs = await Promise.all(tickets.map((t) => ticketQrSvg(t.code)));
 
   return (
     <main className={styles.main}>
@@ -50,15 +38,14 @@ export default async function TicketsConfirmed({ order, tickets }: { order: Chec
               <h2 id="tickets-title">Tus entradas</h2>
               <p>Presenta estas entradas desde tu celular. Cada código es único e intransferible.</p>
             </div>
-            <PrintTicketsButton />
+            <PrintTicketsButton orderId={order.id} />
           </div>
 
           <div className={styles.ticketGrid}>
             {tickets.map((ticket, i) => {
-              const seat = ticket.seatLabel ? parseSeatLabel(ticket.seatLabel) : null;
               const shortCode = `${order.code}-${String(i + 1).padStart(2, "0")}`;
               return (
-                <article key={ticket.id} className={styles.ticket} data-status={ticket.status} aria-label={`Entrada ${i + 1}, ${seatText(ticket.seatLabel)}`}>
+                <article key={ticket.id} className={styles.ticket} data-status={ticket.status} aria-label={`Entrada ${i + 1}, ${ticket.seatText}`}>
                   <div className={styles.ticketTop}>
                     <Image src={order.event.image} alt="" fill sizes="(max-width: 640px) 100vw, 340px" className={styles.ticketImage} />
                     <span className={styles.ticketShade} />
@@ -87,12 +74,12 @@ export default async function TicketsConfirmed({ order, tickets }: { order: Chec
                       </div>
                       <div>
                         <dt>Fila</dt>
-                        <dd>{seat?.row ?? "—"}</dd>
+                        <dd>{ticket.row ?? "—"}</dd>
                       </div>
                       <div>
                         <dt>Asiento</dt>
-                        {/* Plan labels that can't be split into row/number are shown whole. */}
-                        <dd>{seat?.number ?? ticket.seatLabel ?? "—"}</dd>
+                        {/* Labels that can't be split into row/number are shown whole. */}
+                        <dd>{ticket.number ?? ticket.seatLabel ?? "—"}</dd>
                       </div>
                     </dl>
 

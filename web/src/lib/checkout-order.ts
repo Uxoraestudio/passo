@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { pickImage } from "@/lib/events";
 import { describeSeat } from "@/lib/seatMap";
+import { loadSeatParts } from "@/lib/seat-details";
 import type { OrderStatus } from "@/lib/payments";
 
 const TIME_ZONE = "America/Santiago";
@@ -118,21 +119,13 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
   const status: OrderStatus = expired ? "expired" : row.status;
 
   // Plan seats carry their own row and number; grid seats are parsed from the label.
-  const seatedSectors = row.order_items.filter((item) => item.seat_labels.length > 0).map((item) => item.sector_id);
-  const planSeats = new Map<string, { row: string | null; number: number | null }>();
-  if (seatedSectors.length > 0) {
-    const { data: seats } = await supabase
-      .from("event_seats")
-      .select("sector_id, label, row_label, number")
-      .in("sector_id", seatedSectors)
-      .in("label", row.order_items.flatMap((item) => item.seat_labels));
-    for (const s of (seats ?? []) as { sector_id: string; label: string; row_label: string | null; number: number | null }[]) {
-      planSeats.set(`${s.sector_id}:${s.label}`, { row: s.row_label, number: s.number });
-    }
-  }
+  const planSeats = await loadSeatParts(
+    supabase,
+    row.order_items.flatMap((item) => item.seat_labels.map((label) => ({ sectorId: item.sector_id, label })))
+  );
   const describe = (sectorId: string, label: string) => {
     const seat = planSeats.get(`${sectorId}:${label}`);
-    return seat ? describeSeat(label, seat.row, seat.number) : seatText(label);
+    return describeSeat(label, seat?.row, seat?.number);
   };
   /** Short seat code for summaries ("H7"); plan labels may carry a sector prefix. */
   const shortSeat = (sectorId: string, label: string) => {

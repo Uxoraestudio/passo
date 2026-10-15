@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { AccountTicket } from "@/lib/account-tickets";
-import DynamicQr from "./DynamicQr";
 import styles from "./MyTickets.module.css";
 
 export type TicketView = "proximas" | "pasadas" | "canceladas";
@@ -175,11 +174,6 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
     featuredRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const download = () => {
-    setShowQr(true);
-    window.setTimeout(() => window.print(), 120);
-  };
-
   const share = async () => {
     const url = `${window.location.origin}/eventos/${featured.event.slug}/`;
     try {
@@ -197,6 +191,8 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
   };
 
   const days = featured.event.daysLeft;
+  const entries = featured.entries;
+  const current = entries[Math.min(entry, entries.length - 1)];
 
   return (
     <div className={styles.stack}>
@@ -213,13 +209,25 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
           {showQr && (
             <div className={styles.ticketPanel}>
               <p className={styles.ticketPanelTop}>
-                <span>Entrada {entry + 1} de {featured.quantity}</span>
-                <span className={styles.demoTag}>QR provisional</span>
+                <span>
+                  Entrada {entry + 1} de {entries.length}
+                </span>
+                {!current.valid && <span className={styles.voidTag}>No válida</span>}
               </p>
-              <DynamicQr seed={`${featured.orderCode}-${entry}`} label={`Código QR de la entrada ${entry + 1} para ${featured.event.title}`} />
-              <p className={styles.ticketPanelSeat}>{seatLine(featured)}</p>
+              <figure className={styles.qrFigure}>
+                <div
+                  className={styles.qrTile}
+                  role="img"
+                  aria-label={`Código QR de la entrada ${entry + 1} para ${featured.event.title}`}
+                  dangerouslySetInnerHTML={{ __html: current.qrSvg }}
+                />
+                <figcaption className={styles.qrCaption}>{current.holderName ?? "Entrada sin nominar"}</figcaption>
+              </figure>
+              <p className={styles.ticketPanelSeat}>
+                {featured.sector} · {current.seatText}
+              </p>
               <p className={styles.ticketPanelOrder}>Orden {featured.orderCode}</p>
-              {featured.quantity > 1 && (
+              {entries.length > 1 && (
                 <div className={styles.entrySwitch}>
                   <button type="button" onClick={() => setEntry((e) => Math.max(0, e - 1))} disabled={entry === 0} aria-label="Entrada anterior">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -227,14 +235,14 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
                     </svg>
                   </button>
                   <span aria-hidden="true">
-                    {Array.from({ length: featured.quantity }, (_, i) => (
-                      <i key={i} data-active={i === entry} />
+                    {entries.map((e, i) => (
+                      <i key={e.id} data-active={i === entry} />
                     ))}
                   </span>
                   <button
                     type="button"
-                    onClick={() => setEntry((e) => Math.min(featured.quantity - 1, e + 1))}
-                    disabled={entry === featured.quantity - 1}
+                    onClick={() => setEntry((e) => Math.min(entries.length - 1, e + 1))}
+                    disabled={entry === entries.length - 1}
                     aria-label="Entrada siguiente"
                   >
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -296,12 +304,12 @@ export default function MyTickets({ tickets, view }: { tickets: AccountTicket[];
               <TicketIcon />
               {showQr ? "Ocultar entradas" : "Ver entradas"}
             </button>
-            <button type="button" className={styles.outlineButton} onClick={download}>
+            <a href={`/compra/${featured.orderId}/imprimir/?auto=1`} target="_blank" rel="noopener" className={styles.outlineButton}>
               <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="M10 3.5v9m0 0-3.5-3.5M10 12.5l3.5-3.5M4 15.5h12" {...stroke} />
               </svg>
               Descargar
-            </button>
+            </a>
             <button type="button" className={styles.ghostButton} disabled title="Disponible próximamente">
               <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <rect x="3" y="5" width="14" height="10" rx="2" {...stroke} />
