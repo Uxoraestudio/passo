@@ -16,6 +16,7 @@ import {
   type ValidationOverview,
   type ValidationResponse,
 } from "@/lib/validation-data";
+import { playScanSound } from "@/lib/scan-sound";
 import styles from "./ValidationContent.module.css";
 
 const REFRESH_MS = 10_000;
@@ -35,26 +36,6 @@ function store(key: string, value: string) {
     window.localStorage.setItem(key, value);
   } catch {
     // Private mode: the choice just isn't remembered.
-  }
-}
-
-/** Short beep and vibration so the operator knows the result without looking. */
-function signal(ok: boolean) {
-  try {
-    navigator.vibrate?.(ok ? 80 : [120, 80, 120]);
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.frequency.value = ok ? 880 : 220;
-    gain.gain.value = 0.08;
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + (ok ? 0.12 : 0.35));
-    osc.onended = () => ctx.close();
-  } catch {
-    // No sound available: the banner still shows the result.
   }
 }
 
@@ -141,11 +122,11 @@ export default function ValidationContent() {
       try {
         const response = await validateTicket(eventId, code, gate.trim());
         setLastScan({ response, at: new Date().toISOString(), gate: gate.trim() });
-        signal(response.result === "valid");
+        playScanSound(response.result);
         setError("");
         refresh(eventId);
       } catch (e) {
-        signal(false);
+        playScanSound("error");
         setError(e instanceof ValidationError ? e.message : "No pudimos validar la entrada. Inténtalo de nuevo.");
       } finally {
         busyRef.current = false;
@@ -172,7 +153,7 @@ export default function ValidationContent() {
 
       <div className={styles.consoleGrid}>
         <div className={styles.consoleCol}>
-          <ValidatorConsole gate={gate} onGate={chooseGate} busy={busy} disabled={!eventId} onCode={onCode} />
+          <ValidatorConsole gate={gate} onGate={chooseGate} busy={busy} disabled={!eventId} onCode={onCode} lastScan={lastScan} />
         </div>
         <div className={styles.gatesCol}>
           <GatesTable overview={overview} />

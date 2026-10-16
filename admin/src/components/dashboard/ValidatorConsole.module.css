@@ -326,3 +326,112 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
 }
+
+/* ---------- Sound toggle ---------- */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soundButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e5dff7;
+  border-radius: 10px;
+  background: #fff;
+  color: #1c1a2a;
+  cursor: pointer;
+}
+
+.soundButton[aria-pressed="false"] {
+  color: #8a849c;
+}
+
+.soundButton :global(.material-symbols-outlined) {
+  font-size: 19px;
+}
+
+.soundButton:focus-visible {
+  outline: 2px solid #ff782d;
+  outline-offset: 2px;
+}
+
+/* ---------- Result over the camera ---------- */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  border: none;
+  font: inherit;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  animation: overlayIn 160ms ease-out;
+}
+
+.overlay[data-tone="ok"] {
+  background: rgba(5, 150, 105, 0.94);
+}
+
+.overlay[data-tone="warn"] {
+  background: rgba(217, 119, 6, 0.95);
+}
+
+.overlay[data-tone="bad"] {
+  background: rgba(220, 38, 38, 0.95);
+}
+
+.overlayIcon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.overlayTitle {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.overlayResult {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.overlayName {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.overlayDetail {
+  font-size: 14px;
+  opacity: 0.92;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+}

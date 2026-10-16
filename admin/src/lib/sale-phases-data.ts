@@ -1,45 +1,46 @@
 import { createClient } from "@/lib/supabase/client";
 
-/** A presale (Preventa 1, Preventa 2…): its own prices per sector, dates and optional quota. */
+export type QuotaMode = "general" | "sector";
+
+/**
+ * A presale (Preventa 1, Preventa 2…): its own prices per sector, dates and an
+ * optional quota, either for the whole presale or per sector.
+ */
 export type SalePhase = {
   id: string | null;
   name: string;
   starts_at: string;
   ends_at: string;
+  quota_mode: QuotaMode;
+  /** Whole-presale quota (general mode). */
   quota: number | null;
-  /** Presale price per sector id; sectors left out keep their normal price. */
-  prices: Record<string, number>;
+  /** Presale price per sector id, with its own quota in sector mode; sectors left out keep their normal price. */
+  prices: Record<string, { price: number; quota: number | null }>;
 };
 
-type PhaseRow = Omit<SalePhase, "prices"> & { id: string; event_phase_prices: { sector_id: string; price: number }[] };
+type PhaseRow = Omit<SalePhase, "prices"> & { id: string; event_phase_prices: { sector_id: string; price: number; quota: number | null }[] };
 
 export async function listSalePhases(eventId: string): Promise<SalePhase[]> {
   const { data, error } = await createClient()
     .from("event_sale_phases")
-    .select("id, name, starts_at, ends_at, quota, event_phase_prices(sector_id, price)")
+    .select("id, name, starts_at, ends_at, quota, quota_mode, event_phase_prices(sector_id, price, quota)")
     .eq("event_id", eventId)
     .order("starts_at");
   if (error) throw new Error("No pudimos cargar las preventas de este evento.");
   return ((data ?? []) as PhaseRow[]).map(({ event_phase_prices, ...p }) => ({
     ...p,
-    prices: Object.fromEntries(event_phase_prices.map((pp) => [pp.sector_id, Number(pp.price)])),
+    quota_mode: p.quota_mode ?? "general",
+    prices: Object.fromEntries(event_phase_prices.map((pp) => [pp.sector_id, { price: Number(pp.price), quota: pp.quota }])),
   }));
 }
 
-/** Tickets sold per phase (paid orders only), for the "vendidas / cupo" counter. */
-export async function soldByPhase(eventId: string): Promise<Record<string, number>> {
-  const { data, error } = await createClient()
-    .from("orders")
-    .select("sale_phase_id, order_items(quantity)")
-    .eq("event_id", eventId)
-    .eq("status", "paid")
-    .not("sale_phase_id", "is", null);
-  if (error) return {};
-  const sold: Record<string, number> = {};
-  for (const o of (data ?? []) as { sale_phase_id: string; order_items: { quantity: number }[] }[]) {
-    sold[o.sale_phase_id] = (sold[o.sale_phase_id] ?? 0) + o.order_items.reduce((s, i) => s + i.quantity, 0);
-  }
-  return sold;
+/** Presale tickets taken per phase (sold or being paid), in total and per sector. */
+export type PhaseUsage = Record<string, { sold: number; taken: number; sectors: Record<string, number> }>;
+
+export async function salePhaseUsage(eventId: string): Promise<PhaseUsage> {
+  const { data, error } = await createClient().rpc("sale_phase_usage", { p_event_id: eventId });
+  if (error || !data) return {};
+  return data as PhaseUsage;
 }
 
 const saveErrors: Record<string, string> = {

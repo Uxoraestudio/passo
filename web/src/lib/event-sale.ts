@@ -7,7 +7,15 @@ export type SaleTier = TicketTier & { capacity: number; available: number; seats
 
 /** The presale on sale now (or the next one), from get_sale_phase. */
 export type SalePhase = {
-  current: { id: string; name: string; ends_at: string; quota: number | null; remaining: number | null } | null;
+  current: {
+    id: string;
+    name: string;
+    ends_at: string;
+    quota: number | null;
+    remaining: number | null;
+    quota_mode?: "general" | "sector";
+    sectors?: { sector_id: string; quota: number | null; remaining: number | null }[];
+  } | null;
   next: { name: string; starts_at: string } | null;
 };
 
@@ -90,6 +98,8 @@ function closedReasonFor(row: EventRow, hasTiers: boolean, phase: SalePhase, now
 export async function getEventSale(row: EventRow, now = Date.now()): Promise<EventSale> {
   const base = eventDetails[row.id] ?? defaultEventDetail(row);
   const { sectors, phase } = await getSaleData(row.id);
+  // Presale tickets left per sector, when the presale has a quota per sector.
+  const presaleLeft = new Map((phase.current?.sectors ?? []).filter((x) => x.remaining != null).map((x) => [x.sector_id, x.remaining as number]));
 
   const tiers: SaleTier[] = sectors.map((s) => {
     const numbered = Boolean(s.numbered);
@@ -102,7 +112,12 @@ export async function getEventSale(row: EventRow, now = Date.now()): Promise<Eve
       priceMax: s.range && s.range.max > s.range.min ? s.range.max : undefined,
       // Presale price: the normal one is shown struck through next to it.
       normalPrice: s.range && s.range.normal > s.range.min ? s.range.normal : undefined,
-      badge: phase.current && s.range && s.range.normal > s.range.min ? phase.current.name : undefined,
+      badge:
+        phase.current && s.range && s.range.normal > s.range.min
+          ? presaleLeft.has(s.id) && presaleLeft.get(s.id)! <= 50
+            ? `${phase.current.name} · ${presaleLeft.get(s.id) === 1 ? "queda 1" : `quedan ${presaleLeft.get(s.id)}`}`
+            : phase.current.name
+          : undefined,
       status: tierStatus(available, s.capacity),
       color: s.color,
       numbered,

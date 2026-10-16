@@ -24,6 +24,7 @@ const orderErrors: Record<string, { status: number; message: string }> = {
   SEAT_INVALID: { status: 400, message: "Uno de los asientos no existe en este sector." },
   SEAT_TAKEN: { status: 409, message: "Alguien acaba de tomar uno de tus asientos. Elige otro." },
   SOLD_OUT: { status: 409, message: "No quedan suficientes entradas en ese sector." },
+  PHASE_SECTOR_QUOTA: { status: 409, message: "No quedan suficientes entradas en preventa en ese sector. Elige menos entradas o actualiza la página." },
   PHASE_QUOTA: { status: 409, message: "No quedan suficientes entradas en esta preventa. Elige menos entradas o actualiza la página." },
   ORDER_NOT_FOUND: { status: 404, message: "No encontramos tu reserva." },
   ORDER_EXPIRED: { status: 409, message: "Se acabó el tiempo de tu reserva. Vuelve a elegir tus entradas." },
@@ -34,6 +35,19 @@ const orderErrors: Record<string, { status: number; message: string }> = {
 };
 
 export function orderErrorFor(message: string | undefined) {
+  // PHASE_SECTOR_QUOTA:<sector>:<left> — say exactly how many presale tickets are left.
+  const sectorQuota = message?.match(/PHASE_SECTOR_QUOTA:(.+):(\d+)/);
+  if (sectorQuota) {
+    const left = Number(sectorQuota[2]);
+    return {
+      code: "PHASE_SECTOR_QUOTA",
+      status: 409,
+      message:
+        left > 0
+          ? `En ${sectorQuota[1]} ${left === 1 ? "queda 1 entrada" : `quedan ${left} entradas`} en preventa. Elige menos entradas o actualiza la página.`
+          : `Se agotaron las entradas en preventa de ${sectorQuota[1]}. Actualiza la página para ver el nuevo precio.`,
+    };
+  }
   const code = Object.keys(orderErrors).find((key) => message?.includes(key));
   return code
     ? { code, ...orderErrors[code] }

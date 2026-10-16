@@ -276,3 +276,114 @@
     max-width: none;
   }
 }
+
+/* ---------- Quota mode ---------- */
+
+.quotaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+  margin-bottom: 12px;
+}
+
+.quotaRow > p {
+  flex: 1 1 260px;
+  margin: 0 0 8px;
+}
+
+.modeSwitch {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: #f1eef9;
+}
+
+.modeSwitch button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #625d75;
+  cursor: pointer;
+}
+
+.modeSwitch button[data-active="true"] {
+  background: #fff;
+  color: #1c1a2a;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.1);
+}
+
+.modeSwitch button:focus-visible {
+  outline: 2px solid #ff782d;
+  outline-offset: 2px;
+}
+
+.generalQuota {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 1 220px;
+}
+
+.generalQuota input,
+.quotaCell input {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e5dff7;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-weight: 700;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.generalQuota input:focus,
+.quotaCell input:focus {
+  outline: none;
+  border-color: #6534f5;
+  box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.12);
+}
+
+.quotaCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quotaCell input {
+  width: 110px;
+}
+
+.quotaCell small {
+  font-size: 11px;
+  font-weight: 600;
+  color: #625d75;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .prices tr {
+    grid-template-columns: 1fr auto;
+  }
+
+  .prices td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .quotaCell input {
+    flex: 1;
+    width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .prices td:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
