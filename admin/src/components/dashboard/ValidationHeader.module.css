@@ -119,3 +119,53 @@
     justify-content: space-between;
   }
 }
+
+.eventSelect {
+  appearance: none;
+  min-width: 0;
+  max-width: 340px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+
+.eventSelect:focus-visible {
+  outline: none;
+}
+
+.eventPill:focus-within {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 2px;
+}
+
+.liveDot[data-off="true"] {
+  background: #94a3b8;
+  animation: none;
+}
+
+/* Long event names: the pill never exceeds the screen, the name is cut instead. */
+.eventPill {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.eventRow {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.eventSelect {
+  flex: 1 1 auto;
+  max-width: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.chevronIcon {
+  flex-shrink: 0;
+  pointer-events: none;
+}

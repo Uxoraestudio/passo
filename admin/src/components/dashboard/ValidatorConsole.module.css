@@ -54,7 +54,7 @@
   background: #14161c;
 }
 
-.viewfinderFrame {
+.cameraFrame {
   position: relative;
   display: flex;
   align-items: center;
@@ -112,11 +112,6 @@
   font-weight: 600;
   font-size: 13px;
   color: #fff;
-}
-
-.viewfinderCaption {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 .deviceRow {
@@ -216,83 +211,93 @@
   font-size: 18px;
 }
 
-.feedback {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-purple);
+
+.autoscanBadge[data-on="false"] {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
 }
 
-.offlineRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 12px;
+.autoscanBadge[data-on="false"] .autoscanDot {
+  background: #94a3b8;
+}
+
+/* Camera: the video fills the square frame, corners drawn on top. */
+.cameraFrame {
+  width: min(100%, 280px);
+  height: auto;
+  aspect-ratio: 1;
+  overflow: hidden;
   border-radius: 10px;
-  background: #f7f1ff80;
+  background: #0b0c10;
 }
 
-.offlineIconBox {
-  display: flex;
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.cameraFrame[data-on="true"] .video {
+  opacity: 1;
+}
+
+.corner {
+  z-index: 1;
+}
+
+.viewfinderLabel {
+  max-width: 300px;
+  text-align: center;
+}
+
+.cameraButton,
+.cameraButtonGhost {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(101, 52, 245, 0.1);
-  color: var(--color-purple);
-  flex-shrink: 0;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.offlineIcon {
-  font-size: 18px;
+.cameraButton {
+  background: var(--color-orange);
+  color: #fff;
 }
 
-.offlineText {
+.cameraButtonGhost {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.cameraButton:disabled,
+.validateButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.manualHint {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #625d75;
+}
+
+.gateField {
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  flex: 1;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid #efedf5;
 }
 
-.offlineLabel {
-  font-weight: 600;
-  font-size: 13px;
-  color: #1c1a2a;
-}
-
-.offlineCaption {
-  font-size: 11px;
-  color: #797488;
-}
-
-.switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 44px;
-  height: 24px;
-  border-radius: 9999px;
-  border: none;
-  background: #e5dff7;
-  transition: background 200ms ease;
-}
-
-.switch[data-checked="true"] {
-  background: var(--color-purple);
-}
-
-.switchThumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 9999px;
-  background: #fff;
-  transition: transform 200ms ease;
-}
-
-.switch[data-checked="true"] .switchThumb {
-  transform: translateX(20px);
+/* In the column layout the input must keep its own height. */
+.gateField .manualInput {
+  flex: none;
 }

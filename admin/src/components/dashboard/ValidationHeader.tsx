@@ -1,32 +1,49 @@
 import { MaterialIcon } from "@/components/icons";
+import type { ValidationEvent } from "@/lib/validation-data";
 import styles from "./ValidationHeader.module.css";
 
-export default function ValidationHeader() {
+const when = (iso: string) =>
+  new Intl.DateTimeFormat("es-CL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Santiago" }).format(new Date(iso));
+
+/** Which event is being checked at the door, and whether the screen is live. */
+export default function ValidationHeader({
+  events,
+  eventId,
+  onEvent,
+  online,
+  updatedAt,
+}: {
+  events: ValidationEvent[];
+  eventId: string;
+  onEvent: (id: string) => void;
+  online: boolean;
+  updatedAt: Date | null;
+}) {
   return (
     <section className={styles.section}>
       <div>
         <div className={styles.liveRow}>
-          <span className={styles.liveDot} />
-          <span className={styles.liveLabel}>En Tiempo Real</span>
-          <span className={styles.liveCaption}>• Sistema AFORIQ Gateway v4.2</span>
+          <span className={styles.liveDot} data-off={!online} />
+          <span className={styles.liveLabel}>{online ? "En tiempo real" : "Sin conexión"}</span>
+          {updatedAt && <span className={styles.liveCaption}>• Actualizado {updatedAt.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>}
         </div>
-        <h1 className={styles.title}>Control de Acceso y Validación QR en Vivo</h1>
+        <h1 className={styles.title}>Control de acceso y validación QR</h1>
       </div>
 
       <div className={styles.eventRow}>
-        <button type="button" className={styles.eventPill}>
-          <MaterialIcon name="confirmation_number" className={styles.eventIcon} />
-          <span>Luna Nova • Prisma Tour — En Curso</span>
-          <MaterialIcon name="expand_more" className={styles.chevronIcon} />
-        </button>
-        <div className={styles.statusPill}>
-          <span className={styles.statusDot} />
-          <span>ONLINE</span>
-          <span className={styles.statusDivider}>•</span>
-          <span>Latencia: 24ms</span>
-          <span className={styles.statusDivider}>•</span>
-          <span>12 terminales</span>
-        </div>
+        <label className={styles.eventPill}>
+          <MaterialIcon decorative name="confirmation_number" className={styles.eventIcon} />
+          <span className="sr-only">Evento a validar</span>
+          <select className={styles.eventSelect} value={eventId} onChange={(e) => onEvent(e.target.value)} disabled={events.length === 0}>
+            {events.length === 0 && <option value="">No hay eventos para validar</option>}
+            {events.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.title} — {when(e.event_date)}
+              </option>
+            ))}
+          </select>
+          <MaterialIcon decorative name="expand_more" className={styles.chevronIcon} />
+        </label>
       </div>
     </section>
   );

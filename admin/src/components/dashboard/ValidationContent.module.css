@@ -39,3 +39,21 @@
     gap: 20px;
   }
 }
+
+.error,
+.notice {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.error {
+  background: #fef2f2;
+  color: #b42318;
+}
+
+.notice {
+  background: #f3f0fd;
+  color: #4c2fb8;
+}

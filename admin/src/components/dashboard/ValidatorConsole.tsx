@@ -1,108 +1,143 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { MaterialIcon } from "@/components/icons";
+import { useQrScanner, type ScannerState } from "./useQrScanner";
 import styles from "./ValidatorConsole.module.css";
 
-export default function ValidatorConsole() {
-  const [inputDevice, setInputDevice] = useState<"camera" | "scanner">("camera");
-  const [offlineMode, setOfflineMode] = useState(true);
-  const [manualCode, setManualCode] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
+const cameraText: Record<ScannerState, string> = {
+  idle: "Activa la cámara para escanear",
+  starting: "Abriendo la cámara…",
+  scanning: "Alinea el código QR en el visor",
+  denied: "El navegador bloqueó la cámara. Permítela en la configuración del sitio o usa el ingreso manual.",
+  unavailable: "Este dispositivo no tiene cámara disponible. Usa un lector o el ingreso manual.",
+};
 
-  const handleValidate = (event: FormEvent) => {
+/**
+ * Where the operator scans: the device camera, or a USB/Bluetooth reader that
+ * types the code followed by Enter (it lands in the manual field, which keeps
+ * the focus), or the short code typed by hand.
+ */
+export default function ValidatorConsole({
+  gate,
+  onGate,
+  busy,
+  disabled,
+  onCode,
+}: {
+  gate: string;
+  onGate: (gate: string) => void;
+  busy: boolean;
+  disabled: boolean;
+  onCode: (code: string) => void;
+}) {
+  const [device, setDevice] = useState<"camera" | "scanner">("scanner");
+  const [cameraOn, setCameraOn] = useState(false);
+  const [manualCode, setManualCode] = useState("");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const camera = useQrScanner(videoRef, device === "camera" && cameraOn && !disabled, busy, onCode);
+
+  const submit = (event: FormEvent) => {
     event.preventDefault();
     const code = manualCode.trim();
-    if (!code) return;
-    setFeedback(`Validando ${code}…`);
+    if (!code || busy || disabled) return;
+    onCode(code);
     setManualCode("");
-    setTimeout(() => setFeedback(null), 3000);
+    inputRef.current?.focus();
   };
 
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <h2 className={styles.title}>Consola del Validador</h2>
-        <span className={styles.autoscanBadge}>
+        <span className={styles.autoscanBadge} data-on={device === "camera" ? camera === "scanning" : true}>
           <span className={styles.autoscanDot} />
-          AUTOSCAN ON
+          {device === "camera" ? (camera === "scanning" ? "Cámara activa" : "Cámara apagada") : "Lector listo"}
         </span>
       </div>
 
-      <div className={styles.viewfinder}>
-        <div className={styles.viewfinderFrame}>
-          <span className={styles.corner} data-pos="tl" />
-          <span className={styles.corner} data-pos="tr" />
-          <span className={styles.corner} data-pos="bl" />
-          <span className={styles.corner} data-pos="br" />
-          <MaterialIcon name="qr_code_scanner" className={styles.viewfinderIcon} />
-        </div>
-        <p className={styles.viewfinderLabel}>Alinee el código QR en el visor</p>
-        <p className={styles.viewfinderCaption}>Compatible con PDF, Wallet y Pulseras NFC</p>
-      </div>
-
-      <div className={styles.deviceRow}>
-        <button
-          type="button"
-          className={styles.deviceButton}
-          data-active={inputDevice === "camera"}
-          onClick={() => setInputDevice("camera")}
-        >
+      <div className={styles.deviceRow} role="radiogroup" aria-label="Cómo escanear">
+        <button type="button" role="radio" aria-checked={device === "camera"} className={styles.deviceButton} data-active={device === "camera"} onClick={() => setDevice("camera")}>
           <MaterialIcon name="photo_camera" className={styles.deviceIcon} />
-          <span>Cámara Web</span>
+          <span>Cámara</span>
         </button>
         <button
           type="button"
+          role="radio"
+          aria-checked={device === "scanner"}
           className={styles.deviceButton}
-          data-active={inputDevice === "scanner"}
-          onClick={() => setInputDevice("scanner")}
+          data-active={device === "scanner"}
+          onClick={() => {
+            setDevice("scanner");
+            setCameraOn(false);
+            window.setTimeout(() => inputRef.current?.focus(), 0);
+          }}
         >
           <MaterialIcon name="barcode_reader" className={styles.deviceIcon} />
-          <span>Pistola Láser HID</span>
+          <span>Lector o teclado</span>
         </button>
       </div>
 
-      <form className={styles.manualForm} onSubmit={handleValidate}>
+      {device === "camera" && (
+        <div className={styles.viewfinder}>
+          <div className={styles.cameraFrame} data-on={camera === "scanning"}>
+            <video ref={videoRef} className={styles.video} muted playsInline aria-label="Vista de la cámara" />
+            <span className={styles.corner} data-pos="tl" />
+            <span className={styles.corner} data-pos="tr" />
+            <span className={styles.corner} data-pos="bl" />
+            <span className={styles.corner} data-pos="br" />
+            {camera !== "scanning" && <MaterialIcon name="qr_code_scanner" className={styles.viewfinderIcon} />}
+          </div>
+          <p className={styles.viewfinderLabel} aria-live="polite">
+            {busy ? "Validando…" : cameraText[camera]}
+          </p>
+          {!cameraOn ? (
+            <button type="button" className={styles.cameraButton} onClick={() => setCameraOn(true)} disabled={disabled}>
+              <MaterialIcon name="videocam" className={styles.validateIcon} />
+              Activar cámara
+            </button>
+          ) : (
+            <button type="button" className={styles.cameraButtonGhost} onClick={() => setCameraOn(false)}>
+              Apagar cámara
+            </button>
+          )}
+        </div>
+      )}
+
+      <form className={styles.manualForm} onSubmit={submit}>
         <label className={styles.manualLabel} htmlFor="manual-code">
-          Búsqueda / Ingreso Manual
+          {device === "scanner" ? "Escanea con el lector o escribe el código" : "Ingreso manual"}
         </label>
         <div className={styles.manualRow}>
           <input
+            ref={inputRef}
             id="manual-code"
             type="text"
+            inputMode="text"
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            autoFocus
             className={styles.manualInput}
-            placeholder="Ej: 19.492.301-4 o TKT-8902…"
+            placeholder="Ej: PS-95B3307B5B-01"
             value={manualCode}
+            disabled={disabled}
             onChange={(event) => setManualCode(event.target.value)}
           />
-          <button type="submit" className={styles.validateButton}>
-            <span>Validar</span>
+          <button type="submit" className={styles.validateButton} disabled={busy || disabled || !manualCode.trim()}>
+            <span>{busy ? "Validando…" : "Validar"}</span>
             <MaterialIcon name="arrow_forward" className={styles.validateIcon} />
           </button>
         </div>
-        {feedback ? <p className={styles.feedback}>{feedback}</p> : null}
+        <p className={styles.manualHint}>El código corto aparece bajo el QR de cada entrada impresa.</p>
       </form>
 
-      <div className={styles.offlineRow}>
-        <span className={styles.offlineIconBox}>
-          <MaterialIcon name="sync" className={styles.offlineIcon} />
-        </span>
-        <div className={styles.offlineText}>
-          <span className={styles.offlineLabel}>Modo Offline Local</span>
-          <span className={styles.offlineCaption}>Base de datos sincronizada • 6.482 claves hash</span>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={offlineMode}
-          aria-label="Modo Offline Local"
-          className={styles.switch}
-          data-checked={offlineMode}
-          onClick={() => setOfflineMode((prev) => !prev)}
-        >
-          <span className={styles.switchThumb} />
-        </button>
-      </div>
+      <label className={styles.gateField}>
+        <span className={styles.manualLabel}>Puerta o acceso</span>
+        <input className={styles.manualInput} value={gate} maxLength={40} placeholder="Ej: Puerta Norte" onChange={(e) => onGate(e.target.value)} />
+        <small className={styles.manualHint}>Queda registrada en cada ingreso para ver el flujo por acceso.</small>
+      </label>
     </div>
   );
 }
