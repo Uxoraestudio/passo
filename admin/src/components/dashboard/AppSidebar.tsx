@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -15,6 +16,7 @@ import {
   VenueIcon,
 } from "@/components/icons";
 import { MODULES, allows, useAccess, type ModuleKey } from "@/lib/access";
+import { closeMobileMenu, useMobileMenu } from "@/lib/mobile-menu";
 import styles from "./AppSidebar.module.css";
 
 const icons: Record<ModuleKey, typeof HomeIcon> = {
@@ -38,8 +40,41 @@ export default function AppSidebar() {
     return m.key === "eventos" ? [item, { key: "recintos", href: "/recintos/", label: "Recintos", icon: VenueIcon }] : [item];
   });
 
+  // Small screens: the sidebar slides in over the page when the top bar's menu button opens it.
+  const open = useMobileMenu();
+  const asideRef = useRef<HTMLElement>(null);
+
+  // A new page closes the menu.
+  useEffect(() => {
+    closeMobileMenu();
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    asideRef.current?.querySelector<HTMLElement>("a")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMobileMenu();
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+      previous?.focus?.();
+    };
+  }, [open]);
+
   return (
-    <aside className={styles.sidebar}>
+    <>
+    {open && <div className={styles.backdrop} onClick={closeMobileMenu} aria-hidden="true" />}
+    <aside ref={asideRef} id="admin-sidebar" className={styles.sidebar} data-open={open} aria-label="Menú principal">
+      <button type="button" className={styles.closeButton} onClick={closeMobileMenu} aria-label="Cerrar menú">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
       <div className={styles.branding}>
         <span className={styles.logo}>passo</span>
         <p className={styles.tagline}>
@@ -59,6 +94,7 @@ export default function AppSidebar() {
               href={item.href}
               className={styles.navLink}
               data-active={active}
+              onClick={closeMobileMenu}
             >
               <Icon className={styles.navIcon} />
               <span>{item.label}</span>
@@ -92,5 +128,6 @@ export default function AppSidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }
