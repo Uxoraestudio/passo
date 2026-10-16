@@ -1,4 +1,5 @@
 import type { Slide } from "@/components/Hero";
+import { chileParts } from "@/lib/chile-time";
 
 export type EventCardData = {
   id: string;
@@ -40,6 +41,8 @@ export type EventRow = {
   venue_map_id?: string | null;
   max_tickets_per_order?: number | null;
   sale_start?: string | null;
+  /** Presale on sale now, filled in by events-data. */
+  sale_phase_name?: string | null;
 };
 
 export const FALLBACK_IMAGE = "/images/banner-crowd.jpg";
@@ -54,23 +57,23 @@ export function formatPrice(priceBase: number): string {
 }
 
 export function formatDay(isoDate: string): string {
-  const date = new Date(isoDate);
-  return String(date.getDate()).padStart(2, "0");
+  return String(chileParts(isoDate).day).padStart(2, "0");
 }
 
 export function formatMonth(isoDate: string): string {
-  const date = new Date(isoDate);
-  return MONTHS_SHORT[date.getMonth()];
+  return MONTHS_SHORT[chileParts(isoDate).month];
 }
 
-function statusTag(status: EventStatus): EventCardData["tags"] {
+function statusTag(status: EventStatus, phase?: string | null): EventCardData["tags"] {
+  if (phase && (status === "en-venta" || status === "casi-agotado")) return [{ label: phase.toUpperCase(), variant: "orange" }];
   if (status === "casi-agotado") return [{ label: "CASI AGOTADO", variant: "orange" }];
   if (status === "proximamente") return [{ label: "PRÓXIMAMENTE", variant: "secondary" }];
   if (status === "finalizado") return [{ label: "FINALIZADO", variant: "secondary" }];
   return [];
 }
 
-function statusEyebrow(status: EventStatus): string {
+function statusEyebrow(status: EventStatus, phase?: string | null): string {
+  if (phase && (status === "en-venta" || status === "casi-agotado")) return `${phase} abierta`;
   if (status === "casi-agotado") return "Últimas entradas";
   if (status === "proximamente") return "Próximamente";
   if (status === "finalizado") return "Evento finalizado";
@@ -91,7 +94,7 @@ export function toEventCardData(row: EventRow): EventCardData {
     city: row.city,
     price: formatPrice(row.price_base),
     category: row.category ?? null,
-    tags: statusTag(row.status),
+    tags: statusTag(row.status, row.sale_phase_name),
   };
 }
 
@@ -101,7 +104,7 @@ export function toHeroSlide(row: EventRow): Slide {
     slug: row.slug,
     image: pickImage(row.hero_image_url, row.image_url),
     alt: row.title,
-    eyebrow: statusEyebrow(row.status),
+    eyebrow: statusEyebrow(row.status, row.sale_phase_name),
     title: row.title,
     subtitle: row.subtitle ?? "",
     date: `${formatDay(row.event_date)} ${formatMonth(row.event_date)}`,

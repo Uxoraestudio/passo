@@ -21,6 +21,7 @@ import { LAYOUTS } from "@/lib/venue-layouts";
 import ConfirmDialog from "./ConfirmDialog";
 import EventCourtesies from "./EventCourtesies";
 import EventImageField from "./EventImageField";
+import EventPresales from "./EventPresales";
 import PerimetryEditor, { sectorIssue, type SectorDraft } from "./PerimetryEditor";
 import PlanSectorsEditor from "./PlanSectorsEditor";
 import { getVenueMap } from "@/lib/venue-maps-data";
@@ -747,6 +748,12 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => requestLeave("/eventos")} disabled={saving}>
               Cancelar
             </button>
+            {mode === "edit" && eventId && (
+              <Link href={`/eventos/${eventId}/asistentes/`} className={`${styles.btn} ${styles.btnSoft}`}>
+                <MaterialIcon decorative name="groups" className={styles.btnIcon} />
+                Asistentes
+              </Link>
+            )}
             {mode === "create" && (
               <button type="button" className={`${styles.btn} ${styles.btnSoft}`} onClick={() => save("draft")} disabled={saving}>
                 <MaterialIcon decorative name="draft" className={styles.btnIcon} />
@@ -1283,6 +1290,14 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </div>
             ))}
           </section>
+
+          {mode === "edit" && eventId && (
+            <EventPresales
+              eventId={eventId}
+              saleStart={form.saleStart ? new Date(form.saleStart).toISOString() : null}
+              sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name, price: Number(s.price) || 0 }))}
+            />
+          )}
 
           {mode === "edit" && eventId && (
             <EventCourtesies eventId={eventId} sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name }))} />

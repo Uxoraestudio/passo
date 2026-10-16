@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { MaterialIcon } from "@/components/icons";
 import type { EventRecord } from "@/lib/events-data";
@@ -83,10 +84,17 @@ export default function EventRow({
             <MaterialIcon name={p.primaryActionIcon} className={styles.actionIcon} />
             <span>{p.primaryActionLabel}</span>
           </button>
-          <button type="button" className={styles.actionButton} data-tone={p.secondaryActionTone} onClick={() => onEdit(event)}>
-            <MaterialIcon name={p.secondaryActionIcon} className={styles.actionIcon} />
-            <span>{p.secondaryActionLabel}</span>
-          </button>
+          {event.status === "borrador" ? (
+            <button type="button" className={styles.actionButton} data-tone={p.secondaryActionTone} onClick={() => onEdit(event)}>
+              <MaterialIcon name={p.secondaryActionIcon} className={styles.actionIcon} />
+              <span>{p.secondaryActionLabel}</span>
+            </button>
+          ) : (
+            <Link href={`/eventos/${event.id}/asistentes/`} className={styles.actionButton} data-tone={p.secondaryActionTone}>
+              <MaterialIcon name={p.secondaryActionIcon} className={styles.actionIcon} />
+              <span>{p.secondaryActionLabel}</span>
+            </Link>
+          )}
           <button
             type="button"
             className={styles.trailingButton}

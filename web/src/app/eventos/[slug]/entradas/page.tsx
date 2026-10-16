@@ -43,6 +43,7 @@ export default async function EntradasPage({
         slug={slug}
         onSale={sale.onSale}
         closedReason={sale.closedReason}
+        phaseNotice={sale.phaseNotice}
         maxPerOrder={sale.maxPerOrder}
         initialTier={initialTier}
         initialQty={initialQty}

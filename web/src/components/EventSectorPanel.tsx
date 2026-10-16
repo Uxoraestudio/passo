@@ -98,13 +98,18 @@ export default function EventSectorPanel({
                   <div className={styles.tierTop}>
                     <span className={styles.tierColorDot} style={{ background: tier.color }} aria-hidden="true" />
                     <span className={styles.tierName}>{tier.name}</span>
-                    {tier.badge && <span className={styles.tierBadge}>{tier.badge}</span>}
+                    {tier.badge && <span className={styles.tierBadge} data-presale={Boolean(tier.normalPrice)}>{tier.badge}</span>}
                     <span className={tier.status !== "disponible" ? styles.badgeLow : styles.badgeOk}>
                       {tier.status === "agotado" ? "Agotado" : tier.status === "pocas" ? "Pocas un." : "Disponible"}
                     </span>
                   </div>
                 </div>
                 <div className={styles.tierPrice}>
+                  {tier.normalPrice && (
+                    <s className={styles.normalPrice} aria-label={`Precio normal ${currency(tier.normalPrice)}`}>
+                      {currency(tier.normalPrice)}
+                    </s>
+                  )}
                   <span>
                     {tier.priceMax && <small>Desde</small>}
                     {currency(tier.price)}

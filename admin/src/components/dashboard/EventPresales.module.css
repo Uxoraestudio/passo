@@ -1,0 +1,278 @@
+.empty {
+  font-size: 13px;
+  color: #625d75;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff6f0;
+  font-size: 13px;
+  color: #9a3412;
+}
+
+.note :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+.phases {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.phase {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #ebe7f6;
+  background: #fcfbff;
+}
+
+.phase[data-invalid="true"] {
+  border-color: #fca5a5;
+  background: #fffafa;
+}
+
+.phaseHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.phaseNum {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ff782d;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.nameField {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameField input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  color: #1c1a2a;
+}
+
+.nameField input:hover:not(:disabled) {
+  border-color: #e5dff7;
+}
+
+.nameField input:focus {
+  outline: none;
+  border-color: #6534f5;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.12);
+}
+
+.state {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.state[data-tone="live"] {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.state[data-tone="next"] {
+  background: #f3f0fd;
+  color: #4c2fb8;
+}
+
+.state[data-tone="done"] {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a849c;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.remove:focus-visible {
+  outline: 2px solid #ff782d;
+  outline-offset: 2px;
+}
+
+.prices {
+  width: 100%;
+  margin: 4px 0 8px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.prices th,
+.prices td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #f1eef9;
+  text-align: left;
+}
+
+.prices thead th {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #625d75;
+}
+
+.prices tbody th {
+  font-weight: 700;
+  color: #1c1a2a;
+}
+
+.prices td:nth-child(2) {
+  color: #625d75;
+  font-variant-numeric: tabular-nums;
+}
+
+.priceInput {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 220px;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid #e5dff7;
+  border-radius: 8px;
+  background: #fff;
+  color: #625d75;
+}
+
+.priceInput:focus-within {
+  border-color: #6534f5;
+  box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.12);
+}
+
+.priceInput input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: #1c1a2a;
+  font-variant-numeric: tabular-nums;
+}
+
+.priceInput input:focus {
+  outline: none;
+}
+
+.off {
+  flex: none;
+  font-size: 11px;
+  font-weight: 800;
+  color: #047857;
+}
+
+.off[data-up="true"] {
+  color: #b45309;
+}
+
+.problems {
+  margin: 10px 0 0;
+  padding: 10px 12px 10px 28px;
+  border-radius: 10px;
+  background: #fee2e2;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.success {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  font-size: 13px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.unsaved {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+@media (max-width: 640px) {
+  .phase {
+    padding: 12px;
+  }
+
+  .prices thead {
+    display: none;
+  }
+
+  .prices tr {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1eef9;
+  }
+
+  .prices th,
+  .prices td {
+    padding: 0;
+    border: none;
+  }
+
+  .prices td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .priceInput {
+    max-width: none;
+  }
+}

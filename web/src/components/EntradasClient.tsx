@@ -23,6 +23,7 @@ export default function EntradasClient({
   slug,
   onSale,
   closedReason,
+  phaseNotice = null,
   maxPerOrder,
   initialTier,
   initialQty,
@@ -35,6 +36,7 @@ export default function EntradasClient({
   slug: string;
   onSale: boolean;
   closedReason: string | null;
+  phaseNotice?: string | null;
   maxPerOrder: number;
   initialTier: string | null;
   initialQty: number;
@@ -194,6 +196,11 @@ export default function EntradasClient({
               <h2>Selecciona tu sector</h2>
               <span>Máximo {maxPerOrder} entradas por transacción para este evento.</span>
             </div>
+            {phaseNotice && !closedReason && (
+              <p className={styles.phaseNotice} role="status">
+                {phaseNotice}
+              </p>
+            )}
             {closedReason && (
               <p className={styles.closedNotice} role="status">
                 {closedReason}
@@ -209,7 +216,7 @@ export default function EntradasClient({
                       <div>
                         <div className={styles.sectorNameRow}>
                           <span className={styles.sectorName}>{tier.name}</span>
-                          {tier.badge && <span className={styles.sectorBadge}>{tier.badge}</span>}
+                          {tier.badge && <span className={styles.sectorBadge} data-presale={Boolean(tier.normalPrice)}>{tier.badge}</span>}
                         </div>
                         <span className={tier.status !== "disponible" ? styles.statusLow : styles.statusOk}>
                           {tier.status === "agotado" ? "Agotado" : tier.status === "pocas" ? "Pocas unidades" : "Disponible"}
@@ -217,6 +224,11 @@ export default function EntradasClient({
                       </div>
                     </div>
                     <div className={styles.sectorPrice}>
+                      {tier.normalPrice && (
+                        <s className={styles.normalPrice} aria-label={`Precio normal ${currency(tier.normalPrice)}`}>
+                          {currency(tier.normalPrice)}
+                        </s>
+                      )}
                       <span>
                         {tier.priceMax && <small>Desde</small>}
                         {currency(tier.price)}

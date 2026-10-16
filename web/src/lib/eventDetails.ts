@@ -1,3 +1,4 @@
+import { chileParts } from "@/lib/chile-time";
 export type TicketTier = {
   id: string;
   name: string;
@@ -5,6 +6,8 @@ export type TicketTier = {
   price: number;
   /** Highest seat price when the sector has price zones; price is then the lowest ("desde"). */
   priceMax?: number;
+  /** Normal price while a presale is on: shown struck through next to price. */
+  normalPrice?: number;
   status: "disponible" | "pocas" | "agotado";
   color: string;
   numbered: boolean;
@@ -47,7 +50,7 @@ const primaryBadgeByStatus: Record<DefaultDetailSource["status"], string> = {
 };
 
 export function defaultEventDetail(event: DefaultDetailSource): EventDetail {
-  const date = new Date(event.event_date);
+  const date = chileParts(event.event_date);
   const pad = (n: number) => String(n).padStart(2, "0");
   const available = event.capacity - event.sold;
   const tierStatus = event.status === "casi-agotado" || available <= event.capacity * 0.1 ? "pocas" : "disponible";
@@ -57,9 +60,9 @@ export function defaultEventDetail(event: DefaultDetailSource): EventDetail {
     breadcrumbCategory: "Eventos",
     primaryBadge: primaryBadgeByStatus[event.status],
     badges: [],
-    dateLabel: `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`,
-    dateSub: WEEKDAYS[date.getDay()],
-    doorsOpen: `${pad(date.getHours())}:${pad(date.getMinutes())} hrs`,
+    dateLabel: `${date.day} ${MONTHS[date.month]} ${date.year}`,
+    dateSub: WEEKDAYS[date.weekday],
+    doorsOpen: `${pad(date.hour)}:${pad(date.minute)} hrs`,
     doorsClose: "Por confirmar",
     aboutLead: event.subtitle || "Sobre este evento",
     aboutText: [event.description || "Pronto compartiremos más detalles sobre este evento."],

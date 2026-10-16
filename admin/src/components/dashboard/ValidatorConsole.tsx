@@ -8,7 +8,7 @@ import styles from "./ValidatorConsole.module.css";
 const cameraText: Record<ScannerState, string> = {
   idle: "Activa la cámara para escanear",
   starting: "Abriendo la cámara…",
-  scanning: "Alinea el código QR en el visor",
+  scanning: "Centra el QR en el visor, a unos 25 cm del teléfono",
   denied: "El navegador bloqueó la cámara. Permítela en la configuración del sitio o usa el ingreso manual.",
   unavailable: "Este dispositivo no tiene cámara disponible. Usa un lector o el ingreso manual.",
 };
@@ -36,7 +36,8 @@ export default function ValidatorConsole({
   const [manualCode, setManualCode] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const camera = useQrScanner(videoRef, device === "camera" && cameraOn && !disabled, busy, onCode);
+  const scanner = useQrScanner(videoRef, device === "camera" && cameraOn && !disabled, busy, onCode);
+  const camera = scanner.state;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -92,6 +93,21 @@ export default function ValidatorConsole({
           <p className={styles.viewfinderLabel} aria-live="polite">
             {busy ? "Validando…" : cameraText[camera]}
           </p>
+          {camera === "scanning" && scanner.zoomRange && (
+            <label className={styles.zoomField}>
+              <span>Zoom {scanner.zoom.toLocaleString("es-CL", { maximumFractionDigits: 1 })}×</span>
+              <input
+                type="range"
+                min={scanner.zoomRange.min}
+                max={scanner.zoomRange.max}
+                step={scanner.zoomRange.step}
+                value={scanner.zoom}
+                onChange={(e) => scanner.setZoom(Number(e.target.value))}
+                aria-label="Zoom de la cámara"
+              />
+            </label>
+          )}
+          {camera === "scanning" && <p className={styles.cameraTip}>Si se ve borroso, aleja un poco el teléfono: la cámara no enfoca muy de cerca.</p>}
           {!cameraOn ? (
             <button type="button" className={styles.cameraButton} onClick={() => setCameraOn(true)} disabled={disabled}>
               <MaterialIcon name="videocam" className={styles.validateIcon} />

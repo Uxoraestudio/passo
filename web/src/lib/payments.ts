@@ -24,6 +24,7 @@ const orderErrors: Record<string, { status: number; message: string }> = {
   SEAT_INVALID: { status: 400, message: "Uno de los asientos no existe en este sector." },
   SEAT_TAKEN: { status: 409, message: "Alguien acaba de tomar uno de tus asientos. Elige otro." },
   SOLD_OUT: { status: 409, message: "No quedan suficientes entradas en ese sector." },
+  PHASE_QUOTA: { status: 409, message: "No quedan suficientes entradas en esta preventa. Elige menos entradas o actualiza la página." },
   ORDER_NOT_FOUND: { status: 404, message: "No encontramos tu reserva." },
   ORDER_EXPIRED: { status: 409, message: "Se acabó el tiempo de tu reserva. Vuelve a elegir tus entradas." },
   PAYMENT_ALREADY_STARTED: { status: 409, message: "Ya iniciaste el pago de esta compra. Revisa su estado antes de volver a pagar." },

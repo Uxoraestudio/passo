@@ -9,6 +9,7 @@ import { documentError, formatDocument, cleanDocument } from "@/lib/document";
 import CheckoutTopBar from "./CheckoutTopBar";
 import OrderSummary, { HelpCard } from "./OrderSummary";
 import styles from "./Checkout.module.css";
+import { chileToday } from "@/lib/chile-time";
 
 type Person = { firstName: string; lastName: string; document: string };
 type Attendee = Person & { birthDate: string };
@@ -21,7 +22,8 @@ const SAVE_ERRORS: Record<string, string> = {
   DETAILS_INVALID: "Revisa los datos: hay campos incompletos o no válidos.",
 };
 
-const TODAY = new Date().toISOString().slice(0, 10);
+// Birth dates can be at most today, in Chile.
+const TODAY = chileToday();
 
 function personErrors(p: Person) {
   return {
