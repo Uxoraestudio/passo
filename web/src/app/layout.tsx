@@ -16,10 +16,19 @@ const caveat = Caveat({
   weight: ["700"],
 });
 
-export const metadata: Metadata = {
-  title: "Passo",
-  description: "Tu lugar en lo extraordinario. Entradas digitales, seguras y al instante.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  // The favicon and isotype uploaded in the admin (Apariencia); /favicon.ico in public/ is the fallback.
+  const icon = [
+    ...(settings.logoFaviconUrl ? [{ url: settings.logoFaviconUrl, type: "image/png", sizes: "32x32" }] : []),
+    ...(settings.logoIsotypeUrl ? [{ url: settings.logoIsotypeUrl, type: "image/svg+xml", sizes: "any" }] : []),
+  ];
+  return {
+    title: "Aforiq",
+    description: "Tu lugar en lo extraordinario. Entradas digitales, seguras y al instante.",
+    icons: icon.length ? { icon, shortcut: settings.logoFaviconUrl ?? undefined } : { icon: "/favicon.ico" },
+  };
+}
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const settings = await getSiteSettings();

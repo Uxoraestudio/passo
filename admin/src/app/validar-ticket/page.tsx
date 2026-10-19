@@ -6,7 +6,7 @@ import ValidationContent from "@/components/dashboard/ValidationContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Validación QR | Passo Admin",
+  title: "Validación QR | Aforiq Admin",
   description: "Control de acceso y validación QR en vivo, con desglose de puertas, consola del validador y registro de incidencias.",
 };
 

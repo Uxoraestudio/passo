@@ -17,7 +17,7 @@ function parsePrice(price: string): number {
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoPage("eventos");
-  const title = seo.metaTitle || "Eventos | Passo";
+  const title = seo.metaTitle || "Eventos | Aforiq";
   const description = seo.metaDescription || "Conciertos, deportes, teatro y mucho más, en un solo lugar.";
 
   return {

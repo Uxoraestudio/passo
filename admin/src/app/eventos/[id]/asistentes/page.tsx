@@ -6,7 +6,7 @@ import EventAttendees from "@/components/dashboard/EventAttendees";
 import styles from "../../../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Lista de asistentes | Passo Admin",
+  title: "Lista de asistentes | Aforiq Admin",
   description: "Asistentes del evento con el detalle de su compra, cortesías y estado de validación.",
 };
 

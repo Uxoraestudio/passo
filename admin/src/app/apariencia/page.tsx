@@ -6,7 +6,7 @@ import AppearanceContent from "@/components/dashboard/AppearanceContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Apariencia | Passo Admin",
+  title: "Apariencia | Aforiq Admin",
   description: "Administra los logos y colores de tu plataforma.",
 };
 

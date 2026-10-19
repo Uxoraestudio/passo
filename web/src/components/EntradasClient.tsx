@@ -348,7 +348,7 @@ export default function EntradasClient({
               <path d="M12 3l7 3v6c0 5-3.5 7.5-7 9-3.5-1.5-7-4-7-9V6l7-3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
             </svg>
             <div>
-              <p>Garantía oficial Passo</p>
+              <p>Garantía oficial Aforiq</p>
               <span>Tickets 100% auténticos con código QR dinámico antifraude, intransferible hasta el día del evento.</span>
             </div>
           </div>

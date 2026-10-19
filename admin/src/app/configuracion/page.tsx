@@ -6,7 +6,7 @@ import ConfigContent from "@/components/dashboard/ConfigContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Configuración | Passo Admin",
+  title: "Configuración | Aforiq Admin",
   description: "Configuración de la productora: perfil corporativo, pasarelas de pago, políticas de seguridad y liquidaciones bancarias.",
 };
 

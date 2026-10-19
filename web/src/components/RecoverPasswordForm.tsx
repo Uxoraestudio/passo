@@ -78,7 +78,7 @@ export default function RecoverPasswordForm() {
               <div>
                 <p className={recover.noticeTitle}>¡Listo!</p>
                 <p className={recover.noticeText}>
-                  Si <strong>{email.trim()}</strong> tiene una cuenta en Passo, te enviamos un enlace para restablecer tu contraseña.
+                  Si <strong>{email.trim()}</strong> tiene una cuenta en Aforiq, te enviamos un enlace para restablecer tu contraseña.
                   Revisa también tu carpeta de spam.
                 </p>
               </div>

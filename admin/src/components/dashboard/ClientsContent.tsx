@@ -88,7 +88,7 @@ export default function ClientsContent() {
       <div className={pageStyles.heroRow}>
         <div>
           <h1 className={pageStyles.pageTitle}>Clientes</h1>
-          <p className={pageStyles.pageSubtitle}>Personas registradas en Passo y su historial de compras.</p>
+          <p className={pageStyles.pageSubtitle}>Personas registradas en Aforiq y su historial de compras.</p>
         </div>
         <div className={pageStyles.heroActions}>
           <button type="button" className={tableStyles.exportButton} onClick={exportCsv} disabled={!clients || filtered.length === 0}>

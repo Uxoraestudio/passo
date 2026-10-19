@@ -18,9 +18,9 @@ export default async function LoginHeader({ next = null, hint }: { next?: string
         <Link href="/" className={styles.logo}>
           {settings.logoPrimaryUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={settings.logoPrimaryUrl} alt="Passo" className={styles.logoImage} />
+            <img src={settings.logoPrimaryUrl} alt="Aforiq" className={styles.logoImage} />
           ) : (
-            "passo"
+            "aforiq"
           )}
         </Link>
         <p className={styles.signupHint}>

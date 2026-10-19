@@ -46,7 +46,7 @@ export default function AppearancePreview({ colors }: { colors: Colors }) {
       <div className={styles.browserFrame} data-device={device}>
         <div className={styles.miniHeader}>
           <span className={styles.miniLogo} style={{ color: active.textPrimary }}>
-            passo
+            aforiq
           </span>
           {device === "desktop" && (
             <nav className={styles.miniNav}>

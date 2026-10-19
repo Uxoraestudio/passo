@@ -16,7 +16,7 @@ export default async function ProximamentePage({ searchParams }: PageProps<"/pro
         <h1 className={styles.title}>{title || "Esta sección"} está en camino</h1>
         <p className={styles.description}>
           Todavía estamos construyendo esta página. Mientras tanto, sigue explorando los eventos
-          disponibles en Passo.
+          disponibles en Aforiq.
         </p>
         <Link href="/eventos" className={styles.action}>
           Ver eventos

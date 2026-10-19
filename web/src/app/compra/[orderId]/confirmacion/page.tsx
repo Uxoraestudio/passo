@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/auth-redirect";
 import { getCheckoutOrder } from "@/lib/checkout-order";
 
 export const metadata: Metadata = {
-  title: "Confirma tu orden | Passo",
+  title: "Confirma tu orden | Aforiq",
   robots: { index: false },
 };
 

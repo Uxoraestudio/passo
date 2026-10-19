@@ -53,9 +53,9 @@ export default async function Footer() {
             <Link href="/" className={styles.logo}>
               {darkLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={darkLogo} alt="Passo" className={styles.logoImage} />
+                <img src={darkLogo} alt="Aforiq" className={styles.logoImage} />
               ) : (
-                "passo"
+                "aforiq"
               )}
             </Link>
             <p className={styles.tagline}>
@@ -122,7 +122,7 @@ export default async function Footer() {
           </div>
         </div>
         <div className={styles.bottom}>
-          <p className={styles.copyright}>© 2025 PASSO. Todos los derechos reservados.</p>
+          <p className={styles.copyright}>© {new Date().getFullYear()} AFORIQ. Todos los derechos reservados.</p>
           <p className={styles.signature}>La vida se vive aquí.</p>
         </div>
       </div>

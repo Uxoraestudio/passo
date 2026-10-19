@@ -6,7 +6,7 @@ import RolesContent from "@/components/dashboard/RolesContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Roles | Passo Admin",
+  title: "Roles | Aforiq Admin",
   description: "Equipo, roles y permisos: gestión de accesos, matriz granular de permisos por módulo y auditoría de miembros del equipo.",
 };
 

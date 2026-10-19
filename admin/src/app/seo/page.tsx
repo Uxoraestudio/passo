@@ -6,7 +6,7 @@ import SeoContent from "@/components/dashboard/SeoContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "SEO | Passo Admin",
+  title: "SEO | Aforiq Admin",
   description: "Administra el SEO de las páginas principales del sitio.",
 };
 

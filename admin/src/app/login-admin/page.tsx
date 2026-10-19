@@ -4,8 +4,8 @@ import AdminLoginForm from "@/components/AdminLoginForm";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Inicia sesión | Passo Admin",
-  description: "Ingresa tus credenciales corporativas para gestionar la plataforma Passo.",
+  title: "Inicia sesión | Aforiq Admin",
+  description: "Ingresa tus credenciales corporativas para gestionar la plataforma Aforiq.",
 };
 
 export default function LoginAdminPage() {

@@ -6,7 +6,7 @@ import OverviewContent from "@/components/dashboard/OverviewContent";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Resumen general | Passo Admin",
+  title: "Resumen general | Aforiq Admin",
   description: "Ventas, eventos y clientes de tu plataforma, en tiempo real.",
 };
 

@@ -208,7 +208,7 @@ export async function fetchTeam(): Promise<{ members: TeamMember[]; roles: Staff
 }
 
 const memberErrors: Record<string, string> = {
-  USER_NOT_FOUND: "No existe una cuenta con ese correo. La persona debe registrarse primero en Passo.",
+  USER_NOT_FOUND: "No existe una cuenta con ese correo. La persona debe registrarse primero en Aforiq.",
   ADMIN_ONLY: "Solo un administrador puede otorgar o quitar el nivel de administrador.",
   LAST_ADMIN: "Debe quedar al menos un administrador.",
   ROLE_NOT_FOUND: "Ese rol ya no existe. Recarga la página.",

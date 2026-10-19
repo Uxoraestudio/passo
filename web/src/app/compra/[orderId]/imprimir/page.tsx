@@ -8,7 +8,7 @@ import PrintNow from "./PrintNow";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Tus entradas | Passo",
+  title: "Tus entradas | Aforiq",
   robots: { index: false },
 };
 

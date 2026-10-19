@@ -13,7 +13,7 @@ import { loadOrderTickets } from "@/lib/order-tickets";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Estado de tu compra | Passo",
+  title: "Estado de tu compra | Aforiq",
   robots: { index: false },
 };
 

@@ -6,7 +6,7 @@ import VenueMapEditor from "@/components/venue-editor/VenueMapEditor";
 import styles from "../../../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Plano del recinto | Passo Admin",
+  title: "Plano del recinto | Aforiq Admin",
   description: "Editor del plano: sectores, escenario, accesos y escala del recinto.",
 };
 

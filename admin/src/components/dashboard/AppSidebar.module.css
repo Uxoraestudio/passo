@@ -205,3 +205,11 @@
     transition: none;
   }
 }
+
+/* Logo uploaded in Apariencia (version for dark backgrounds). */
+.logoImage {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: 100%;
+}

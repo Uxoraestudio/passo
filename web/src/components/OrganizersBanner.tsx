@@ -47,7 +47,7 @@ export default function OrganizersBanner() {
           <div className={styles.hoodieBox}>
             <Image
               src="/images/organizers-hoodie.jpg"
-              alt="Hoodie con la marca Passo"
+              alt="Asistente de espaldas en un concierto"
               fill
               sizes="256px"
               className={styles.hoodieImage}

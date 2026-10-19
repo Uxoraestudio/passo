@@ -36,9 +36,9 @@ export default function HeaderInner({
             <Link href="/" className={styles.logo}>
               {logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt="Passo" className={styles.logoImage} />
+                <img src={logoUrl} alt="Aforiq" className={styles.logoImage} />
               ) : (
-                "passo"
+                "aforiq"
               )}
             </Link>
             <nav className={styles.nav}>

@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import styles from "../login-usuario/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Recupera tu contraseña | Passo",
+  title: "Recupera tu contraseña | Aforiq",
   description: "Te enviaremos un enlace para que puedas crear una nueva contraseña.",
   robots: { index: false },
 };

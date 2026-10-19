@@ -349,7 +349,7 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
                 <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span>
-                <strong>Compra oficial Passo</strong>
+                <strong>Compra oficial Aforiq</strong>
                 Cada entrada lleva un código QR único a nombre de su asistente.
               </span>
             </p>

@@ -6,7 +6,7 @@ import VenuesContent from "@/components/venue-editor/VenuesContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Recintos | Passo Admin",
+  title: "Recintos | Aforiq Admin",
   description: "Recintos y sus planos de sectores y asientos, reutilizables en cada evento.",
 };
 

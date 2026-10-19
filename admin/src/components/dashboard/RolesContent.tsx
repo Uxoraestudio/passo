@@ -235,7 +235,7 @@ export default function RolesContent() {
               Equipo con acceso al panel
             </h3>
             <p className={tableStyles.cardSubtitle}>
-              {members.length} {members.length === 1 ? "persona" : "personas"}. Para sumar a alguien, primero debe tener una cuenta en Passo.
+              {members.length} {members.length === 1 ? "persona" : "personas"}. Para sumar a alguien, primero debe tener una cuenta en Aforiq.
             </p>
             <div className={tableStyles.tableWrap}>
               <table className={tableStyles.table}>
@@ -451,7 +451,7 @@ export default function RolesContent() {
         ]}
       >
         <div className={styles.form}>
-          <p>La persona debe haberse registrado antes en Passo con este correo.</p>
+          <p>La persona debe haberse registrado antes en Aforiq con este correo.</p>
           <label className={styles.field}>
             <span>Correo de la cuenta</span>
             <input data-autofocus type="email" value={newEmail} placeholder="nombre@empresa.cl" onChange={(e) => setNewEmail(e.target.value)} />

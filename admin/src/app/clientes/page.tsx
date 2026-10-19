@@ -6,7 +6,7 @@ import ClientsContent from "@/components/dashboard/ClientsContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Clientes | Passo Admin",
+  title: "Clientes | Aforiq Admin",
   description: "Directorio de clientes y asistentes: base de compradores, segmentación, comportamiento de compra y ficha detallada por cliente.",
 };
 

@@ -44,3 +44,9 @@
     display: none;
   }
 }
+
+.logoImage {
+  display: block;
+  width: auto;
+  height: 28px;
+}

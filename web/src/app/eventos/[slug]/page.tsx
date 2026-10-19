@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: PageProps<"/eventos/[slug]">)
   if (!row) return {};
 
   const template = await getSeoPage("evento_detalle");
-  const title = `${row.title} | Passo`;
-  const description = row.subtitle || row.description || template.metaDescription || "Compra tus entradas en Passo.";
+  const title = `${row.title} | Aforiq`;
+  const description = row.subtitle || row.description || template.metaDescription || "Compra tus entradas en Aforiq.";
   const image = row.banner_image_url || row.image_url || template.ogImageUrl;
 
   return {
@@ -52,7 +52,7 @@ const schedule = [
 ];
 
 const lollapaloozaPolicies = [
-  { title: "E-Ticket Dinámico Passo", text: "Tu código QR se sincroniza y rota cada 30 segundos en la app oficial. Blindaje total contra capturas o fraudes." },
+  { title: "E-Ticket Dinámico Aforiq", text: "Tu código QR se sincroniza y rota cada 30 segundos en la app oficial. Blindaje total contra capturas o fraudes." },
   { title: "Pulsera Inteligente Cashless", text: "Medio oficial de pago dentro del parque. Carga saldo anticipado y recibe 10% adicional de bonificación." },
   { title: "Nominación Obligatoria", text: "Cada entrada debe estar nominada con RUT o Pasaporte antes del 1 de marzo. 1 cambio de titular gratis hasta 72h antes." },
   { title: "Garantía Oficial de Devolución", text: "Protección respaldada por la Ley del Consumidor ante suspensión o reprogramación del evento." },

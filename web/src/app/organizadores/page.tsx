@@ -7,8 +7,8 @@ import styles from "./page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoPage("organizadores");
-  const title = seo.metaTitle || "Organizadores | Passo";
-  const description = seo.metaDescription || "Publica tu evento en Passo y llega a más personas.";
+  const title = seo.metaTitle || "Organizadores | Aforiq";
+  const description = seo.metaDescription || "Publica tu evento en Aforiq y llega a más personas.";
 
   return {
     title,
@@ -28,7 +28,7 @@ export default function OrganizadoresPage() {
       <main className={styles.main}>
         <span className={styles.eyebrow}>Para organizadores</span>
         <h1 className={styles.title}>
-          Publica tu evento en <span className={styles.accent}>Passo</span>
+          Publica tu evento en <span className={styles.accent}>Aforiq</span>
         </h1>
         <p className={styles.description}>
           Estamos preparando el flujo de autoservicio para que las productoras puedan crear y
@@ -36,8 +36,8 @@ export default function OrganizadoresPage() {
           publicar tu evento manualmente.
         </p>
         <div className={styles.actions}>
-          <a href="mailto:organizadores@passo.cl" className={styles.primaryAction}>
-            Escribir a organizadores@passo.cl
+          <a href="mailto:organizadores@aforiq.cl" className={styles.primaryAction}>
+            Escribir a organizadores@aforiq.cl
           </a>
           <Link href="/eventos" className={styles.secondaryAction}>
             Ver eventos publicados

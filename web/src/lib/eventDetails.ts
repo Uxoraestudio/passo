@@ -243,7 +243,7 @@ export const eventDetails: Record<string, EventDetail> = {
 };
 
 export const genericPolicies = [
-  { title: "E-Ticket Digital Passo", text: "Tu código QR nominativo llega a tu correo y a la app oficial. Solo debes mostrarlo el día del evento, sin necesidad de imprimir nada." },
+  { title: "E-Ticket Digital Aforiq", text: "Tu código QR nominativo llega a tu correo y a la app oficial. Solo debes mostrarlo el día del evento, sin necesidad de imprimir nada." },
   { title: "Nominación Obligatoria", text: "Cada entrada debe estar nominada con RUT o Pasaporte. 1 cambio de titular gratis hasta 72h antes del evento." },
   { title: "Garantía Oficial de Devolución", text: "Protección respaldada por la Ley del Consumidor ante suspensión o reprogramación del evento." },
 ];

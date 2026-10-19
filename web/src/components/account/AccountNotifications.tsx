@@ -11,7 +11,7 @@ const DEFAULT_PREFS: NotificationPrefs = { eventReminders: true, presales: true,
 const OPTIONS: { key: keyof NotificationPrefs; title: string; text: string }[] = [
   { key: "eventReminders", title: "Recordatorios de mis eventos", text: "Te avisamos el día antes con la hora de apertura y cómo llegar." },
   { key: "presales", title: "Preventas y lanzamientos", text: "Entérate primero cuando salen a la venta los eventos que te interesan." },
-  { key: "newsletter", title: "Novedades de Passo", text: "Un resumen ocasional con lo mejor de la cartelera." },
+  { key: "newsletter", title: "Novedades de Aforiq", text: "Un resumen ocasional con lo mejor de la cartelera." },
 ];
 
 export default function AccountNotifications({ initialPrefs }: { initialPrefs: NotificationPrefs | null }) {

@@ -6,7 +6,7 @@ import SalesContent from "@/components/dashboard/SalesContent";
 import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Ventas y reportes | Passo Admin",
+  title: "Ventas y reportes | Aforiq Admin",
   description: "Ingresos, entradas vendidas y órdenes pagadas, con exportación a CSV.",
 };
 

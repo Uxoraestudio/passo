@@ -14,7 +14,7 @@ export type SeoPage = {
 };
 
 export const seoPageOrder: { pageKey: SeoPageKey; label: string; description: string }[] = [
-  { pageKey: "home", label: "Inicio", description: "Portada del sitio (passo.cl)" },
+  { pageKey: "home", label: "Inicio", description: "Portada del sitio (aforiq.cl)" },
   { pageKey: "eventos", label: "Listado de eventos", description: "Página /eventos" },
   { pageKey: "evento_detalle", label: "Detalle de evento (plantilla)", description: "Valores de respaldo para eventos sin imagen o descripción propia" },
   { pageKey: "login", label: "Iniciar sesión", description: "Página de login de usuarios" },

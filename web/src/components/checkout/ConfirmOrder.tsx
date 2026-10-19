@@ -147,7 +147,7 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
                 <rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.8" />
                 <path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
               </svg>
-              Te llevaremos al portal seguro de Flow para completar el pago. Passo no almacena los datos de tu tarjeta.
+              Te llevaremos al portal seguro de Flow para completar el pago. Aforiq no almacena los datos de tu tarjeta.
             </p>
           </section>
 

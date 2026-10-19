@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandLogo } from "@/components/BrandProvider";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -76,7 +77,7 @@ export default function AppSidebar() {
         </svg>
       </button>
       <div className={styles.branding}>
-        <span className={styles.logo}>passo</span>
+        <BrandLogo className={styles.logo} imageClassName={styles.logoImage} />
         <p className={styles.tagline}>
           TU LUGAR EN LO
           <br />

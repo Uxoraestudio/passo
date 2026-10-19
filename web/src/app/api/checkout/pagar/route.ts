@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   try {
     const payment = await createFlowPayment({
       commerceOrder: order.code,
-      subject: `Entradas ${event?.title ?? "Passo"} · ${order.code}`,
+      subject: `Entradas ${event?.title ?? "Aforiq"} · ${order.code}`,
       amount: order.total,
       email: order.buyer_email,
       urlConfirmation: `${siteUrl}/api/flow/confirmacion/`,

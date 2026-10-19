@@ -1,12 +1,24 @@
 import type { Metadata } from "next";
+import { BrandProvider } from "@/components/BrandProvider";
+import { getBrand } from "@/lib/brand";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Passo Admin",
-  description: "Panel administrativo de Passo.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  // The favicon and isotype uploaded in Apariencia; /favicon.ico in public/ is the fallback.
+  const icon = [
+    ...(brand.favicon ? [{ url: brand.favicon, type: "image/png", sizes: "32x32" }] : []),
+    ...(brand.isotype ? [{ url: brand.isotype, type: "image/svg+xml", sizes: "any" }] : []),
+  ];
+  return {
+    title: "Aforiq Admin",
+    description: "Panel administrativo de Aforiq.",
+    icons: icon.length ? { icon, shortcut: brand.favicon ?? undefined } : { icon: "/favicon.ico" },
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const brand = await getBrand();
   return (
     <html lang="es">
       <head>
@@ -21,7 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <BrandProvider brand={brand}>{children}</BrandProvider>
+      </body>
     </html>
   );
 }

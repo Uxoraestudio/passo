@@ -6,7 +6,7 @@ import EventSeatsEditor from "@/components/event-seats/EventSeatsEditor";
 import styles from "../../../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Asientos y precios | Passo Admin",
+  title: "Asientos y precios | Aforiq Admin",
   description: "Zonas de precio, asientos bloqueados y accesibles del evento.",
 };
 

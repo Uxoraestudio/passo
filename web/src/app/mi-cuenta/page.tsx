@@ -14,7 +14,7 @@ import { accountDisplayName, initialsOf } from "@/lib/account-user";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Mi cuenta | Passo",
+  title: "Mi cuenta | Aforiq",
   robots: { index: false },
 };
 

@@ -9,8 +9,8 @@ import styles from "../login-usuario/page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoPage("registro");
-  const title = seo.metaTitle || "Crea tu cuenta | Passo";
-  const description = seo.metaDescription || "Regístrate en Passo para comprar entradas a tu próxima gran experiencia.";
+  const title = seo.metaTitle || "Crea tu cuenta | Aforiq";
+  const description = seo.metaDescription || "Regístrate en Aforiq para comprar entradas a tu próxima gran experiencia.";
 
   return {
     title,

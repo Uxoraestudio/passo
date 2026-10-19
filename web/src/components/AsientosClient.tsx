@@ -444,7 +444,7 @@ export default function AsientosClient({
             </span>
             <div>
               <p>Compra oficial y segura</p>
-              <span>Tus entradas se emiten directamente en tu cuenta Passo.</span>
+              <span>Tus entradas se emiten directamente en tu cuenta Aforiq.</span>
             </div>
           </div>
         </aside>

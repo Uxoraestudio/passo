@@ -11,7 +11,7 @@ import { getSeoPage } from "@/lib/seo-settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoPage("home");
-  const title = seo.metaTitle || "Passo";
+  const title = seo.metaTitle || "Aforiq";
   const description = seo.metaDescription || "Tu lugar en lo extraordinario. Entradas digitales, seguras y al instante.";
 
   return {

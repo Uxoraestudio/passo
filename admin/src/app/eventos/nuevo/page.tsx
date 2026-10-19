@@ -6,7 +6,7 @@ import EventFormPage from "@/components/dashboard/EventFormPage";
 import styles from "../../inicio/page.module.css";
 
 export const metadata: Metadata = {
-  title: "Nuevo evento | Passo Admin",
+  title: "Nuevo evento | Aforiq Admin",
   description: "Completa la información para crear y publicar tu evento.",
 };
 
