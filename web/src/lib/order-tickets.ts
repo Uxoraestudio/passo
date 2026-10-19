@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { describeSeat } from "@/lib/seatMap";
 import { loadSeatParts } from "@/lib/seat-details";
@@ -17,9 +18,13 @@ export type IssuedTicket = {
   status: "valid" | "used" | "void";
 };
 
-/** Tickets of one order (RLS limits them to the buyer and staff), seats in order. */
-export async function loadOrderTickets(orderId: string): Promise<IssuedTicket[]> {
-  const supabase = await createClient();
+/**
+ * Tickets of one order, seats in order (the same order as the short codes
+ * ORDER-01, ORDER-02…). With the buyer's client RLS limits them to the buyer
+ * and staff; the confirmation e-mail passes the service-role client.
+ */
+export async function loadOrderTickets(orderId: string, client?: SupabaseClient): Promise<IssuedTicket[]> {
+  const supabase = client ?? (await createClient());
   const { data } = await supabase
     .from("tickets")
     .select("id, code, sector_id, sector_name, seat_label, holder_name, status")

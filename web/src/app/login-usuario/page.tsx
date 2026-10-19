@@ -24,14 +24,15 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LoginUsuarioPage({ searchParams }: PageProps<"/login-usuario">) {
-  const next = safeNextPath((await searchParams)?.next);
+  const params = await searchParams;
+  const next = safeNextPath(params?.next);
 
   return (
     <>
       <LoginHeader next={next} />
       <main className={styles.main}>
         <div className={styles.grid}>
-          <LoginForm next={next} />
+          <LoginForm next={next} invalidLink={params?.enlace === "invalido"} />
           <LoginBrandPanel />
         </div>
       </main>

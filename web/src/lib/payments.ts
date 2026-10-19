@@ -1,4 +1,6 @@
+import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendOrderConfirmation } from "@/lib/order-email";
 import { FLOW_STATUS, getFlowPaymentStatus } from "@/lib/flow";
 
 export type OrderStatus = "pending" | "paid" | "rejected" | "cancelled" | "expired" | "refund_required";
@@ -99,6 +101,12 @@ export async function syncFlowPayment(token: string, source: "confirmation" | "r
     });
     if (error) throw error;
     status = data as OrderStatus;
+  }
+
+  if (status === "paid") {
+    // After the response: the buyer's redirect and Flow's notice don't wait for the mail.
+    const orderId = order.id as string;
+    after(() => sendOrderConfirmation(orderId));
   }
 
   return { orderId: order.id as string, status };

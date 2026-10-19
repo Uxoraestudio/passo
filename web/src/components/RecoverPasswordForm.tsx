@@ -17,7 +17,7 @@ const mailIcon = (
   </svg>
 );
 
-export default function RecoverPasswordForm() {
+export default function RecoverPasswordForm({ invalidLink = false }: { invalidLink?: boolean }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
@@ -68,6 +68,9 @@ export default function RecoverPasswordForm() {
         </button>
 
         <div role="status" aria-live="polite">
+          {invalidLink && status === "idle" && (
+            <p className={styles.error}>Ese enlace ya no es válido: expiró o ya se usó. Pide uno nuevo aquí.</p>
+          )}
           {status === "sent" && (
             <div className={recover.notice} data-tone="success">
               <span className={recover.noticeIcon} aria-hidden="true">

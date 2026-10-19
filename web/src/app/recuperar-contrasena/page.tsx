@@ -23,13 +23,14 @@ const brandSlogan = (
   </>
 );
 
-export default function RecuperarContrasenaPage() {
+export default async function RecuperarContrasenaPage({ searchParams }: PageProps<"/recuperar-contrasena">) {
+  const invalidLink = (await searchParams)?.enlace === "invalido";
   return (
     <>
       <LoginHeader hint={{ text: "¿Recordaste tu contraseña?", linkLabel: "Inicia sesión", href: "/login-usuario/" }} />
       <main className={styles.main}>
         <div className={styles.grid}>
-          <RecoverPasswordForm />
+          <RecoverPasswordForm invalidLink={invalidLink} />
           <LoginBrandPanel
             handwritten={
               <>

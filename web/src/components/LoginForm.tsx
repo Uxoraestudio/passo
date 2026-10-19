@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./LoginForm.module.css";
 
-export default function LoginForm({ next }: { next: string | null }) {
+export default function LoginForm({ next, invalidLink = false }: { next: string | null; invalidLink?: boolean }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -24,7 +24,11 @@ export default function LoginForm({ next }: { next: string | null }) {
 
     setSubmitting(false);
     if (signInError) {
-      setError("Correo o contraseña incorrectos.");
+      setError(
+        signInError.code === "email_not_confirmed"
+          ? "Aún no confirmas tu cuenta. Abre el enlace que te enviamos por correo (revisa también spam)."
+          : "Correo o contraseña incorrectos."
+      );
       return;
     }
 
@@ -139,7 +143,11 @@ export default function LoginForm({ next }: { next: string | null }) {
           </a>
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error ? (
+          <p className={styles.error}>{error}</p>
+        ) : (
+          invalidLink && <p className={styles.error}>Ese enlace ya no es válido: expiró o ya se usó. Si ya confirmaste tu cuenta, inicia sesión aquí.</p>
+        )}
 
         <button type="submit" className={styles.submit} disabled={submitting}>
           <span>{submitting ? "Ingresando..." : "Iniciar sesión"}</span>

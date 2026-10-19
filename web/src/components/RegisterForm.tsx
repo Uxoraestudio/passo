@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./LoginForm.module.css";
+import recover from "./RecoverPasswordForm.module.css";
 
 export default function RegisterForm({ next }: { next: string | null }) {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function RegisterForm({ next }: { next: string | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  // Set when the account was created but must be confirmed from the e-mail first.
+  const [pendingEmail, setPendingEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -20,10 +23,14 @@ export default function RegisterForm({ next }: { next: string | null }) {
     setError("");
 
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: {
+        data: { full_name: fullName },
+        // Where the confirmation link lands; /auth/confirm checks it on the server.
+        emailRedirectTo: `${window.location.origin}/auth/confirm/?next=${encodeURIComponent(next ?? "/mi-cuenta/")}`,
+      },
     });
 
     setSubmitting(false);
@@ -32,9 +39,44 @@ export default function RegisterForm({ next }: { next: string | null }) {
       return;
     }
 
+    if (!data.session) {
+      setPendingEmail(email.trim());
+      return;
+    }
     router.push(next ?? "/mi-cuenta/");
     router.refresh();
   };
+
+  if (pendingEmail) {
+    return (
+      <div className={styles.column}>
+        <div className={styles.header}>
+          <h1 className={styles.heading}>
+            Revisa tu
+            <br />
+            <span className={styles.accent}>correo</span>
+          </h1>
+        </div>
+        <div className={recover.notice} data-tone="success" role="status">
+          <span className={recover.noticeIcon} aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="none">
+              <path d="m4 8.3 2.6 2.6L12 5.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <div>
+            <p className={recover.noticeTitle}>Confirma tu cuenta</p>
+            <p className={recover.noticeText}>
+              Te enviamos un enlace a <strong>{pendingEmail}</strong>. Ábrelo para activar tu cuenta y entrar. Si no lo ves en unos minutos,
+              revisa la carpeta de spam.
+            </p>
+          </div>
+        </div>
+        <div className={recover.back}>
+          <a href="/login-usuario/">Ya confirmé, iniciar sesión</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.column}>
