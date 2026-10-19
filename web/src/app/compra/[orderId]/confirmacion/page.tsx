@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConfirmOrder from "@/components/checkout/ConfirmOrder";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { getCheckoutOrder } from "@/lib/checkout-order";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function ConfirmacionPage({ params }: PageProps<"/compra/[orderId]/confirmacion">) {
   const { orderId } = await params;
   if (!UUID.test(orderId)) notFound();
-  await requireUser(`/compra/${orderId}/confirmacion/`);
+  await requireSession(`/compra/${orderId}/confirmacion/`);
 
   const order = await getCheckoutOrder(orderId);
   if (!order) notFound();

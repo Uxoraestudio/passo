@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PendingRefresh from "@/components/PendingRefresh";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { createClient } from "@/lib/supabase/server";
 import { syncFlowPayment, type OrderStatus } from "@/lib/payments";
 import { getCheckoutOrder } from "@/lib/checkout-order";
@@ -86,7 +86,7 @@ async function loadOrder(orderId: string) {
 export default async function CompraPage({ params }: PageProps<"/compra/[orderId]">) {
   const { orderId } = await params;
   if (!UUID.test(orderId)) notFound();
-  await requireUser(`/compra/${orderId}/`);
+  await requireSession(`/compra/${orderId}/`);
 
   let order = await loadOrder(orderId);
   if (!order) notFound();

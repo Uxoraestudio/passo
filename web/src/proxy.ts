@@ -21,7 +21,9 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  // Refreshes an expired session and verifies it locally (ES256 keys), without
+  // a round trip to Supabase Auth on every request.
+  await supabase.auth.getClaims();
 
   return response;
 }

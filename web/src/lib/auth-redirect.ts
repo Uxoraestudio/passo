@@ -12,6 +12,21 @@ export function loginUrl(next: string) {
   return `/login-usuario/?next=${encodeURIComponent(next)}`;
 }
 
+/**
+ * Pages that only need to know someone is signed in (the purchase flow): the
+ * session's signature is checked locally (getClaims) instead of asking Supabase
+ * Auth on every page, which matters when many buyers arrive at once.
+ */
+export async function requireSession(currentPath: string) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims?.sub) {
+    redirect(loginUrl(currentPath));
+  }
+  return { id: data.claims.sub, email: (data.claims.email as string | undefined) ?? null };
+}
+
+/** Pages that need the user's current profile data (Mi cuenta): asks Supabase Auth. */
 export async function requireUser(currentPath: string) {
   const supabase = await createClient();
   const {

@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import EntradasClient from "@/components/EntradasClient";
 import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { getEventSale } from "@/lib/event-sale";
 import { getEventPlan } from "@/lib/seat-plan";
 
@@ -27,7 +27,7 @@ export default async function EntradasPage({
   if (initialTier) returnQuery.set("tier", initialTier);
   if (initialQty) returnQuery.set("qty", String(initialQty));
   const returnSuffix = returnQuery.size ? `?${returnQuery}` : "";
-  await requireUser(`/eventos/${slug}/entradas/${returnSuffix}`);
+  await requireSession(`/eventos/${slug}/entradas/${returnSuffix}`);
 
   const event = toEventCardData(row);
   const [sale, plan] = await Promise.all([getEventSale(row), row.venue_map_id ? getEventPlan(row.id) : Promise.resolve(null)]);

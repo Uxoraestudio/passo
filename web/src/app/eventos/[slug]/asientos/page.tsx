@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import AsientosClient from "@/components/AsientosClient";
 import { toEventCardData } from "@/lib/events";
 import { getEventRowBySlug } from "@/lib/events-data";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { getEventSale } from "@/lib/event-sale";
 import { createClient } from "@/lib/supabase/server";
 import { getEventPlan } from "@/lib/seat-plan";
@@ -23,7 +23,7 @@ export default async function AsientosPage({
   const sectorId = typeof query?.sector === "string" ? query.sector : "";
   const requestedQty = Math.max(1, Number(typeof query?.qty === "string" ? query.qty : 1) || 1);
 
-  await requireUser(`/eventos/${slug}/asientos/?sector=${encodeURIComponent(sectorId)}&qty=${requestedQty}`);
+  await requireSession(`/eventos/${slug}/asientos/?sector=${encodeURIComponent(sectorId)}&qty=${requestedQty}`);
 
   const sale = await getEventSale(row);
   const tier = sale.tiers.find((t) => t.id === sectorId && t.numbered);

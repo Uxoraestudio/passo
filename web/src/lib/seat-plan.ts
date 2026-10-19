@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { CACHE_SECONDS, createPublicClient } from "@/lib/supabase/public";
 
 import { planImageUrl, type EventPlan, type PlanElement, type PlanSeat, type PlanSeatKind, type PlanSeatState, type PlanZone, type Point } from "@/lib/seat-plan-types";
 
@@ -8,11 +10,28 @@ export type * from "@/lib/seat-plan-types";
 
 type WireSeat = [string | null, string, number | null, number, number, PlanSeatKind, PlanSeatState, string | null];
 
+// Seat states change as people buy, but every visitor sees the same map: it is
+// cached for a few seconds (CACHE_SECONDS.seats). A seat taken in between is
+// caught when the order is created ("Alguien acaba de tomar uno de tus asientos").
+const publicSeatMap = unstable_cache(
+  async (eventId: string): Promise<unknown> => {
+    const { data, error } = await createPublicClient().rpc("get_event_seat_map", { p_event_id: eventId });
+    return error ? null : data;
+  },
+  ["event-seat-map"],
+  { revalidate: CACHE_SECONDS.seats, tags: ["events"] }
+);
+
 /** The event's plan with live seat states, or null when the event has no plan. */
 export const getEventPlan = cache(async (eventId: string): Promise<EventPlan | null> => {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_event_seat_map", { p_event_id: eventId });
-  if (error || !data) return null;
+  let data = await publicSeatMap(eventId);
+  if (!data) {
+    // Drafts aren't public: staff previewing one read it with their own session.
+    const supabase = await createClient();
+    const result = await supabase.rpc("get_event_seat_map", { p_event_id: eventId });
+    if (result.error || !result.data) return null;
+    data = result.data;
+  }
   const w = data as {
     image_path: string | null;
     image_width: number;

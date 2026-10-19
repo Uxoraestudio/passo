@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getCheckoutOrder } from "@/lib/checkout-order";
 import { loadOrderTickets, ticketQrSvg } from "@/lib/order-tickets";
@@ -21,7 +21,7 @@ export default async function ImprimirEntradasPage({ params, searchParams }: Pag
   const { orderId } = await params;
   const auto = (await searchParams).auto === "1";
   if (!UUID.test(orderId)) notFound();
-  await requireUser(`/compra/${orderId}/imprimir/`);
+  await requireSession(`/compra/${orderId}/imprimir/`);
 
   const [order, tickets, settings] = await Promise.all([getCheckoutOrder(orderId), loadOrderTickets(orderId), getSiteSettings()]);
   if (!order) notFound();

@@ -6,8 +6,10 @@ import HeaderInner from "./HeaderInner";
 
 export default async function Header() {
   const supabase = await createClient();
-  const [settings, events, { data }] = await Promise.all([getSiteSettings(), getAllEvents(), supabase.auth.getUser()]);
-  const name = data.user ? accountDisplayName(data.user) : null;
+  // Only for the greeting: the session is verified locally, without a call to Supabase Auth.
+  const [settings, events, { data }] = await Promise.all([getSiteSettings(), getAllEvents(), supabase.auth.getClaims()]);
+  const claims = data?.claims;
+  const name = claims?.sub ? accountDisplayName({ email: claims.email as string | undefined, user_metadata: claims.user_metadata ?? {} }) : null;
 
   return (
     <HeaderInner

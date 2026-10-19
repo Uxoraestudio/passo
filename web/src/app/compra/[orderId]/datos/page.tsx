@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NominationForm from "@/components/checkout/NominationForm";
-import { requireUser } from "@/lib/auth-redirect";
+import { requireSession } from "@/lib/auth-redirect";
 import { getCheckoutOrder } from "@/lib/checkout-order";
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function DatosPage({ params }: PageProps<"/compra/[orderId]/datos">) {
   const { orderId } = await params;
   if (!UUID.test(orderId)) notFound();
-  await requireUser(`/compra/${orderId}/datos/`);
+  await requireSession(`/compra/${orderId}/datos/`);
 
   const order = await getCheckoutOrder(orderId);
   if (!order) notFound();

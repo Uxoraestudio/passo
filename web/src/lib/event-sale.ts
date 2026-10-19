@@ -1,5 +1,6 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { CACHE_SECONDS, createPublicClient } from "@/lib/supabase/public";
 import type { EventRow } from "@/lib/events";
 import { defaultEventDetail, eventDetails, type EventDetail, type TicketTier } from "@/lib/eventDetails";
 
@@ -41,34 +42,42 @@ type SectorRow = {
   seats_per_row: number | null;
 };
 
-const getSaleData = cache(async (eventId: string) => {
-  const supabase = await createClient();
-  const [{ data: sectors }, { data: availability }, { data: prices }, { data: phase }] = await Promise.all([
-    supabase
-      .from("event_sectors")
-      .select("id, name, capacity, price, color, numbered, seats_per_row")
-      .eq("event_id", eventId)
-      .eq("is_active", true)
-      .order("sort_order"),
-    supabase.rpc("get_sector_availability", { p_event_id: eventId }),
-    // Seats with price zones: the cheapest and the most expensive free seat.
-    supabase.rpc("get_sector_prices", { p_event_id: eventId }),
-    supabase.rpc("get_sale_phase", { p_event_id: eventId }),
-  ]);
-  const taken = new Map<string, number>(
-    ((availability ?? []) as { sector_id: string; taken: number }[]).map((a) => [a.sector_id, a.taken])
-  );
-  const range = new Map<string, { min: number; max: number; normal: number }>(
-    ((prices ?? []) as { sector_id: string; min_price: number; max_price: number; normal_min_price: number | null }[]).map((p) => [
-      p.sector_id,
-      { min: p.min_price, max: p.max_price, normal: p.normal_min_price ?? p.min_price },
-    ])
-  );
-  return {
-    sectors: ((sectors ?? []) as SectorRow[]).map((s) => ({ ...s, taken: taken.get(s.id) ?? 0, range: range.get(s.id) })),
-    phase: ((phase as SalePhase | null) ?? { current: null, next: null }) as SalePhase,
-  };
-});
+// Prices, availability and the current presale: the same for every visitor,
+// so they are cached for a few seconds and shared (see CACHE_SECONDS.sale).
+const saleData = unstable_cache(
+  async (eventId: string) => {
+    const supabase = createPublicClient();
+    const [{ data: sectors }, { data: availability }, { data: prices }, { data: phase }] = await Promise.all([
+      supabase
+        .from("event_sectors")
+        .select("id, name, capacity, price, color, numbered, seats_per_row")
+        .eq("event_id", eventId)
+        .eq("is_active", true)
+        .order("sort_order"),
+      supabase.rpc("get_sector_availability", { p_event_id: eventId }),
+      // Seats with price zones: the cheapest and the most expensive free seat.
+      supabase.rpc("get_sector_prices", { p_event_id: eventId }),
+      supabase.rpc("get_sale_phase", { p_event_id: eventId }),
+    ]);
+    const taken = new Map<string, number>(
+      ((availability ?? []) as { sector_id: string; taken: number }[]).map((a) => [a.sector_id, a.taken])
+    );
+    const range = new Map<string, { min: number; max: number; normal: number }>(
+      ((prices ?? []) as { sector_id: string; min_price: number; max_price: number; normal_min_price: number | null }[]).map((p) => [
+        p.sector_id,
+        { min: p.min_price, max: p.max_price, normal: p.normal_min_price ?? p.min_price },
+      ])
+    );
+    return {
+      sectors: ((sectors ?? []) as SectorRow[]).map((s) => ({ ...s, taken: taken.get(s.id) ?? 0, range: range.get(s.id) })),
+      phase: ((phase as SalePhase | null) ?? { current: null, next: null }) as SalePhase,
+    };
+  },
+  ["event-sale"],
+  { revalidate: CACHE_SECONDS.sale, tags: ["events"] }
+);
+
+const getSaleData = cache((eventId: string) => saleData(eventId));
 
 function tierStatus(available: number, capacity: number): TicketTier["status"] {
   if (available <= 0) return "agotado";
