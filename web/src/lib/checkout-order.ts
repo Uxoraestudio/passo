@@ -35,8 +35,13 @@ export type CheckoutOrder = {
   expiresAt: string;
   serverNow: number;
   subtotal: number;
+  /** Coupon discount on the subtotal (0 without coupon). */
+  discount: number;
+  couponCode: string | null;
   serviceFee: number;
   total: number;
+  /** The event asks for each attendee's name and ID; when false only the buyer's. */
+  nominate: boolean;
   buyer: { email: string; firstName: string; lastName: string; document: string; phone: string };
   event: {
     slug: string;
@@ -66,6 +71,8 @@ type OrderRow = {
   subtotal: number;
   service_fee: number;
   total: number;
+  discount: number | null;
+  coupon_code: string | null;
   buyer_email: string;
   buyer_name: string | null;
   buyer_first_name: string | null;
@@ -81,6 +88,7 @@ type OrderRow = {
     venue: string;
     city: string;
     event_date: string;
+    nominate_tickets: boolean | null;
   } | null;
   order_items: { sector_id: string; sector_name: string; quantity: number; unit_price: number; seat_labels: string[] }[];
   order_attendees: {
@@ -107,7 +115,7 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
   const { data } = await supabase
     .from("orders")
     .select(
-      "id, code, status, expires_at, flow_token, subtotal, service_fee, total, buyer_email, buyer_name, buyer_first_name, buyer_last_name, buyer_document, buyer_phone, event:events(slug, title, subtitle, image_url, banner_image_url, venue, city, event_date), order_items(sector_id, sector_name, quantity, unit_price, seat_labels), order_attendees(position, sector_id, seat_label, first_name, last_name, document, birth_date)"
+      "id, code, status, expires_at, flow_token, subtotal, service_fee, total, discount, coupon_code, buyer_email, buyer_name, buyer_first_name, buyer_last_name, buyer_document, buyer_phone, event:events(slug, title, subtitle, image_url, banner_image_url, venue, city, event_date, nominate_tickets), order_items(sector_id, sector_name, quantity, unit_price, seat_labels), order_attendees(position, sector_id, seat_label, first_name, last_name, document, birth_date)"
     )
     .eq("id", orderId)
     .maybeSingle();
@@ -167,8 +175,11 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
     expiresAt: row.expires_at,
     serverNow: now,
     subtotal: row.subtotal,
+    discount: row.discount ?? 0,
+    couponCode: row.coupon_code ?? null,
     serviceFee: row.service_fee,
     total: row.total,
+    nominate: row.event.nominate_tickets ?? true,
     buyer: {
       email: row.buyer_email,
       firstName: row.buyer_first_name ?? fallbackFirst ?? "",

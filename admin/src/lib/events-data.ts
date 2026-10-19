@@ -20,6 +20,8 @@ export type EventRecord = {
   doors_open: string | null;
   image_url: string | null;
   hero_image_url: string | null;
+  /** Hero image for phones (portrait); the desktop hero is used when empty. */
+  hero_mobile_image_url: string | null;
   banner_image_url: string | null;
   price_base: number;
   capacity: number;
@@ -32,6 +34,8 @@ export type EventRecord = {
   max_tickets_per_order: number;
   qr_validation: boolean;
   age_restriction: boolean;
+  /** Each ticket carries its attendee's name and ID; off = only the buyer's details. */
+  nominate_tickets: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -77,6 +81,7 @@ export type EventInput = {
   doors_open: string;
   image_url: string;
   hero_image_url: string;
+  hero_mobile_image_url: string;
   banner_image_url: string;
   sold: number;
   status: EventStatus;
@@ -85,6 +90,7 @@ export type EventInput = {
   max_tickets_per_order: number;
   qr_validation: boolean;
   age_restriction: boolean;
+  nominate_tickets: boolean;
   sectors: SectorInput[];
   /** Published venue plan the event uses; its sectors then come from the plan. */
   venue_map_id: string | null;
@@ -127,6 +133,7 @@ function eventPayload(input: EventInput) {
     doors_open: input.doors_open || null,
     image_url: input.image_url || null,
     hero_image_url: input.hero_image_url || null,
+    hero_mobile_image_url: input.hero_mobile_image_url || null,
     banner_image_url: input.banner_image_url || null,
     price_base,
     capacity,
@@ -137,6 +144,7 @@ function eventPayload(input: EventInput) {
     max_tickets_per_order: input.max_tickets_per_order,
     qr_validation: input.qr_validation,
     age_restriction: input.age_restriction,
+    nominate_tickets: input.nominate_tickets,
   };
 }
 
@@ -275,10 +283,25 @@ export async function updateEvent(id: string, input: EventInput): Promise<void> 
   else await syncSectors(id, input.sectors);
 }
 
-export async function deleteEvent(id: string): Promise<void> {
-  const supabase = createClient();
-  const { error } = await supabase.from("events").delete().eq("id", id);
-  if (error) throw error;
+/** The event has paid orders: deleting it needs its exact title as confirmation. */
+export class EventHasSalesError extends Error {
+  constructor(public paidOrders: number) {
+    super(`El evento tiene ${paidOrders} ${paidOrders === 1 ? "compra pagada" : "compras pagadas"}.`);
+  }
+}
+
+/**
+ * Deletes an event with everything that hangs from it (sectors, orders,
+ * tickets, coupons, scans). With paid orders the server asks for the title.
+ */
+export async function deleteEvent(id: string, confirmTitle?: string): Promise<void> {
+  const { error } = await createClient().rpc("delete_event", { p_event_id: id, p_confirm_title: confirmTitle ?? null });
+  if (!error) return;
+  const sales = error.message.match(/EVENT_HAS_SALES:(\d+)/);
+  if (sales) throw new EventHasSalesError(Number(sales[1]));
+  if (error.message.includes("FORBIDDEN")) throw new Error("Tu rol no permite eliminar eventos.");
+  if (error.message.includes("EVENT_NOT_FOUND")) throw new Error("Este evento ya no existe.");
+  throw new Error("No pudimos eliminar el evento. Inténtalo de nuevo.");
 }
 
 export async function uploadEventImage(file: File): Promise<string> {

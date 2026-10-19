@@ -61,3 +61,13 @@ export function sectorCountFor(venue: Venue): number {
   if (venue.is_custom || venue.layout_key === "custom") return 0;
   return LAYOUTS[venue.layout_key].sectors.length;
 }
+
+/** Deletes a venue and its plans. Refused while an event uses it. */
+export async function deleteVenue(id: string): Promise<void> {
+  const { error } = await createClient().rpc("delete_venue", { p_venue_id: id });
+  if (!error) return;
+  const inUse = error.message.match(/VENUE_IN_USE:(.+)/);
+  if (inUse) throw new Error(`No se puede eliminar: lo usa ${inUse[1].includes(",") ? "los eventos" : "el evento"} «${inUse[1]}». Elimina o cambia de recinto ese evento primero.`);
+  if (error.message.includes("FORBIDDEN")) throw new Error("Tu rol no permite eliminar recintos.");
+  throw new Error("No pudimos eliminar el recinto. Inténtalo de nuevo.");
+}

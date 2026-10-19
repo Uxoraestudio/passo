@@ -39,3 +39,11 @@ describe("order confirmation e-mail", () => {
     expect(mail.html).toContain("&lt;script&gt;x");
   });
 });
+
+describe("order confirmation e-mail with a coupon", () => {
+  it("shows the coupon discount", () => {
+    const mail = orderConfirmationEmail({ ...base, discount: 3000, couponCode: "VERANO20", serviceFee: 1200, total: 13200 });
+    expect(mail.text).toContain("Cupón VERANO20: −$3.000");
+    expect(mail.html).toContain("−$3.000");
+  });
+});

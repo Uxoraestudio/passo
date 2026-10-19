@@ -31,6 +31,8 @@ export type EventRow = {
   category: string | null;
   image_url: string | null;
   hero_image_url: string | null;
+  /** Portrait hero for phones; the desktop hero is cropped when empty. */
+  hero_mobile_image_url?: string | null;
   banner_image_url: string | null;
   price_base: number;
   capacity: number;
@@ -103,6 +105,7 @@ export function toHeroSlide(row: EventRow): Slide {
     id: row.id,
     slug: row.slug,
     image: pickImage(row.hero_image_url, row.image_url),
+    mobileImage: row.hero_mobile_image_url || null,
     alt: row.title,
     eyebrow: statusEyebrow(row.status, row.sale_phase_name),
     title: row.title,

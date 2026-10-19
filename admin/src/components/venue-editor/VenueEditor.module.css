@@ -768,3 +768,35 @@
 .summary b {
   font-size: 13px;
 }
+
+/* Venues list: plan button + delete. */
+.rowActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconDanger {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #f3d0cc;
+  border-radius: 10px;
+  background: #fff;
+  color: #b42318;
+  cursor: pointer;
+}
+
+.iconDanger:hover {
+  background: #fef3f2;
+}
+
+.iconDanger:focus-visible {
+  outline: 2px solid #ff782d;
+  outline-offset: 2px;
+}
+
+.iconDanger :global(.material-symbols-outlined) {
+  font-size: 19px;
+}

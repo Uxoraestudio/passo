@@ -12,6 +12,9 @@ export type OrderEmailData = {
   event: { title: string; date: string; venue: string; city: string };
   tickets: { shortCode: string; holder: string | null; sector: string; seat: string }[];
   subtotal: number;
+  /** Coupon discount on the subtotal, if any. */
+  discount?: number;
+  couponCode?: string | null;
   serviceFee: number;
   total: number;
 };
@@ -47,7 +50,7 @@ export function orderConfirmationEmail(data: OrderEmailData) {
       (t) => `
         <tr>
           <td style="padding:12px 0;border-top:1px solid ${LINE};font-size:14px;color:${INK};">
-            <strong>${escape(t.holder ?? "Sin nominar")}</strong><br>
+            <strong>${escape(t.holder ?? "Entrada al portador")}</strong><br>
             <span style="color:${MUTED};">${escape(t.sector)} · ${escape(t.seat)}</span>
           </td>
           <td align="right" style="padding:12px 0;border-top:1px solid ${LINE};font-size:13px;color:${MUTED};font-family:Menlo,Consolas,monospace;white-space:nowrap;">
@@ -105,6 +108,11 @@ export function orderConfirmationEmail(data: OrderEmailData) {
 
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${LINE};">
             <tr><td style="padding:12px 0 2px;font-size:14px;color:${MUTED};">Entradas</td><td align="right" style="padding:12px 0 2px;font-size:14px;color:${INK};">${money(data.subtotal)}</td></tr>
+            ${
+              data.discount
+                ? `<tr><td style="padding:2px 0;font-size:14px;color:${MUTED};">Cupón ${escape(data.couponCode ?? "")}</td><td align="right" style="padding:2px 0;font-size:14px;color:#047857;">−${money(data.discount)}</td></tr>`
+                : ""
+            }
             <tr><td style="padding:2px 0;font-size:14px;color:${MUTED};">Cargo por servicio</td><td align="right" style="padding:2px 0;font-size:14px;color:${INK};">${money(data.serviceFee)}</td></tr>
             <tr><td style="padding:8px 0 0;font-size:16px;font-weight:800;color:${INK};">Total pagado</td><td align="right" style="padding:8px 0 0;font-size:16px;font-weight:800;color:${INK};">${money(data.total)}</td></tr>
           </table>
@@ -127,9 +135,10 @@ export function orderConfirmationEmail(data: OrderEmailData) {
     "",
     `${hello} recibimos tu pago y ${what} ya ${count === 1 ? "está lista" : "están listas"}.`,
     "",
-    ...data.tickets.map((t) => `- ${t.holder ?? "Sin nominar"} · ${t.sector} · ${t.seat} (${t.shortCode})`),
+    ...data.tickets.map((t) => `- ${t.holder ?? "Entrada al portador"} · ${t.sector} · ${t.seat} (${t.shortCode})`),
     "",
     `Entradas: ${money(data.subtotal)}`,
+    ...(data.discount ? [`Cupón ${data.couponCode ?? ""}: −${money(data.discount)}`] : []),
     `Cargo por servicio: ${money(data.serviceFee)}`,
     `Total pagado: ${money(data.total)}`,
     "",

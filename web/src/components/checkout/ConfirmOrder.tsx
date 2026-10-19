@@ -6,6 +6,7 @@ import type { CheckoutOrder } from "@/lib/checkout-order";
 import { payOrder } from "@/lib/checkout-client";
 import CheckoutTopBar from "./CheckoutTopBar";
 import OrderSummary, { HelpCard, currency } from "./OrderSummary";
+import CouponBox from "./CouponBox";
 import styles from "./Checkout.module.css";
 
 export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
@@ -49,7 +50,11 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
           <header className={styles.pageHeader}>
             <span className={styles.stepTag}>Paso 03 de 04</span>
             <h1 className={styles.pageTitle}>Revisa y confirma tu orden</h1>
-            <p className={styles.pageSubtitle}>Verifica que los datos de los asistentes y tus entradas sean correctos antes de pagar.</p>
+            <p className={styles.pageSubtitle}>
+              {order.nominate
+                ? "Verifica que los datos de los asistentes y tus entradas sean correctos antes de pagar."
+                : "Verifica tus entradas y tus datos antes de pagar."}
+            </p>
           </header>
 
           {expired && (
@@ -87,7 +92,7 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
           <section className={styles.card} aria-labelledby="attendees-title">
             <div className={styles.cardHeaderRow}>
               <h2 id="attendees-title" className={styles.cardTitle}>
-                Asistentes y entradas nominadas
+                {order.nominate ? "Asistentes y entradas nominadas" : "Tus entradas"}
               </h2>
               <Link href={detailsHref} className={styles.editLink}>
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -106,16 +111,18 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
                       <strong>{slot.sectorName}</strong>
                       <span className={styles.seatChip}>{slot.seatText}</span>
                     </div>
-                    <dl className={styles.reviewData}>
-                      <div>
-                        <dt>Titular</dt>
-                        <dd>{a ? `${a.firstName} ${a.lastName}` : "—"}</dd>
-                      </div>
-                      <div>
-                        <dt>RUT / documento</dt>
-                        <dd>{a?.document ?? "—"}</dd>
-                      </div>
-                    </dl>
+                    {order.nominate && (
+                      <dl className={styles.reviewData}>
+                        <div>
+                          <dt>Titular</dt>
+                          <dd>{a ? `${a.firstName} ${a.lastName}` : "—"}</dd>
+                        </div>
+                        <div>
+                          <dt>RUT / documento</dt>
+                          <dd>{a?.document ?? "—"}</dd>
+                        </div>
+                      </dl>
+                    )}
                   </li>
                 );
               })}
@@ -156,9 +163,15 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
               <path d="M12 11v5M12 8h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
             </svg>
-            <span>
-              <strong>Entradas nominativas:</strong> cada entrada queda a nombre de su asistente, que deberá presentar su cédula de identidad o pasaporte en el acceso.
-            </span>
+            {order.nominate ? (
+              <span>
+                <strong>Entradas nominativas:</strong> cada entrada queda a nombre de su asistente, que deberá presentar su cédula de identidad o pasaporte en el acceso.
+              </span>
+            ) : (
+              <span>
+                <strong>Entradas al portador:</strong> el código QR de cada entrada da acceso a quien lo presente. Compártelas solo con quienes irán contigo.
+              </span>
+            )}
           </p>
 
           <label className={styles.termsRow}>
@@ -179,6 +192,7 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
 
         <aside className={styles.sidebar}>
           <OrderSummary order={order} title="Detalle de tu orden">
+            <CouponBox orderId={order.id} code={order.couponCode} discount={order.discount} disabled={expired || paying} />
             {error && (
               <p className={styles.formError} role="alert">
                 {error.message}{" "}

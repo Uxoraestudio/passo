@@ -41,6 +41,12 @@ function Num({
   step?: number;
   suffix?: ReactNode;
 }) {
+  const shown = Number.isFinite(value) ? String(Math.round(value * 100) / 100) : "";
+  // The raw text while typing: the field can be emptied to type a new number
+  // (a controlled number input would snap back to the old value).
+  const [text, setText] = useState(shown);
+  const [editing, setEditing] = useState(false);
+  const clamp = (v: number) => Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v));
   return (
     <label className={styles.field}>
       <span>{label}</span>
@@ -48,14 +54,21 @@ function Num({
         <input
           type="number"
           inputMode="decimal"
-          value={Number.isFinite(value) ? Math.round(value * 100) / 100 : ""}
+          value={editing ? text : shown}
           min={min}
           max={max}
           step={step}
-          onChange={(e) => {
-            const v = Number(e.target.value);
-            if (e.target.value !== "" && Number.isFinite(v)) onChange(v);
+          onFocus={(e) => {
+            setText(shown);
+            setEditing(true);
+            e.target.select();
           }}
+          onChange={(e) => {
+            setText(e.target.value);
+            const v = Number(e.target.value);
+            if (e.target.value !== "" && Number.isFinite(v) && v >= (min ?? -Infinity)) onChange(clamp(v));
+          }}
+          onBlur={() => setEditing(false)}
         />
         {suffix && <small>{suffix}</small>}
       </div>

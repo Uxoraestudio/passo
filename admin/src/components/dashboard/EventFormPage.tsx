@@ -22,6 +22,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import EventCourtesies from "./EventCourtesies";
 import EventImageField from "./EventImageField";
 import EventPresales from "./EventPresales";
+import EventCoupons from "./EventCoupons";
 import PerimetryEditor, { sectorIssue, type SectorDraft } from "./PerimetryEditor";
 import PlanSectorsEditor from "./PlanSectorsEditor";
 import { getVenueMap } from "@/lib/venue-maps-data";
@@ -76,12 +77,14 @@ type FormState = {
   doorsOpen: string;
   image_url: string;
   hero_image_url: string;
+  hero_mobile_image_url: string;
   banner_image_url: string;
   sold: number | "";
   saleStart: string;
   maxTicketsPerOrder: number | "";
   qrValidation: boolean;
   ageRestriction: boolean;
+  nominateTickets: boolean;
   showInHero: boolean;
   status: EventStatus;
   address: string;
@@ -103,12 +106,14 @@ function emptyForm(): FormState {
     doorsOpen: "19:30",
     image_url: "",
     hero_image_url: "",
+    hero_mobile_image_url: "",
     banner_image_url: "",
     sold: 0,
     saleStart: "",
     maxTicketsPerOrder: 6,
     qrValidation: true,
     ageRestriction: false,
+    nominateTickets: true,
     showInHero: false,
     status: "borrador",
     address: "",
@@ -138,12 +143,14 @@ function formFromEvent(event: EventRecord): FormState {
     doorsOpen: event.doors_open ? event.doors_open.slice(0, 5) : "",
     image_url: event.image_url ?? "",
     hero_image_url: event.hero_image_url ?? "",
+    hero_mobile_image_url: event.hero_mobile_image_url ?? "",
     banner_image_url: event.banner_image_url ?? "",
     sold: event.sold,
     saleStart: toDateTimeLocal(event.sale_start),
     maxTicketsPerOrder: event.max_tickets_per_order,
     qrValidation: event.qr_validation,
     ageRestriction: event.age_restriction,
+    nominateTickets: event.nominate_tickets ?? true,
     showInHero: event.show_in_hero,
     status: event.status,
     address: event.address ?? "",
@@ -223,8 +230,8 @@ function partsOf(form: FormState, venueId: string | null, sectors: SectorDraft[]
     venue: JSON.stringify([venueId, form.address, planId]),
     map: sectorsSignature(sectors),
     fecha: JSON.stringify([form.date, form.time, form.doorsOpen]),
-    img: JSON.stringify([form.hero_image_url, form.banner_image_url, form.image_url]),
-    conf: JSON.stringify([form.saleStart, form.maxTicketsPerOrder, form.sold, form.qrValidation, form.ageRestriction, form.showInHero]),
+    img: JSON.stringify([form.hero_image_url, form.hero_mobile_image_url, form.banner_image_url, form.image_url]),
+    conf: JSON.stringify([form.saleStart, form.maxTicketsPerOrder, form.sold, form.qrValidation, form.ageRestriction, form.nominateTickets, form.showInHero]),
     status: form.status,
   };
 }
@@ -517,6 +524,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     doors_open: form.doorsOpen,
     image_url: form.image_url,
     hero_image_url: form.hero_image_url,
+    hero_mobile_image_url: form.hero_mobile_image_url,
     banner_image_url: form.banner_image_url,
     sold: Number(form.sold) || 0,
     status,
@@ -525,6 +533,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     max_tickets_per_order: Number(form.maxTicketsPerOrder) || 1,
     qr_validation: form.qrValidation,
     age_restriction: form.ageRestriction,
+    nominate_tickets: form.nominateTickets,
     sectors: sectors.map((s, i) => ({
       id: s.id,
       name: s.name.trim(),
@@ -1198,7 +1207,13 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </span>
             </div>
             <div className={styles.imageGroup}>
-              <EventImageField label="Banner Hero del home — 1600 × 900 px · 16:9" hint="Se usa en el carrusel principal de la portada." value={form.hero_image_url} onChange={(url) => update("hero_image_url", url)} />
+              <EventImageField label="Banner Hero del home — 1600 × 900 px · 16:9" hint="Se usa en el carrusel principal de la portada en computadores y tablets." value={form.hero_image_url} onChange={(url) => update("hero_image_url", url)} />
+              <EventImageField
+                label="Banner Hero para teléfonos — 1080 × 1620 px · 2:3 vertical"
+                hint="Opcional. En teléfonos reemplaza al banner horizontal (si falta, se recorta el horizontal). Deja el motivo principal en el tercio superior y central: abajo va el título del evento."
+                value={form.hero_mobile_image_url}
+                onChange={(url) => update("hero_mobile_image_url", url)}
+              />
               <EventImageField label="Banner interno del evento — 1280 × 500 px · ~2.5:1" hint="Cabecera de la página de detalle del evento." value={form.banner_image_url} onChange={(url) => update("banner_image_url", url)} />
               <EventImageField label="Tarjeta destacada / listado — 800 × 560 px · 4:3" hint="Eventos destacados, Cerca de ti y listado de eventos." value={form.image_url} onChange={(url) => update("image_url", url)} />
             </div>
@@ -1271,6 +1286,12 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               { key: "showInHero" as const, id: "t-hero", title: "Mostrar en banner Hero del home", desc: "El evento aparecerá en el carrusel principal de la portada." },
               { key: "qrValidation" as const, id: "t-qr", title: "Validación con QR en puerta", desc: "Habilita el check-in desde la app de Validación." },
               { key: "ageRestriction" as const, id: "t-age", title: "Evento para mayores de 18", desc: "Se solicitará confirmación de edad al comprar." },
+              {
+                key: "nominateTickets" as const,
+                id: "t-nominate",
+                title: "Nominación de entradas",
+                desc: "Cada entrada queda a nombre de su asistente (nombre, RUT y fecha de nacimiento). Apagado, solo se piden los datos del comprador.",
+              },
             ].map((t) => (
               <div key={t.key} className={styles.switch}>
                 <div className={styles.switchText}>
@@ -1298,6 +1319,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name, price: Number(s.price) || 0 }))}
             />
           )}
+
+          {mode === "edit" && eventId && <EventCoupons eventId={eventId} />}
 
           {mode === "edit" && eventId && (
             <EventCourtesies eventId={eventId} sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name }))} />

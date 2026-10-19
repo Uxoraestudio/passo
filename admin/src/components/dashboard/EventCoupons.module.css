@@ -1,0 +1,149 @@
+.form {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #efedf6;
+}
+
+.empty {
+  font-size: 13px;
+  color: #625d75;
+}
+
+.success {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  font-size: 13px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid #ebe7f6;
+  border-radius: 12px;
+  background: #fcfbff;
+}
+
+.list li[data-off="true"] {
+  opacity: 0.65;
+}
+
+.codeCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.code {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px dashed #c9bef0;
+  background: #fff;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #1c1a2a;
+}
+
+.state {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+}
+
+.state[data-tone="live"] {
+  color: #047857;
+}
+
+.state[data-tone="next"] {
+  color: #4c2fb8;
+}
+
+.state[data-tone="off"] {
+  color: #b91c1c;
+}
+
+.info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 13px;
+  color: #625d75;
+}
+
+.info b {
+  font-size: 14px;
+  color: #1c1a2a;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ghost {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #e5dff7;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1c1a2a;
+  cursor: pointer;
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a849c;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.ghost:focus-visible,
+.remove:focus-visible {
+  outline: 2px solid #ff782d;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .list li {
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

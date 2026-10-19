@@ -66,6 +66,15 @@ export default function OrderSummary({ order, title, children }: { order: Checko
               <dd>{currency(line.unitPrice * line.quantity)}</dd>
             </div>
           ))}
+          {order.discount > 0 && (
+            <div className={styles.discountRow}>
+              <dt>
+                Cupón {order.couponCode}
+                <small>Descuento sobre las entradas</small>
+              </dt>
+              <dd>−{currency(order.discount)}</dd>
+            </div>
+          )}
           <div>
             <dt>Cargo por servicio (10%)</dt>
             <dd>{currency(order.serviceFee)}</dd>

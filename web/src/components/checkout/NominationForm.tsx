@@ -104,7 +104,7 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
     };
   });
   const hasErrors =
-    Object.values(buyerErr).some(Boolean) || attendeeErr.some((e) => Object.values(e).some(Boolean));
+    Object.values(buyerErr).some(Boolean) || (order.nominate && attendeeErr.some((e) => Object.values(e).some(Boolean)));
 
   const updateAttendee = (index: number, patch: Partial<Attendee>) =>
     setAttendees((prev) => prev.map((a, i) => (i === index ? { ...a, ...patch } : a)));
@@ -133,7 +133,8 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
         document: formatDocument(buyer.document),
         phone: buyer.phone.trim(),
       },
-      p_attendees: resolved.map((a, i) => ({
+      // Events without nomination only keep the buyer's details.
+      p_attendees: !order.nominate ? [] : resolved.map((a, i) => ({
         sector_id: order.slots[i].sectorId,
         seat_label: order.slots[i].seatLabel,
         first_name: a.firstName.trim(),
@@ -169,8 +170,12 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
 
           <header className={styles.pageHeader}>
             <span className={styles.stepTag}>Paso 02 de 04</span>
-            <h1 className={styles.pageTitle}>Identificación y nominación</h1>
-            <p className={styles.pageSubtitle}>Ingresa los datos del titular de la compra y asigna cada entrada a la persona que asistirá.</p>
+            <h1 className={styles.pageTitle}>{order.nominate ? "Identificación y nominación" : "Tus datos"}</h1>
+            <p className={styles.pageSubtitle}>
+              {order.nominate
+                ? "Ingresa los datos del titular de la compra y asigna cada entrada a la persona que asistirá."
+                : "Ingresa los datos del titular de la compra. Las entradas de este evento no se nominan."}
+            </p>
           </header>
 
           {expired && (
@@ -220,12 +225,15 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
               </Field>
             </div>
 
-            <label className={styles.checkRow}>
-              <input type="checkbox" checked={buyerAttends} onChange={(e) => setBuyerAttends(e.target.checked)} />
-              <span>El comprador es uno de los asistentes (Entrada 1)</span>
-            </label>
+            {order.nominate && (
+              <label className={styles.checkRow}>
+                <input type="checkbox" checked={buyerAttends} onChange={(e) => setBuyerAttends(e.target.checked)} />
+                <span>El comprador es uno de los asistentes (Entrada 1)</span>
+              </label>
+            )}
           </fieldset>
 
+          {order.nominate && (
           <fieldset className={styles.card} disabled={expired}>
             <legend className={styles.srOnly}>Nominación de entradas</legend>
             <div className={styles.cardHeader}>
@@ -310,6 +318,7 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
               })}
             </div>
           </fieldset>
+          )}
 
           {submitError && (
             <p className={styles.formError} role="alert">

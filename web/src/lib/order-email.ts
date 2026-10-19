@@ -23,7 +23,7 @@ export async function sendOrderConfirmation(orderId: string) {
       .eq("status", "paid")
       .eq("kind", "sale")
       .is("confirmation_email_at", null)
-      .select("id, code, buyer_email, buyer_name, buyer_first_name, subtotal, service_fee, total, event_id")
+      .select("id, code, buyer_email, buyer_name, buyer_first_name, subtotal, discount, coupon_code, service_fee, total, event_id")
       .maybeSingle();
     if (!claimed) return;
 
@@ -49,6 +49,8 @@ export async function sendOrderConfirmation(orderId: string) {
             seat: t.seatText,
           })),
         subtotal: claimed.subtotal,
+        discount: claimed.discount ?? 0,
+        couponCode: claimed.coupon_code,
         serviceFee: claimed.service_fee,
         total: claimed.total,
       });

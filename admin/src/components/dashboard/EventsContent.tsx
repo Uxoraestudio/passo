@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
-import { EVENTS_FLASH_KEY, deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
+import { EVENTS_FLASH_KEY, EventHasSalesError, deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
 import { fetchRevenueByEvent } from "@/lib/admin-data";
 import { useCanEdit } from "@/lib/access";
 import EventsKpiRow from "./EventsKpiRow";
 import EventsFilterBar, { type FilterTab } from "./EventsFilterBar";
 import EventRow from "./EventRow";
+import ConfirmDialog from "./ConfirmDialog";
+import formStyles from "./EventFormPage.module.css";
 import styles from "./EventsContent.module.css";
 
 const PAGE_SIZE = 5;
@@ -36,6 +38,12 @@ export default function EventsContent() {
   const refresh = useCallback(() => setReloadToken((t) => t + 1), []);
 
   const [flash, setFlash] = useState("");
+
+  // Delete flow: a plain confirmation, or (with paid orders) typing the title.
+  const [toDelete, setToDelete] = useState<{ event: EventRecord; paidOrders: number | null } | null>(null);
+  const [typedTitle, setTypedTitle] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let message: string | null = null;
@@ -129,13 +137,37 @@ export default function EventsContent() {
     router.push(`/eventos/${event.id}/editar`);
   };
 
-  const handleDelete = async (event: EventRecord) => {
-    if (!window.confirm(`¿Eliminar "${event.title}"? Esta acción no se puede deshacer.`)) return;
+  const handleDelete = (event: EventRecord) => {
+    setToDelete({ event, paidOrders: null });
+    setTypedTitle("");
+    setDeleteError("");
+  };
+
+  const closeDelete = () => {
+    if (!deleting) setToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    const { event, paidOrders } = toDelete;
+    setDeleting(true);
+    setDeleteError("");
     try {
-      await deleteEvent(event.id);
+      await deleteEvent(event.id, paidOrders ? typedTitle : undefined);
+      setToDelete(null);
+      setFlash(`Evento «${event.title}» eliminado`);
+      window.setTimeout(() => setFlash(""), 4200);
       refresh();
-    } catch {
-      window.alert("No pudimos eliminar el evento. Intenta de nuevo.");
+    } catch (e) {
+      if (e instanceof EventHasSalesError) {
+        // First attempt found sales: ask for the title (or the typed one didn't match).
+        if (paidOrders) setDeleteError("El nombre no coincide. Escríbelo tal como aparece.");
+        setToDelete({ event, paidOrders: e.paidOrders });
+      } else {
+        setDeleteError(e instanceof Error ? e.message : "No pudimos eliminar el evento.");
+      }
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -256,6 +288,51 @@ export default function EventsContent() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={toDelete !== null}
+        icon="delete"
+        kind={toDelete?.paidOrders ? "form" : "alert"}
+        title={toDelete?.paidOrders ? "Este evento tiene ventas" : `¿Eliminar «${toDelete?.event.title ?? ""}»?`}
+        busy={deleting}
+        onClose={closeDelete}
+        actions={[
+          { label: "Cancelar", variant: "soft", onClick: closeDelete, autoFocus: !toDelete?.paidOrders },
+          {
+            label: "Eliminar evento",
+            variant: "danger",
+            onClick: confirmDelete,
+            busyLabel: "Eliminando…",
+          },
+        ]}
+      >
+        {toDelete?.paidOrders ? (
+          <>
+            <p>
+              «{toDelete.event.title}» tiene <b>{toDelete.paidOrders.toLocaleString("es-CL")}</b>{" "}
+              {toDelete.paidOrders === 1 ? "compra pagada" : "compras pagadas"} (ventas o cortesías). Si lo eliminas se borran también
+              sus órdenes, entradas y validaciones, y no se puede deshacer.
+            </p>
+            <label className={formStyles.field} style={{ marginTop: 12 }}>
+              <span className={formStyles.label}>Para confirmar, escribe el nombre del evento</span>
+              <input
+                value={typedTitle}
+                onChange={(e) => setTypedTitle(e.target.value)}
+                placeholder={toDelete.event.title}
+                autoComplete="off"
+                data-autofocus=""
+                onKeyDown={(e) => e.key === "Enter" && typedTitle.trim() && confirmDelete()}
+              />
+            </label>
+          </>
+        ) : (
+          <p>Se eliminará el evento con sus sectores, preventas y cupones. Esta acción no se puede deshacer.</p>
+        )}
+        {deleteError && (
+          <p className={formStyles.fieldError} role="alert">
+            {deleteError}
+          </p>
+        )}
+      </ConfirmDialog>
     </div>
   );
 }

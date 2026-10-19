@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 import Link from "next/link";
 import styles from "./Hero.module.css";
 
@@ -9,6 +9,8 @@ export type Slide = {
   id: string;
   slug?: string;
   image: string;
+  /** Portrait image for phones (≤640px), shown instead of the landscape one. */
+  mobileImage?: string | null;
   alt: string;
   eyebrow: string;
   title: string;
@@ -17,6 +19,28 @@ export type Slide = {
   venue: string;
   price: string;
 };
+
+/**
+ * The slide's image. With a portrait version for phones it becomes a
+ * <picture>: phones download only the portrait one, larger screens only the
+ * landscape one.
+ */
+function HeroImage({ slide, priority }: { slide: Slide; priority: boolean }) {
+  if (!slide.mobileImage) {
+    return <Image src={slide.image} alt={slide.alt} fill priority={priority} sizes="100vw" className={styles.image} draggable={false} />;
+  }
+  const common = { alt: slide.alt, fill: true, sizes: "100vw", priority };
+  const { props: desktop } = getImageProps({ ...common, src: slide.image });
+  const {
+    props: { srcSet: mobileSrcSet },
+  } = getImageProps({ ...common, src: slide.mobileImage });
+  return (
+    <picture>
+      <source media="(max-width: 640px)" srcSet={mobileSrcSet} />
+      <img {...desktop} alt={slide.alt} className={styles.image} draggable={false} />
+    </picture>
+  );
+}
 
 const AUTOPLAY_MS = 7000;
 const SWIPE_THRESHOLD = 48;
@@ -151,15 +175,7 @@ export default function Hero({ slides }: { slides: Slide[] }) {
             data-active={index === current}
             aria-hidden={index !== current}
           >
-            <Image
-              src={slide.image}
-              alt={slide.alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
-              className={styles.image}
-              draggable={false}
-            />
+            <HeroImage slide={slide} priority={index === 0} />
           </div>
         ))}
         <div className={styles.gradient} />

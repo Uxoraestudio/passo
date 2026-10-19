@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { useCanEdit } from "@/lib/access";
-import { createVenue, listVenues, type Venue } from "@/lib/venues-data";
+import { createVenue, deleteVenue, listVenues, type Venue } from "@/lib/venues-data";
 import ConfirmDialog from "@/components/dashboard/ConfirmDialog";
 import pageStyles from "@/app/inicio/page.module.css";
 import tableStyles from "@/components/dashboard/SalesContent.module.css";
@@ -35,6 +35,24 @@ export default function VenuesContent() {
   const [form, setForm] = useState({ name: "", city: "", address: "" });
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [toDelete, setToDelete] = useState<Venue | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteVenue(toDelete.id);
+      await load();
+      setToDelete(null);
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "No pudimos eliminar el recinto.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -124,9 +142,25 @@ export default function VenuesContent() {
                         </span>
                       </td>
                       <td className={tableStyles.num}>
-                        <Link href={`/recintos/${v.id}/plano/`} className={styles.secondaryButton}>
-                          {status.tone === "none" ? (canEdit ? "Crear plano" : "Ver") : "Abrir plano"}
-                        </Link>
+                        <div className={styles.rowActions}>
+                          <Link href={`/recintos/${v.id}/plano/`} className={styles.secondaryButton}>
+                            {status.tone === "none" ? (canEdit ? "Crear plano" : "Ver") : "Abrir plano"}
+                          </Link>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              className={styles.iconDanger}
+                              onClick={() => {
+                                setDeleteError("");
+                                setToDelete(v);
+                              }}
+                              aria-label={`Eliminar ${v.name}`}
+                              title="Eliminar recinto"
+                            >
+                              <MaterialIcon decorative name="delete" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -170,6 +204,24 @@ export default function VenuesContent() {
             </p>
           )}
         </div>
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={toDelete !== null}
+        icon="delete"
+        title={`¿Eliminar «${toDelete?.name ?? ""}»?`}
+        busy={deleting}
+        onClose={() => !deleting && setToDelete(null)}
+        actions={[
+          { label: "Cancelar", variant: "soft", onClick: () => setToDelete(null), autoFocus: true },
+          { label: "Eliminar recinto", variant: "danger", onClick: confirmDelete, busyLabel: "Eliminando…" },
+        ]}
+      >
+        <p>Se eliminan el recinto y todos sus planos (publicados y borradores). Esta acción no se puede deshacer.</p>
+        {deleteError && (
+          <p role="alert" style={{ color: "#b42318", fontSize: 13, fontWeight: 600, marginTop: 10 }}>
+            {deleteError}
+          </p>
+        )}
       </ConfirmDialog>
     </main>
   );
