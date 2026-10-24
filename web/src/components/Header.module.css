@@ -1,10 +1,25 @@
+/* Brand-orange bar with white text and icons (brand choice). */
 .header {
+  --header-bg: var(--color-orange);
+  --header-ink: #fff;
+  --header-ink-soft: rgba(255, 255, 255, 0.85);
+  --header-chip: rgba(255, 255, 255, 0.18);
+  --header-chip-hover: rgba(255, 255, 255, 0.3);
+  --header-chip-border: rgba(255, 255, 255, 0.4);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 50;
+  background: var(--header-bg);
+  border-bottom: 1px solid rgba(20, 9, 36, 0.08);
+  transition: background 350ms ease, border-color 350ms ease;
+}
+
+/* Scrolled: the full-width bar gives way to the floating pill. */
+.header[data-scrolled="true"] {
   background: transparent;
+  border-bottom-color: transparent;
 }
 
 .spacer {
@@ -21,9 +36,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--color-gray-100);
+  background: transparent;
+  border-bottom: 0 solid transparent;
   border-radius: 0;
   box-shadow: 0 0 0 rgba(17, 24, 39, 0);
   transition:
@@ -50,9 +64,9 @@
   gap: 32px;
   border-radius: 9999px;
   border-bottom: 0 solid transparent;
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--header-bg) 94%, transparent);
   backdrop-filter: blur(16px);
-  box-shadow: 0 16px 32px -12px rgba(17, 24, 39, 0.22);
+  box-shadow: 0 16px 32px -12px rgba(120, 45, 0, 0.45);
 }
 
 .left {
@@ -72,7 +86,7 @@
   line-height: 32px;
   letter-spacing: -0.7px;
   text-transform: lowercase;
-  color: #150b24;
+  color: var(--header-ink);
   cursor: pointer;
   transition: opacity 180ms ease, font-size 250ms ease;
 }
@@ -81,10 +95,12 @@
   opacity: 0.75;
 }
 
+/* The uploaded logo's orange brackets vanish on the orange bar: render it all in white. */
 .logoImage {
   height: 32px;
   width: auto;
   display: block;
+  filter: brightness(0) invert(1);
   transition: height 250ms ease;
 }
 
@@ -108,20 +124,24 @@
 }
 
 .navLink {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
-  color: var(--color-gray-700);
+  color: var(--header-ink);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 180ms ease;
+  transition: text-decoration-color 180ms ease;
 }
 
 .navLink:hover {
-  color: var(--color-purple);
+  text-decoration-color: currentColor;
 }
 
 .navLink:focus-visible {
-  outline: 2px solid var(--color-purple);
+  outline: 2px solid var(--header-ink);
   outline-offset: 3px;
   border-radius: 2px;
 }
@@ -140,8 +160,9 @@
   height: 44px;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: #f2edfe;
-  color: var(--color-purple);
+  background: var(--header-chip);
+  border: 1px solid var(--header-chip-border);
+  color: var(--header-ink);
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease, color 150ms ease, width 250ms ease, height 250ms ease;
 }
@@ -163,13 +184,13 @@
 }
 
 .accountButton:hover {
-  background: var(--color-purple);
-  color: #fff;
+  background: #fff;
+  color: var(--color-dark-900);
   transform: translateY(-1px);
 }
 
 .accountButton:focus-visible {
-  outline: 2px solid var(--color-purple);
+  outline: 2px solid var(--header-ink);
   outline-offset: 2px;
 }
 
@@ -181,20 +202,21 @@
   height: 44px;
   padding: 4px 14px 4px 4px;
   border-radius: 9999px;
-  background: #f2edfe;
-  color: var(--color-gray-900);
+  background: var(--header-chip);
+  border: 1px solid var(--header-chip-border);
+  color: var(--header-ink);
   font-size: 14px;
   font-weight: 700;
   transition: background 150ms ease, height 250ms ease, transform 150ms ease;
 }
 
 .accountChip:hover {
-  background: #e4dcfd;
+  background: var(--header-chip-hover);
   transform: translateY(-1px);
 }
 
 .accountChip:focus-visible {
-  outline: 2px solid var(--color-purple);
+  outline: 2px solid var(--header-ink);
   outline-offset: 2px;
 }
 
