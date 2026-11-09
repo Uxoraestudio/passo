@@ -326,22 +326,6 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
             </p>
           )}
 
-          <div className={styles.formActions}>
-            <Link href={retryHref} className={styles.secondaryButton}>
-              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="M8.3 4.2 2.5 10m0 0 5.8 5.8M2.5 10h15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Volver al paso anterior
-            </Link>
-            <button type="submit" className={styles.primaryButton} disabled={expired || saving} aria-busy={saving}>
-              {saving ? "Guardando…" : "Continuar a confirmación"}
-              {!saving && (
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                  <path d="M11.7 4.2 17.5 10m0 0-5.8 5.8M17.5 10h-15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
-            </button>
-          </div>
         </form>
 
         <aside className={styles.sidebar}>
