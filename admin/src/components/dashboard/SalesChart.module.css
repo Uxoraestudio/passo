@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 4px;
   grid-column: span 2;
+  min-width: 0;
   padding: 25px;
   border-radius: 16px;
   border: 1px solid rgba(226, 232, 240, 0.8);
@@ -16,7 +17,7 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
 }
 
 .title {
@@ -33,33 +34,227 @@
   color: #64748b;
 }
 
-.headerRight {
+/* Entradas | Ingresos */
+.toggle {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #f1f5f9;
 }
 
-.legend {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.legendItem {
-  display: flex;
+.toggle button {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 9px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
   font-size: 12px;
-  line-height: 16px;
   color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.toggle button::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+.toggle button[data-color="purple"]::before {
+  background: #5b32e6;
+}
+
+.toggle button[data-color="orange"]::before {
+  background: #f95721;
+}
+
+.toggle button:hover {
+  color: #0f172a;
+}
+
+.toggle button[aria-pressed="true"] {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+}
+
+.toggle button[aria-pressed="true"]::before {
+  opacity: 1;
+}
+
+.toggle button:focus-visible,
+.svg:focus-visible {
+  outline: 2px solid #6534f5;
+  outline-offset: 2px;
+}
+
+.chartArea {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 240px;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+  border-radius: 6px;
+  touch-action: pan-y;
+}
+
+.gridLine {
+  stroke: #f1f5f9;
+  stroke-width: 1;
+}
+
+.baseLine {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.axisLabel {
+  font-size: 11px;
+  font-weight: 500;
+  fill: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Line: drawn from left to right on load and when switching series. */
+.line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: draw 0.9s cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+
+.line[data-color="purple"] {
+  stroke: #5b32e6;
+}
+
+.line[data-color="orange"] {
+  stroke: #f95721;
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.area {
+  animation: fadeUp 0.7s ease-out 0.25s both;
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+}
+
+.gradTop[data-color="purple"] {
+  stop-color: #5b32e6;
+  stop-opacity: 0.16;
+}
+
+.gradTop[data-color="orange"] {
+  stop-color: #f95721;
+  stop-opacity: 0.16;
+}
+
+.gradBottom {
+  stop-color: #fff;
+  stop-opacity: 0;
+}
+
+.crosshair {
+  stroke: #cbd5e1;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.marker {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+.marker[data-color="purple"] {
+  fill: #5b32e6;
+}
+
+.marker[data-color="orange"] {
+  fill: #f95721;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line,
+  .area {
+    animation: none;
+  }
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  min-width: 160px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  font-size: 12px;
+  color: #475569;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
   white-space: nowrap;
 }
 
+.tooltipDay {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tooltipDay::first-letter {
+  text-transform: uppercase;
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltipRow b {
+  margin-left: auto;
+  padding-left: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltipRow:not([data-active]) {
+  opacity: 0.75;
+}
+
 .dot {
-  width: 7px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 9999px;
   flex-shrink: 0;
 }
@@ -72,104 +267,10 @@
   background: #f95721;
 }
 
-.toggle {
-  display: flex;
-  align-items: center;
-  padding: 4px;
-  border-radius: 12px;
-  background: #f1f5f9;
-}
-
-.toggle button {
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: none;
-  background: none;
-  font-weight: 600;
-  font-size: 12px;
-  color: #475569;
-}
-
-.toggle button[data-active="true"] {
-  background: #5b32e6;
-  color: #fff;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
-}
-
-.chartArea {
-  width: 100%;
-  height: 224px;
-}
-
-.svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.gridLine {
-  stroke: #f1f5f9;
-  stroke-width: 1;
-}
-
-.axisLabelSales {
-  font-size: 11px;
-  font-weight: 600;
-  fill: #5b32e6;
-}
-
-.axisLabelRevenue {
-  font-size: 11px;
-  font-weight: 600;
-  fill: #f95721;
-}
-
-.lineSales {
-  fill: none;
-  stroke: #5b32e6;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.lineRevenue {
-  fill: none;
-  stroke: #f95721;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.xAxis {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 44px;
-  font-weight: 500;
-  font-size: 11px;
-  line-height: 16.5px;
-  color: #94a3b8;
-}
-
-@media (max-width: 1100px) {
-  .card {
-    grid-column: span 3;
-  }
-}
-
-@media (max-width: 640px) {
-  .xAxis span:nth-child(even) {
-    display: none;
-  }
-}
-
-.chartArea {
-  position: relative;
-}
-
 .empty {
   position: absolute;
-  inset: 0;
+  inset: 0 0 30px 56px;
+  z-index: 1;
   display: grid;
   place-items: center;
   font-size: 13px;
@@ -178,18 +279,20 @@
   pointer-events: none;
 }
 
-/* Labels are positioned over the plot width (the chart's 40px side padding ≈ 6.25%). */
-.xAxis {
-  position: relative;
-  display: block;
-  height: 17px;
-  margin: 0 6.25%;
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.xAxis span {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  white-space: nowrap;
+@media (max-width: 1100px) {
+  .card {
+    grid-column: span 3;
+  }
 }

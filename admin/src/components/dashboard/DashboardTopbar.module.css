@@ -1,5 +1,8 @@
 .topbar {
-  z-index: 2;
+  /* Above the pages' sticky bars (z 15-30) so the bell and account menus
+     open over them; below the mobile menu and dialogs (z 59-60). */
+  position: relative;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
