@@ -22,8 +22,9 @@ export default async function ConfirmacionPage({ params }: PageProps<"/compra/[o
   if (!order) notFound();
   if (order.status !== "pending" && order.status !== "expired") redirect(`/compra/${orderId}/`);
   if (order.paymentStarted) redirect(`/compra/${orderId}/`);
-  // Every ticket must be named before reviewing the order.
-  if (order.status === "pending" && order.attendees.length !== order.slots.length) redirect(`/compra/${orderId}/datos/`);
+  // Details must be saved first: every ticket named, or just the buyer when the event doesn't nominate.
+  const detailsMissing = order.nominate ? order.attendees.length !== order.slots.length : !order.buyer.document;
+  if (order.status === "pending" && detailsMissing) redirect(`/compra/${orderId}/datos/`);
 
   return (
     <>
