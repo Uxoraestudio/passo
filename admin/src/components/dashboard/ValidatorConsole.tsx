@@ -57,15 +57,11 @@ function ScanOverlay({ scan, onDone }: { scan: Scan; onDone: () => void }) {
  * the focus), or the short code typed by hand.
  */
 export default function ValidatorConsole({
-  gate,
-  onGate,
   busy,
   disabled,
   onCode,
   lastScan = null,
 }: {
-  gate: string;
-  onGate: (gate: string) => void;
   busy: boolean;
   disabled: boolean;
   onCode: (code: string) => void;
@@ -226,11 +222,6 @@ export default function ValidatorConsole({
         <p className={styles.manualHint}>El código corto aparece bajo el QR de cada entrada impresa.</p>
       </form>
 
-      <label className={styles.gateField}>
-        <span className={styles.manualLabel}>Puerta o acceso</span>
-        <input className={styles.manualInput} value={gate} maxLength={40} placeholder="Ej: Puerta Norte" onChange={(e) => onGate(e.target.value)} />
-        <small className={styles.manualHint}>Queda registrada en cada ingreso para ver el flujo por acceso.</small>
-      </label>
     </div>
   );
 }

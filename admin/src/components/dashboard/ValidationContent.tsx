@@ -8,6 +8,8 @@ import ValidEntryBanner from "./ValidEntryBanner";
 import ValidatorConsole from "./ValidatorConsole";
 import GatesTable from "./GatesTable";
 import IncidentLog from "./IncidentLog";
+import ValidationSummary from "./ValidationSummary";
+import { MaterialIcon } from "@/components/icons";
 import {
   getValidationOverview,
   listValidationEvents,
@@ -52,6 +54,8 @@ const subscribeOnline = (cb: () => void) => {
 export default function ValidationContent() {
   const online = useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
   const [events, setEvents] = useState<ValidationEvent[] | null>(null);
+  // Producers pick the event; door validators work the one(s) assigned to them.
+  const [canChoose, setCanChoose] = useState(true);
   const [eventId, setEventId] = useState("");
   const [gate, setGate] = useState("");
   const [overview, setOverview] = useState<ValidationOverview | null>(null);
@@ -60,15 +64,23 @@ export default function ValidationContent() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [onlyRejected, setOnlyRejected] = useState(false);
+  const [tab, setTab] = useState<"scan" | "stats">("scan");
+
+  const chooseTab = (next: "scan" | "stats") => {
+    setTab(next);
+    // Back on the scan tab, the reader's field is ready for the next code.
+    if (next === "scan") window.setTimeout(() => document.getElementById("manual-code")?.focus(), 0);
+  };
   const busyRef = useRef(false);
 
   // Events, then the remembered one (or the next to happen) and the remembered door.
   useEffect(() => {
     let active = true;
     listValidationEvents()
-      .then((list) => {
+      .then(({ events: list, canChoose: choose }) => {
         if (!active) return;
         setEvents(list);
+        setCanChoose(choose);
         const remembered = stored(EVENT_KEY);
         const now = Date.now();
         const next = list.find((e) => new Date(e.event_date).getTime() > now - 12 * 3_600_000) ?? list[list.length - 1];
@@ -137,12 +149,23 @@ export default function ValidationContent() {
     [eventId, gate, refresh]
   );
 
+  const loadingNumbers = !overview && !!eventId && !error;
+
   return (
     <div className={styles.page}>
       {events === null && !error ? (
         <SkeletonHeader />
       ) : (
-        <ValidationHeader events={events ?? []} eventId={eventId} onEvent={chooseEvent} online={online} updatedAt={updatedAt} />
+        <ValidationHeader
+          events={events ?? []}
+          canChoose={canChoose}
+          eventId={eventId}
+          onEvent={chooseEvent}
+          gate={gate}
+          onGate={chooseGate}
+          online={online}
+          updatedAt={updatedAt}
+        />
       )}
 
       {error && (
@@ -151,31 +174,68 @@ export default function ValidationContent() {
         </p>
       )}
       {events !== null && events.length === 0 && (
-        <p className={styles.notice}>No hay eventos en venta ni recién realizados para validar. Publica un evento para usar esta pantalla.</p>
+        <p className={styles.notice}>
+          {canChoose
+            ? "No hay eventos en venta ni recién realizados para validar. Publica un evento para usar esta pantalla."
+            : "Todavía no tienes un evento asignado. Pídele al productor que te asigne al evento donde trabajarás en la puerta."}
+        </p>
       )}
 
-      <ValidEntryBanner key={lastScan?.at ?? "idle"} scan={lastScan} />
+      <div className={styles.tabs} role="tablist" aria-label="Validación">
+        {(
+          [
+            ["scan", "qr_code_scanner", "Escanear"],
+            ["stats", "monitoring", "Estadísticas"],
+          ] as const
+        ).map(([id, icon, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            id={`val-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls={`val-panel-${id}`}
+            className={styles.tab}
+            onClick={() => chooseTab(id)}
+          >
+            <MaterialIcon decorative name={icon} />
+            {label}
+          </button>
+        ))}
+      </div>
 
-      <div className={styles.consoleGrid}>
-        <div className={styles.consoleCol}>
-          <ValidatorConsole gate={gate} onGate={chooseGate} busy={busy} disabled={!eventId} onCode={onCode} lastScan={lastScan} />
+      {/* Scan: what the door needs, and nothing else. Kept mounted so the camera and the result survive a look at the numbers. */}
+      <div role="tabpanel" id="val-panel-scan" aria-labelledby="val-tab-scan" hidden={tab !== "scan"} className={styles.scanGrid}>
+        <div className={styles.scanMain}>
+          <ValidEntryBanner key={lastScan?.at ?? "idle"} scan={lastScan} />
+          <ValidatorConsole busy={busy} disabled={!eventId} onCode={onCode} lastScan={lastScan} />
         </div>
-        <div className={styles.gatesCol}>
-          {!overview && eventId && !error ? <SkeletonTable rows={4} columns={3} label="Cargando accesos…" /> : <GatesTable overview={overview} />}
+        <div className={styles.scanSide}>
+          {loadingNumbers ? <SkeletonList rows={2} thumb="none" label="Cargando resumen…" /> : <ValidationSummary overview={overview} />}
+          {loadingNumbers ? (
+            <SkeletonList rows={4} label="Cargando últimos escaneos…" />
+          ) : (
+            <IncidentLog title="Últimos escaneos" limit={6} scans={overview?.recent ?? []} onlyRejected={onlyRejected} onToggle={() => setOnlyRejected((v) => !v)} />
+          )}
         </div>
       </div>
 
-      {!overview && eventId && !error ? (
-        <>
-          <SkeletonKpis label="Cargando indicadores de validación…" />
-          <SkeletonList rows={4} label="Cargando registro de escaneos…" />
-        </>
-      ) : (
-        <>
-          <ValidationKpiRow overview={overview} />
-          <IncidentLog scans={overview?.recent ?? []} onlyRejected={onlyRejected} onToggle={() => setOnlyRejected((v) => !v)} />
-        </>
-      )}
+      <div role="tabpanel" id="val-panel-stats" aria-labelledby="val-tab-stats" hidden={tab !== "stats"} className={styles.statsStack}>
+        {loadingNumbers ? (
+          <>
+            <SkeletonKpis label="Cargando indicadores de validación…" />
+            <SkeletonTable rows={4} columns={3} label="Cargando ingresos por sector…" />
+          </>
+        ) : (
+          <>
+            <ValidationKpiRow overview={overview} />
+            <div className={styles.statsGrid}>
+              <GatesTable overview={overview} />
+              <IncidentLog scans={overview?.recent ?? []} onlyRejected={onlyRejected} onToggle={() => setOnlyRejected((v) => !v)} />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

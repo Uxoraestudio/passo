@@ -49,6 +49,7 @@ const messages: Record<string, string> = {
   FORBIDDEN: "Tu rol no permite validar entradas.",
   EVENT_NOT_FOUND: "Ese evento ya no existe. Elige otro.",
   EMPTY_CODE: "Escanea un QR o escribe el código de la entrada.",
+  NOT_ASSIGNED: "Este evento no te fue asignado. Pídele al productor que te asigne.",
 };
 
 function toError(message: string | undefined, fallback: string) {
@@ -56,17 +57,58 @@ function toError(message: string | undefined, fallback: string) {
   return new ValidationError(code ? messages[code] : fallback);
 }
 
+/** True when the database doesn't have a function yet (its migration isn't applied). */
+export const missingFunction = (error: { code?: string; message?: string } | null, name: string) =>
+  !!error && (error.code === "PGRST202" || error.code === "42883" || !!error.message?.includes(name));
+
+export type ValidationEvents = {
+  /** Producers pick any event; door validators only get the ones assigned to them. */
+  canChoose: boolean;
+  events: ValidationEvent[];
+};
+
 /** Events that can be validated: on sale or finished, from two days ago onwards. */
-export async function listValidationEvents(): Promise<ValidationEvent[]> {
+export async function listValidationEvents(): Promise<ValidationEvents> {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("my_validation_events");
+  if (!error && data) return { canChoose: !!data.can_choose, events: (data.events ?? []) as ValidationEvent[] };
+  if (error && !missingFunction(error, "my_validation_events")) throw toError(error.message, "No pudimos cargar los eventos.");
+
+  // Before the door-staff migration: every validator could pick any event.
   const since = new Date(Date.now() - 2 * 86_400_000).toISOString();
-  const { data, error } = await createClient()
+  const res = await supabase
     .from("events")
     .select("id, title, event_date, venue, status")
     .in("status", ["en-venta", "casi-agotado", "finalizado"])
     .gte("event_date", since)
     .order("event_date", { ascending: true });
-  if (error) throw toError(error.message, "No pudimos cargar los eventos.");
-  return data ?? [];
+  if (res.error) throw toError(res.error.message, "No pudimos cargar los eventos.");
+  return { canChoose: true, events: res.data ?? [] };
+}
+
+// ---------------------------------------------------------------------------
+// Door team of an event (assigned by the producer)
+// ---------------------------------------------------------------------------
+
+export type DoorStaffMember = { user_id: string; name: string; email: string; role: string; assigned: boolean };
+
+export class DoorStaffUnavailable extends Error {}
+
+export async function fetchDoorStaff(eventId: string): Promise<DoorStaffMember[]> {
+  const { data, error } = await createClient().rpc("event_door_staff_list", { p_event_id: eventId });
+  if (error) {
+    if (missingFunction(error, "event_door_staff_list")) throw new DoorStaffUnavailable();
+    throw toError(error.message, "No pudimos cargar el equipo de puerta.");
+  }
+  return (data ?? []) as DoorStaffMember[];
+}
+
+export async function saveDoorStaff(eventId: string, userIds: string[]) {
+  const { error } = await createClient().rpc("set_event_door_staff", { p_event_id: eventId, p_user_ids: userIds });
+  if (error) {
+    if (missingFunction(error, "set_event_door_staff")) throw new DoorStaffUnavailable();
+    throw toError(error.message, "No pudimos guardar el equipo de puerta. Inténtalo de nuevo.");
+  }
 }
 
 export async function validateTicket(eventId: string, code: string, gate: string): Promise<ValidationResponse> {

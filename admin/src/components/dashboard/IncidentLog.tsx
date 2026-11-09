@@ -6,14 +6,28 @@ const ICONS = { ok: "check_circle", warn: "history", bad: "block" } as const;
 const time = (iso: string) => new Date(iso).toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
 /** The latest scans of the event, rejections first in mind: who, where and why. */
-export default function IncidentLog({ scans, onlyRejected, onToggle }: { scans: RecentScan[]; onlyRejected: boolean; onToggle: () => void }) {
-  const shown = onlyRejected ? scans.filter((s) => s.result !== "valid") : scans;
+export default function IncidentLog({
+  scans,
+  onlyRejected,
+  onToggle,
+  limit,
+  title = "Registro en vivo",
+}: {
+  scans: RecentScan[];
+  onlyRejected: boolean;
+  onToggle: () => void;
+  /** Show only the latest few (the scan tab); the statistics tab shows them all. */
+  limit?: number;
+  title?: string;
+}) {
+  const filtered = onlyRejected ? scans.filter((s) => s.result !== "valid") : scans;
+  const shown = limit ? filtered.slice(0, limit) : filtered;
   return (
     <div className={styles.card}>
       <div className={styles.header}>
         <span className={styles.headerLeft}>
           <MaterialIcon decorative name="receipt_long" className={styles.headerIcon} />
-          <h2 className={styles.title}>Registro en vivo</h2>
+          <h2 className={styles.title}>{title}</h2>
         </span>
         <button type="button" className={styles.filterButton} aria-pressed={onlyRejected} onClick={onToggle}>
           {onlyRejected ? "Ver todos" : "Solo rechazos"}

@@ -213,6 +213,7 @@ const memberErrors: Record<string, string> = {
   LAST_ADMIN: "Debe quedar al menos un administrador.",
   ROLE_NOT_FOUND: "Ese rol ya no existe. Recarga la página.",
   FORBIDDEN: "Tu rol no permite administrar el equipo.",
+  OTHER_TEAM: "Esa persona ya trabaja con otra productora o en el equipo de la plataforma.",
 };
 
 export function friendlyError(error: { message?: string; code?: string } | null, fallback: string) {

@@ -2,13 +2,42 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #1c1a2a;
+}
+
+.subtitle {
+  padding-top: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #64748b;
 }
 
 .liveRow {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #ecfdf3;
+}
+
+.liveRow:has([data-off="true"]) {
+  background: #fef2f2;
 }
 
 .liveDot {
@@ -17,6 +46,11 @@
   border-radius: 9999px;
   background: var(--color-success);
   animation: pulse 1.6s ease-in-out infinite;
+}
+
+.liveDot[data-off="true"] {
+  background: #b42318;
+  animation: none;
 }
 
 @keyframes pulse {
@@ -29,75 +63,158 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .liveDot {
+    animation: none;
+  }
+}
+
 .liveLabel {
   font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #005438;
+  font-size: 12px;
+  color: #05603a;
+}
+
+.liveLabel[data-off="true"] {
+  color: #b42318;
 }
 
 .liveCaption {
   font-size: 12px;
-  color: #797488;
+  font-variant-numeric: tabular-nums;
+  color: #4b7a62;
 }
 
-.title {
+/* Event + door, set once before scanning */
+.setup {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.04);
+}
+
+.setupField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.setupLabel {
   font-weight: 700;
-  font-size: 28px;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.setupLabel i {
+  font-style: normal;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: #94a3b8;
+}
+
+.gateWrap {
+  position: relative;
+  display: flex;
+}
+
+.gateIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.gateInput {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 38px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gateInput:hover {
+  border-color: #c4b5fd;
+}
+
+.gateInput:focus-visible {
+  outline: none;
+  border-color: #6534f5;
+  box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.16);
+}
+
+.assigned {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e9e4fb;
+  background: #f7f5ff;
+}
+
+.assignedIcon {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: #5b32e6;
+}
+
+.assignedText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.assignedText b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 14px;
   color: #1c1a2a;
 }
 
-.eventRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.statusPill {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.1);
-  font-weight: 600;
+.assignedText small {
   font-size: 12px;
-  color: #005438;
-  white-space: nowrap;
+  color: #64748b;
 }
 
-.statusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: var(--color-success);
+.assignedTag {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #ece6ff;
+  font-weight: 700;
+  font-size: 11px;
+  color: #5b32e6;
 }
 
-.statusDivider {
-  color: rgba(0, 84, 56, 0.4);
-}
-
-@media (min-width: 1280px) {
-  .section {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
+@media (max-width: 720px) {
+  .title {
+    font-size: 24px;
   }
-}
 
-.liveDot[data-off="true"] {
-  background: #94a3b8;
-  animation: none;
-}
-
-/* Long event names: the select never exceeds the screen, the name is cut instead. */
-.eventRow {
-  display: flex;
-  min-width: 0;
-  max-width: min(100%, 420px);
+  .setup {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+  }
 }

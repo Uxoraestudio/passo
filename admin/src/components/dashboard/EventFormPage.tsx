@@ -22,6 +22,7 @@ import { createVenue, getVenueById, listVenues, sectorCountFor, venueCapacity, t
 import { LAYOUTS } from "@/lib/venue-layouts";
 import ConfirmDialog from "./ConfirmDialog";
 import EventCourtesies from "./EventCourtesies";
+import EventDoorStaff from "./EventDoorStaff";
 import EventImageField from "./EventImageField";
 import EventPresales from "./EventPresales";
 import EventCoupons from "./EventCoupons";
@@ -61,7 +62,7 @@ const steps = [
 type StepKey = (typeof steps)[number]["key"];
 /** Wizard steps: the form sections, plus presales, coupons and courtesies once the event exists. */
 type FlowKey = StepKey | "extras";
-const extrasStep = { key: "extras" as const, label: "Preventas, cupones y cortesías" };
+const extrasStep = { key: "extras" as const, label: "Extras y equipo de puerta" };
 
 const stepIcons: Record<FlowKey, string> = {
   info: "edit_note",
@@ -1336,6 +1337,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             />
             <EventCoupons eventId={eventId} />
             <EventCourtesies eventId={eventId} sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name }))} />
+            <EventDoorStaff eventId={eventId} />
             </div>
           )}
 
