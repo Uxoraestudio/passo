@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { CheckoutOrder } from "@/lib/checkout-order";
 import { documentError, formatDocument, cleanDocument } from "@/lib/document";
 import CheckoutTopBar from "./CheckoutTopBar";
-import OrderSummary, { HelpCard } from "./OrderSummary";
+import OrderSummary from "./OrderSummary";
+import CouponBox from "./CouponBox";
 import styles from "./Checkout.module.css";
 import { chileToday } from "@/lib/chile-time";
 
@@ -330,6 +331,7 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
 
         <aside className={styles.sidebar}>
           <OrderSummary order={order} title="Desglose de compra">
+            <CouponBox orderId={order.id} code={order.couponCode} discount={order.discount} disabled={expired || saving} />
             <button type="submit" form="nomination-form" className={styles.primaryButton} disabled={expired || saving}>
               {saving ? "Guardando…" : "Continuar a confirmación"}
             </button>
@@ -347,7 +349,6 @@ export default function NominationForm({ order }: { order: CheckoutOrder }) {
               </span>
             </p>
           </OrderSummary>
-          <HelpCard />
         </aside>
       </div>
     </main>

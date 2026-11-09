@@ -616,8 +616,7 @@
 .ghostButton:focus-visible,
 .copyButton:focus-visible,
 .backLink:focus-visible,
-.editLink:focus-visible,
-.helpCard:focus-visible {
+.editLink:focus-visible {
   outline: 2px solid var(--color-purple);
   outline-offset: 2px;
 }
@@ -840,48 +839,6 @@
   display: block;
   font-size: 12.5px;
   color: var(--color-gray-900);
-}
-
-.helpCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  border: 1px solid var(--color-gray-100);
-  background: #fff;
-  transition: border-color 150ms ease;
-}
-
-.helpCard:hover {
-  border-color: #d6cbfc;
-}
-
-.helpIcon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: #f2edfe;
-  color: var(--color-purple);
-}
-
-.helpIcon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.helpCard strong {
-  display: block;
-  font-size: 13.5px;
-  color: var(--color-gray-900);
-}
-
-.helpCard small {
-  font-size: 12px;
-  color: var(--color-gray-500);
 }
 
 /* Confirmation page */

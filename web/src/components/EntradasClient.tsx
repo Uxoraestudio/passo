@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -80,6 +80,23 @@ export default function EntradasClient({
       if (next === 0) delete updated[tierId];
       return updated;
     });
+  };
+
+  const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [flashId, setFlashId] = useState<string | null>(null);
+
+  // Picking a zone on the map selects it and takes the buyer to its row to set the quantity.
+  const selectFromMap = (id: string) => {
+    if ((selections[id] ?? 0) === 0) updateQty(id, 1);
+    window.setTimeout(() => {
+      const row = rowRefs.current[id];
+      if (!row) return;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      row.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+      row.querySelector<HTMLButtonElement>("button[data-role='add']")?.focus({ preventScroll: true });
+      setFlashId(id);
+      window.setTimeout(() => setFlashId((current) => (current === id ? null : current)), 1400);
+    }, 0);
   };
 
   const activeIds = Object.keys(selections).filter((id) => selections[id] > 0);
@@ -174,11 +191,11 @@ export default function EntradasClient({
                   plan={plan}
                   activeIds={activeIds}
                   soldOutIds={tiers.filter((t) => t.status === "agotado").map((t) => t.id)}
-                  onSelect={(id) => updateQty(id, (selections[id] ?? 0) > 0 ? 0 : 1)}
+                  onSelect={selectFromMap}
                   label="Plano del recinto: elige un sector"
                 />
               ) : (
-                <VenueMap tiers={detail.tiers} activeIds={activeIds} onSelect={(id) => updateQty(id, (selections[id] ?? 0) > 0 ? 0 : 1)} />
+                <VenueMap tiers={detail.tiers} activeIds={activeIds} onSelect={selectFromMap} />
               )}
             </div>
             <div className={styles.legend}>
@@ -210,7 +227,15 @@ export default function EntradasClient({
               {tiers.map((tier) => {
                 const qty = selections[tier.id] ?? 0;
                 return (
-                  <div key={tier.id} className={styles.sectorRow} data-active={qty > 0}>
+                  <div
+                    key={tier.id}
+                    ref={(el) => {
+                      rowRefs.current[tier.id] = el;
+                    }}
+                    className={styles.sectorRow}
+                    data-active={qty > 0}
+                    data-flash={flashId === tier.id}
+                  >
                     <div className={styles.sectorInfo}>
                       <span className={styles.sectorDot} style={{ background: tier.color }} />
                       <div>
@@ -244,6 +269,7 @@ export default function EntradasClient({
                       <span>{qty}</span>
                       <button
                         type="button"
+                        data-role="add"
                         onClick={() => updateQty(tier.id, 1)}
                         disabled={!canAdd(tier)}
                         aria-label={`Sumar ${tier.name}`}

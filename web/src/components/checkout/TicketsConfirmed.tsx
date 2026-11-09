@@ -162,24 +162,6 @@ export default async function TicketsConfirmed({ order, tickets }: { order: Chec
           </Link>
         </aside>
       </div>
-
-      <a href="/proximamente/?title=Centro%20de%20ayuda" className={styles.helpBanner}>
-        <span className={styles.helpIcon} aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path
-              d="M4 13v-1a8 8 0 1 1 16 0v1M4 13a2 2 0 0 1 2-2h1v6H6a2 2 0 0 1-2-2v-2Zm16 0a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2v-2Z"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-        <span className={styles.helpText}>
-          <strong>¿Necesitas ayuda?</strong>
-          <small>Revisa nuestro centro de ayuda si tienes dudas sobre tu compra.</small>
-        </span>
-        <span className={styles.helpCta}>Centro de ayuda →</span>
-      </a>
     </main>
   );
 }

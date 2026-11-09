@@ -234,6 +234,28 @@
   background: #f8f6ff;
 }
 
+/* Brief highlight when the zone was picked on the map. */
+.sectorRow[data-flash="true"] {
+  animation: rowFlash 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes rowFlash {
+  0%,
+  35% {
+    box-shadow: 0 0 0 4px rgba(101, 52, 245, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(101, 52, 245, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectorRow[data-flash="true"] {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(101, 52, 245, 0.28);
+  }
+}
+
 .sectorInfo {
   display: flex;
   align-items: flex-start;

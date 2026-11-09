@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { CheckoutOrder } from "@/lib/checkout-order";
 import { payOrder } from "@/lib/checkout-client";
 import CheckoutTopBar from "./CheckoutTopBar";
-import OrderSummary, { HelpCard, currency } from "./OrderSummary";
+import OrderSummary, { currency } from "./OrderSummary";
 import CouponBox from "./CouponBox";
 import styles from "./Checkout.module.css";
 
@@ -211,7 +211,6 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
               Modificar datos de compra
             </Link>
           </OrderSummary>
-          <HelpCard />
         </aside>
       </div>
 
