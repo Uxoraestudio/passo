@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import { SkeletonList } from "@/components/Skeleton";
 import { useCanEdit } from "@/lib/access";
 import { listSalePhases, salePhaseUsage, saveSalePhases, type PhaseUsage, type QuotaMode, type SalePhase } from "@/lib/sale-phases-data";
 import ConfirmDialog from "./ConfirmDialog";
 import formStyles from "./EventFormPage.module.css";
 import styles from "./EventPresales.module.css";
+import { DateTimeField } from "@/components/TimePicker";
 
 type Sector = { id: string; name: string; price: number };
 
@@ -245,7 +247,7 @@ export default function EventPresales({ eventId, sectors, saleStart }: { eventId
           {loadError}
         </p>
       ) : drafts === null ? (
-        <p className={styles.empty}>Cargando…</p>
+        <SkeletonList rows={2} thumb="none" card={false} label="Cargando preventas…" />
       ) : sectors.length === 0 ? (
         <p className={styles.empty}>Guarda el evento con al menos un sector activo para configurar preventas.</p>
       ) : (
@@ -291,11 +293,11 @@ export default function EventPresales({ eventId, sectors, saleStart }: { eventId
                     <div className={`${formStyles.row} ${formStyles.c2}`}>
                       <label className={formStyles.field}>
                         <span className={formStyles.label}>Inicio</span>
-                        <input type="datetime-local" value={d.start} disabled={!canEdit} onChange={(e) => patch(d.key, { start: e.target.value })} />
+                        <DateTimeField value={d.start} disabled={!canEdit} onChange={(v) => patch(d.key, { start: v })} aria-label="Inicio de la preventa" />
                       </label>
                       <label className={formStyles.field}>
                         <span className={formStyles.label}>Término</span>
-                        <input type="datetime-local" value={d.end} disabled={!canEdit} onChange={(e) => patch(d.key, { end: e.target.value })} />
+                        <DateTimeField value={d.end} disabled={!canEdit} onChange={(v) => patch(d.key, { end: v })} aria-label="Término de la preventa" defaultTime="23:59" />
                       </label>
                     </div>
 

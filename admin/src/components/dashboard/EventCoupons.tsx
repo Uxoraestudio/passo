@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonList } from "@/components/Skeleton";
 import { useCanEdit } from "@/lib/access";
 import { createCoupon, deleteCoupon, listCoupons, normalizeCode, updateCoupon, type Coupon, type CouponKind, type CouponStats } from "@/lib/coupons-data";
 import ConfirmDialog from "./ConfirmDialog";
 import formStyles from "./EventFormPage.module.css";
 import styles from "./EventCoupons.module.css";
+import { DateTimeField } from "@/components/TimePicker";
 
 const money = (v: number) => `$${v.toLocaleString("es-CL")}`;
 const whole = (v: string) => v.replace(/\D/g, "").slice(0, 9);
@@ -149,13 +152,21 @@ export default function EventCoupons({ eventId }: { eventId: string }) {
                 onChange={(e) => setForm({ ...form, code: normalizeCode(e.target.value) })}
               />
             </label>
-            <label className={formStyles.field}>
-              <span className={formStyles.label}>Tipo</span>
-              <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value as CouponKind })}>
-                <option value="percent">Porcentaje (%)</option>
-                <option value="amount">Monto fijo ($)</option>
-              </select>
-            </label>
+            <div className={formStyles.field}>
+              <span className={formStyles.label} aria-hidden="true">
+                Tipo
+              </span>
+              <Select
+                size="lg"
+                aria-label="Tipo de descuento"
+                value={form.kind}
+                onChange={(v) => setForm({ ...form, kind: v as CouponKind })}
+                options={[
+                  { value: "percent", label: "Porcentaje (%)" },
+                  { value: "amount", label: "Monto fijo ($)" },
+                ]}
+              />
+            </div>
             <label className={formStyles.field}>
               <span className={formStyles.label}>{form.kind === "percent" ? "Descuento (%)" : "Descuento ($)"}</span>
               <input
@@ -177,13 +188,13 @@ export default function EventCoupons({ eventId }: { eventId: string }) {
               <span className={formStyles.label}>
                 Desde <i>opcional</i>
               </span>
-              <input type="datetime-local" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} />
+              <DateTimeField value={form.start} onChange={(v) => setForm({ ...form, start: v })} aria-label="Válido desde" />
             </label>
             <label className={formStyles.field}>
               <span className={formStyles.label}>
                 Hasta <i>opcional</i>
               </span>
-              <input type="datetime-local" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} />
+              <DateTimeField value={form.end} onChange={(v) => setForm({ ...form, end: v })} aria-label="Válido hasta" defaultTime="23:59" />
             </label>
           </div>
           <p className={formStyles.hint}>Cada compra cuenta como un uso, sin importar cuántas entradas lleve. El total con descuento debe quedar sobre $1.000.</p>
@@ -211,7 +222,7 @@ export default function EventCoupons({ eventId }: { eventId: string }) {
           {loadError}
         </p>
       ) : coupons === null ? (
-        <p className={styles.empty}>Cargando…</p>
+        <SkeletonList rows={3} thumb="none" card={false} label="Cargando cupones…" />
       ) : coupons.length === 0 ? (
         <p className={styles.empty}>Este evento todavía no tiene cupones.</p>
       ) : (

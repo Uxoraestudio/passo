@@ -176,14 +176,13 @@
   gap: 6px;
 }
 
-.field span {
+.field > span {
   font-size: 12px;
   font-weight: 700;
   color: #1c1a2a;
 }
 
-.field input,
-.field select {
+.field input {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #e5dff7;

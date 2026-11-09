@@ -3,6 +3,8 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonHeader, SkeletonKpis, SkeletonTable } from "@/components/Skeleton";
 import { getEvent, type EventRecord } from "@/lib/events-data";
 import { attendeesCsv, getEventAttendees, KIND_LABEL, STATUS_LABEL, type Attendee, type AttendeeKind, type TicketStatus } from "@/lib/attendees-data";
 import styles from "./EventAttendees.module.css";
@@ -74,7 +76,14 @@ export default function EventAttendees({ eventId }: { eventId: string }) {
     URL.revokeObjectURL(url);
   };
 
-  if (load.state === "loading") return <div className={styles.state}>Cargando asistentes…</div>;
+  if (load.state === "loading")
+    return (
+      <div className={styles.page}>
+        <SkeletonHeader actions={2} />
+        <SkeletonKpis label="Cargando resumen de asistentes…" />
+        <SkeletonTable rows={8} columns={6} label="Cargando asistentes…" />
+      </div>
+    );
   if (load.state === "error")
     return (
       <div className={styles.state} role="alert">
@@ -146,36 +155,41 @@ export default function EventAttendees({ eventId }: { eventId: string }) {
           <span className="sr-only">Buscar asistente</span>
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nombre, RUT, correo o código de orden" />
         </label>
-        <label>
-          <span className="sr-only">Tipo de entrada</span>
-          <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)}>
-            <option value="all">Todos los tipos</option>
-            <option value="sale">Venta</option>
-            <option value="cortesia">Cortesía</option>
-            <option value="prensa">Prensa</option>
-          </select>
-        </label>
-        <label>
-          <span className="sr-only">Estado de validación</span>
-          <select value={status} onChange={(e) => setStatus(e.target.value as typeof status)}>
-            <option value="all">Todos los estados</option>
-            <option value="used">Ingresó</option>
-            <option value="valid">Por ingresar</option>
-            <option value="void">Anulada</option>
-          </select>
-        </label>
+        <div className={styles.filterSelect}>
+          <Select
+            aria-label="Tipo de entrada"
+            value={kind}
+            onChange={(v) => setKind(v as typeof kind)}
+            options={[
+              { value: "all", label: "Todos los tipos" },
+              { value: "sale", label: "Venta" },
+              { value: "cortesia", label: "Cortesía" },
+              { value: "prensa", label: "Prensa" },
+            ]}
+          />
+        </div>
+        <div className={styles.filterSelect}>
+          <Select
+            aria-label="Estado de validación"
+            value={status}
+            onChange={(v) => setStatus(v as typeof status)}
+            options={[
+              { value: "all", label: "Todos los estados" },
+              { value: "used", label: "Ingresó" },
+              { value: "valid", label: "Por ingresar" },
+              { value: "void", label: "Anulada" },
+            ]}
+          />
+        </div>
         {sectors.length > 1 && (
-          <label>
-            <span className="sr-only">Sector</span>
-            <select value={sector} onChange={(e) => setSector(e.target.value)}>
-              <option value="all">Todos los sectores</option>
-              {sectors.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className={styles.filterSelect}>
+            <Select
+              aria-label="Sector"
+              value={sector}
+              onChange={setSector}
+              options={[{ value: "all", label: "Todos los sectores" }, ...sectors.map((s) => ({ value: s, label: s }))]}
+            />
+          </div>
         )}
       </div>
 

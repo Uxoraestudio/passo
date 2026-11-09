@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { SkeletonHeader, SkeletonKpis, SkeletonList, SkeletonTable } from "@/components/Skeleton";
 import ValidationHeader from "./ValidationHeader";
 import ValidationKpiRow from "./ValidationKpiRow";
 import ValidEntryBanner from "./ValidEntryBanner";
@@ -138,7 +139,11 @@ export default function ValidationContent() {
 
   return (
     <div className={styles.page}>
-      <ValidationHeader events={events ?? []} eventId={eventId} onEvent={chooseEvent} online={online} updatedAt={updatedAt} />
+      {events === null && !error ? (
+        <SkeletonHeader />
+      ) : (
+        <ValidationHeader events={events ?? []} eventId={eventId} onEvent={chooseEvent} online={online} updatedAt={updatedAt} />
+      )}
 
       {error && (
         <p className={styles.error} role="alert">
@@ -156,12 +161,21 @@ export default function ValidationContent() {
           <ValidatorConsole gate={gate} onGate={chooseGate} busy={busy} disabled={!eventId} onCode={onCode} lastScan={lastScan} />
         </div>
         <div className={styles.gatesCol}>
-          <GatesTable overview={overview} />
+          {!overview && eventId && !error ? <SkeletonTable rows={4} columns={3} label="Cargando accesos…" /> : <GatesTable overview={overview} />}
         </div>
       </div>
 
-      <ValidationKpiRow overview={overview} />
-      <IncidentLog scans={overview?.recent ?? []} onlyRejected={onlyRejected} onToggle={() => setOnlyRejected((v) => !v)} />
+      {!overview && eventId && !error ? (
+        <>
+          <SkeletonKpis label="Cargando indicadores de validación…" />
+          <SkeletonList rows={4} label="Cargando registro de escaneos…" />
+        </>
+      ) : (
+        <>
+          <ValidationKpiRow overview={overview} />
+          <IncidentLog scans={overview?.recent ?? []} onlyRejected={onlyRejected} onToggle={() => setOnlyRejected((v) => !v)} />
+        </>
+      )}
     </div>
   );
 }

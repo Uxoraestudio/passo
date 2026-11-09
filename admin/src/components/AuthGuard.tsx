@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AccessContext, allows, firstAllowedHref, type Access, type ModuleKey } from "@/lib/access";
+import { SkeletonShell } from "./Skeleton";
 import styles from "./AuthGuard.module.css";
 
 type State = { status: "checking" } | { status: "unauthorized" } | { status: "authorized"; access: Access };
@@ -71,7 +72,9 @@ export default function AuthGuard({
     }
   }, [state.status, router]);
 
-  if (state.status !== "authorized") return null;
+  // While the session is checked (and during the redirect to login) show the
+  // panel's outline instead of a blank screen.
+  if (state.status !== "authorized") return <SkeletonShell />;
 
   if (module && !allows(state.access, module, level)) {
     const fallback = firstAllowedHref(state.access);

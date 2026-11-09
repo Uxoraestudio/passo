@@ -15,10 +15,10 @@ export type SeoPage = {
 
 export const seoPageOrder: { pageKey: SeoPageKey; label: string; description: string }[] = [
   { pageKey: "home", label: "Inicio", description: "Portada del sitio (aforiq.cl)" },
-  { pageKey: "eventos", label: "Listado de eventos", description: "Página /eventos" },
-  { pageKey: "evento_detalle", label: "Detalle de evento (plantilla)", description: "Valores de respaldo para eventos sin imagen o descripción propia" },
-  { pageKey: "login", label: "Iniciar sesión", description: "Página de login de usuarios" },
-  { pageKey: "registro", label: "Registro", description: "Página de registro de usuarios" },
+  { pageKey: "eventos", label: "Listado de eventos", description: "Página con todos los eventos" },
+  { pageKey: "evento_detalle", label: "Página de cada evento", description: "Se usa cuando un evento no tiene imagen o descripción propia" },
+  { pageKey: "login", label: "Iniciar sesión", description: "Página donde los compradores inician sesión" },
+  { pageKey: "registro", label: "Registro", description: "Página donde los compradores crean su cuenta" },
   { pageKey: "organizadores", label: "Organizadores", description: "Página para organizadores de eventos" },
 ];
 

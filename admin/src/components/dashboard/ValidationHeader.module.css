@@ -57,36 +57,6 @@
   flex-wrap: wrap;
 }
 
-.eventPill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: none;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(12, 10, 26, 0.06), 0 4px 12px rgba(12, 10, 26, 0.03);
-  font-weight: 600;
-  font-size: 14px;
-  color: #1c1a2a;
-  white-space: nowrap;
-}
-
-.eventPill:hover {
-  background: #f7f1ff;
-}
-
-.eventIcon {
-  font-size: 20px;
-  color: var(--color-purple);
-}
-
-.chevronIcon {
-  font-size: 18px;
-  color: #797488;
-}
-
 .statusPill {
   display: flex;
   align-items: center;
@@ -120,52 +90,14 @@
   }
 }
 
-.eventSelect {
-  appearance: none;
-  min-width: 0;
-  max-width: 340px;
-  border: none;
-  background: transparent;
-  font: inherit;
-  font-weight: 700;
-  color: inherit;
-  cursor: pointer;
-  text-overflow: ellipsis;
-}
-
-.eventSelect:focus-visible {
-  outline: none;
-}
-
-.eventPill:focus-within {
-  outline: 2px solid var(--color-orange);
-  outline-offset: 2px;
-}
-
 .liveDot[data-off="true"] {
   background: #94a3b8;
   animation: none;
 }
 
-/* Long event names: the pill never exceeds the screen, the name is cut instead. */
-.eventPill {
-  max-width: 100%;
-  min-width: 0;
-}
-
+/* Long event names: the select never exceeds the screen, the name is cut instead. */
 .eventRow {
+  display: flex;
   min-width: 0;
-  max-width: 100%;
-}
-
-.eventSelect {
-  flex: 1 1 auto;
-  max-width: none;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.chevronIcon {
-  flex-shrink: 0;
-  pointer-events: none;
+  max-width: min(100%, 420px);
 }

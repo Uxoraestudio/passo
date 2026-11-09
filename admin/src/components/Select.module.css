@@ -1,0 +1,194 @@
+/* One select style for the whole admin. Trigger rules start with html so
+   page resets such as `.page :where(button) { padding: 0 }` can't override them. */
+
+:global(html) .trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 36px 0 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+:global(html) .trigger:hover:not(:disabled) {
+  border-color: #c4b5fd;
+}
+
+:global(html) .trigger:focus-visible,
+:global(html) .trigger.open {
+  outline: none;
+  border-color: #6534f5;
+  box-shadow: 0 0 0 3px rgba(101, 52, 245, 0.16);
+}
+
+:global(html) .trigger:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+:global(html) .trigger[data-invalid="true"] {
+  border-color: #b42318;
+}
+
+:global(html) .trigger[data-invalid="true"]:focus-visible,
+:global(html) .trigger[data-invalid="true"].open {
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.14);
+}
+
+:global(html) .auto {
+  width: auto;
+  max-width: 100%;
+}
+
+:global(html) .sm {
+  height: 34px;
+  padding: 0 32px 0 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+:global(html) .lg {
+  height: 44px;
+  border-radius: 10px;
+}
+
+:global(html) .withIcon {
+  padding-left: 38px;
+}
+
+:global(html) .sm.withIcon {
+  padding-left: 34px;
+}
+
+:global(html) .icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+:global(html) .icon > * {
+  width: 16px;
+  height: 16px;
+  font-size: 18px;
+}
+
+:global(html) .value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(html) .placeholder {
+  color: #94a3b8;
+}
+
+:global(html) .chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+
+:global(html) .sm .chevron {
+  right: 10px;
+}
+
+:global(html) .open .chevron {
+  transform: translateY(-50%) rotate(180deg);
+  color: #6534f5;
+}
+
+/* Dropdown list (rendered in a portal on <body>) */
+
+.list {
+  position: fixed;
+  z-index: 1000;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.06);
+  font-family: inherit;
+  outline: none;
+  animation: listIn 0.12s ease-out;
+}
+
+@keyframes listIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list {
+    animation: none;
+  }
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 14px;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+.optionLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.active {
+  background: #f5f3ff;
+  color: #1e293b;
+}
+
+.selected {
+  font-weight: 600;
+  color: #5b32e6;
+}
+
+.check {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: #6534f5;
+}
+
+.disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+}

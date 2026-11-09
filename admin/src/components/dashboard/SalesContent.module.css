@@ -30,22 +30,10 @@
   color: #94a3b8;
 }
 
-.eventSelect select {
-  max-width: 220px;
-  appearance: none;
-  padding: 9px 30px 9px 14px;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #fff
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath d='M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z'/%3E%3C/svg%3E")
-    no-repeat right 10px center / 14px;
-  font: inherit;
-  font-weight: 600;
-  font-size: 12px;
-  color: #334155;
-  text-overflow: ellipsis;
-  color-scheme: light;
-  cursor: pointer;
+.eventSelect {
+  display: flex;
+  max-width: 240px;
+  min-width: 0;
 }
 
 .exportButton {
@@ -73,7 +61,6 @@
   cursor: progress;
 }
 
-.eventSelect select:focus-visible,
 .exportButton:focus-visible,
 .chips button:focus-visible {
   outline: 2px solid #6534f5;

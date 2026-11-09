@@ -57,7 +57,7 @@ export default function GatesTable({ overview }: { overview: ValidationOverview 
         <h2 className={styles.title}>Por puerta</h2>
       </div>
       {gates.length === 0 ? (
-        <p className={styles.empty}>Los ingresos se agrupan por la puerta indicada en la consola.</p>
+        <p className={styles.empty}>Los ingresos se agrupan por la puerta que se indica al escanear.</p>
       ) : (
         <div className={styles.tableWrap}>
           <table className={styles.table}>

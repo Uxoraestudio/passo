@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
 import type { Point, Section } from "@/lib/venue-map-types";
 import { alignToSection, GENERATOR_LIMITS, rotationTowards, type GeneratorParams, type GeneratorResult } from "./seatGenerator";
 import { centroid, type Size } from "./geometry";
@@ -176,11 +177,16 @@ export default function SeatGeneratorPanel(props: Props) {
           <Num label="Rotación" value={params.rotation} step={1} suffix="°" onChange={(v) => set({ rotation: ((v % 360) + 360) % 360 })} />
           <label className={styles.field}>
             <span>Alineación</span>
-            <select value={params.alignment} onChange={(e) => set({ alignment: e.target.value as GeneratorParams["alignment"] })}>
-              <option value="center">Centrada</option>
-              <option value="left">Izquierda</option>
-              <option value="right">Derecha</option>
-            </select>
+            <Select
+              size="sm"
+              value={params.alignment}
+              onChange={(v) => set({ alignment: v as GeneratorParams["alignment"] })}
+              options={[
+                { value: "center", label: "Centrada" },
+                { value: "left", label: "Izquierda" },
+                { value: "right", label: "Derecha" },
+              ]}
+            />
           </label>
         </div>
         {stage && (
@@ -208,16 +214,18 @@ export default function SeatGeneratorPanel(props: Props) {
         <div className={styles.fieldRow}>
           <label className={styles.field}>
             <span>Filas con</span>
-            <select
+            <Select
+              size="sm"
               value={params.rowLabels}
-              onChange={(e) => {
-                const rowLabels = e.target.value as GeneratorParams["rowLabels"];
+              onChange={(v) => {
+                const rowLabels = v as GeneratorParams["rowLabels"];
                 set({ rowLabels, rowStart: rowLabels === "letters" ? "A" : "1" });
               }}
-            >
-              <option value="letters">Letras (A, B, C…)</option>
-              <option value="numbers">Números (1, 2, 3…)</option>
-            </select>
+              options={[
+                { value: "letters", label: "Letras (A, B, C…)" },
+                { value: "numbers", label: "Números (1, 2, 3…)" },
+              ]}
+            />
           </label>
           <LiveText
             key={params.rowLabels}
@@ -232,19 +240,29 @@ export default function SeatGeneratorPanel(props: Props) {
         </div>
         <label className={styles.field}>
           <span>Orden de las filas</span>
-          <select value={params.rowOrder} onChange={(e) => set({ rowOrder: e.target.value as GeneratorParams["rowOrder"] })}>
-            <option value="front-to-back">Desde el escenario hacia atrás</option>
-            <option value="back-to-front">Desde atrás hacia el escenario</option>
-          </select>
+          <Select
+            size="sm"
+            value={params.rowOrder}
+            onChange={(v) => set({ rowOrder: v as GeneratorParams["rowOrder"] })}
+            options={[
+              { value: "front-to-back", label: "Desde el escenario hacia atrás" },
+              { value: "back-to-front", label: "Desde atrás hacia el escenario" },
+            ]}
+          />
         </label>
         <div className={styles.fieldRow}>
           <label className={styles.field}>
             <span>Asientos</span>
-            <select value={params.numbering} onChange={(e) => set({ numbering: e.target.value as GeneratorParams["numbering"] })}>
-              <option value="ltr">Izquierda → derecha</option>
-              <option value="rtl">Derecha → izquierda</option>
-              <option value="odd-even-center">Impares / pares desde el centro</option>
-            </select>
+            <Select
+              size="sm"
+              value={params.numbering}
+              onChange={(v) => set({ numbering: v as GeneratorParams["numbering"] })}
+              options={[
+                { value: "ltr", label: "Izquierda → derecha" },
+                { value: "rtl", label: "Derecha → izquierda" },
+                { value: "odd-even-center", label: "Impares / pares desde el centro" },
+              ]}
+            />
           </label>
           <Num label="Primer número" value={params.seatStart} min={0} onChange={(v) => set({ seatStart: Math.max(0, Math.round(v)) })} />
         </div>

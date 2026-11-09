@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonList } from "@/components/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { useCanEdit } from "@/lib/access";
 import { fetchCourtesies, formatDateTime, issueCourtesy, voidCourtesy, type Courtesy } from "@/lib/admin-data";
@@ -120,23 +122,31 @@ export default function EventCourtesies({ eventId, sectors }: { eventId: string;
               <label className={formStyles.label} htmlFor="ct-kind">
                 Tipo
               </label>
-              <select id="ct-kind" value={kind} onChange={(e) => setKind(e.target.value as "cortesia" | "prensa")}>
-                <option value="cortesia">Cortesía</option>
-                <option value="prensa">Prensa / acreditación</option>
-              </select>
+              <Select
+                id="ct-kind"
+                size="lg"
+                value={kind}
+                onChange={(v) => setKind(v as "cortesia" | "prensa")}
+                options={[
+                  { value: "cortesia", label: "Cortesía" },
+                  { value: "prensa", label: "Prensa / acreditación" },
+                ]}
+              />
             </div>
             <div className={formStyles.field}>
               <label className={formStyles.label} htmlFor="ct-sector">
                 Sector
               </label>
-              <select id="ct-sector" value={selectedSector} onChange={(e) => setSectorId(e.target.value)}>
-                {sectors.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                    {available[s.id] !== undefined ? ` · ${available[s.id].toLocaleString("es-CL")} disponibles` : ""}
-                  </option>
-                ))}
-              </select>
+              <Select
+                id="ct-sector"
+                size="lg"
+                value={selectedSector}
+                onChange={setSectorId}
+                options={sectors.map((s) => ({
+                  value: s.id,
+                  label: `${s.name}${available[s.id] !== undefined ? ` · ${available[s.id].toLocaleString("es-CL")} disponibles` : ""}`,
+                }))}
+              />
             </div>
             <div className={formStyles.field}>
               <label className={formStyles.label} htmlFor="ct-qty">
@@ -203,7 +213,7 @@ export default function EventCourtesies({ eventId, sectors }: { eventId: string;
           {loadError}
         </p>
       ) : !list ? (
-        <p className={styles.empty}>Cargando…</p>
+        <SkeletonList rows={2} thumb="none" card={false} label="Cargando cortesías…" />
       ) : list.length === 0 ? (
         <p className={styles.empty}>Aún no hay cortesías ni acreditaciones para este evento.</p>
       ) : (

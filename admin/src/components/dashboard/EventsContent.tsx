@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
+import { SkeletonKpis, SkeletonList } from "@/components/Skeleton";
 import { EVENTS_FLASH_KEY, EventHasSalesError, deleteEvent, listEvents, type EventRecord, type EventStatus } from "@/lib/events-data";
 import { fetchRevenueByEvent } from "@/lib/admin-data";
 import { useCanEdit } from "@/lib/access";
@@ -213,7 +214,11 @@ export default function EventsContent() {
         </div>
       </div>
 
-      <EventsKpiRow events={events} revenue={revenueByEvent ? Object.values(revenueByEvent).reduce((a, b) => a + b, 0) : null} />
+      {loading ? (
+        <SkeletonKpis label="Cargando indicadores de eventos…" />
+      ) : (
+        <EventsKpiRow events={events} revenue={revenueByEvent ? Object.values(revenueByEvent).reduce((a, b) => a + b, 0) : null} />
+      )}
 
       <EventsFilterBar
         tab={tab}
@@ -228,7 +233,7 @@ export default function EventsContent() {
 
       <div className={styles.list}>
         {loading ? (
-          <div className={styles.empty}>Cargando eventos...</div>
+          <SkeletonList rows={4} thumb="image" label="Cargando eventos…" />
         ) : loadError ? (
           <div className={styles.empty}>{loadError}</div>
         ) : pageItems.length > 0 ? (

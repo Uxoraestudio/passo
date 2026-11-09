@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonList, SkeletonTable } from "@/components/Skeleton";
 import { MODULES, useAccess, useCanEdit, type ModuleKey, type PermissionLevel } from "@/lib/access";
 import { deleteRole, fetchTeam, formatDate, saveRole, setMember, type StaffRole, type TeamMember } from "@/lib/admin-data";
 import ConfirmDialog from "./ConfirmDialog";
@@ -173,17 +175,11 @@ export default function RolesContent() {
   const membersWith = (roleId: string) => (members ?? []).filter((m) => m.role === "staff" && m.staff_role_id === roleId).length;
   const admins = (members ?? []).filter((m) => m.role === "admin").length;
 
-  const accessOptions = (includeAdmin: boolean) => (
-    <>
-      {includeAdmin && <option value={ADMIN}>Administrador</option>}
-      <option value={FULL}>Staff · acceso completo</option>
-      {roles.map((r) => (
-        <option key={r.id} value={r.id}>
-          {r.name}
-        </option>
-      ))}
-    </>
-  );
+  const accessOptions = (includeAdmin: boolean) => [
+    ...(includeAdmin ? [{ value: ADMIN, label: "Administrador" }] : []),
+    { value: FULL, label: "Equipo · acceso completo" },
+    ...roles.map((r) => ({ value: r.id, label: r.name })),
+  ];
 
   return (
     <main className={pageStyles.main}>
@@ -225,9 +221,10 @@ export default function RolesContent() {
           </button>
         </div>
       ) : !members ? (
-        <div className={pageStyles.stateCard} aria-busy="true">
-          <p>Cargando equipo…</p>
-        </div>
+        <>
+          <SkeletonTable rows={5} columns={4} label="Cargando equipo…" />
+          <SkeletonList rows={3} thumb="none" label="Cargando roles…" />
+        </>
       ) : (
         <>
           <section className={tableStyles.card} aria-labelledby="equipo">
@@ -258,15 +255,20 @@ export default function RolesContent() {
                         </td>
                         <td>
                           {canEdit && !lockedAdmin ? (
-                            <label className={tableStyles.eventSelect}>
-                              <span className="sr-only">Acceso de {m.full_name || m.email}</span>
-                              <select value={accessValue(m)} disabled={busyId === m.id} onChange={(e) => applyAccess(m, e.target.value)}>
-                                {accessOptions(isAdmin)}
-                              </select>
-                            </label>
+                            <div className={tableStyles.eventSelect}>
+                              <Select
+                                size="sm"
+                                width="auto"
+                                aria-label={`Acceso de ${m.full_name || m.email}`}
+                                value={accessValue(m)}
+                                disabled={busyId === m.id}
+                                onChange={(v) => applyAccess(m, v)}
+                                options={accessOptions(isAdmin)}
+                              />
+                            </div>
                           ) : (
                             <span className={styles.badge} data-admin={m.role === "admin"}>
-                              {m.role === "admin" ? "Administrador" : roles.find((r) => r.id === m.staff_role_id)?.name ?? "Staff · acceso completo"}
+                              {m.role === "admin" ? "Administrador" : roles.find((r) => r.id === m.staff_role_id)?.name ?? "Equipo · acceso completo"}
                             </span>
                           )}
                         </td>
@@ -304,7 +306,7 @@ export default function RolesContent() {
               <article className={styles.roleCard} style={{ "--role": "#94a3b8" } as React.CSSProperties}>
                 <div className={styles.roleTop}>
                   <span className={styles.roleDot} aria-hidden="true" />
-                  <h3>Staff · acceso completo</h3>
+                  <h3>Equipo · acceso completo</h3>
                   <span className={styles.roleCount}>{members.filter((m) => m.role === "staff" && !m.staff_role_id).length}</span>
                 </div>
                 <p>Puede ver y editar todas las secciones, excepto otorgar el nivel de administrador.</p>
@@ -456,12 +458,10 @@ export default function RolesContent() {
             <span>Correo de la cuenta</span>
             <input data-autofocus type="email" value={newEmail} placeholder="nombre@empresa.cl" onChange={(e) => setNewEmail(e.target.value)} />
           </label>
-          <label className={styles.field}>
-            <span>Acceso</span>
-            <select value={newAccess} onChange={(e) => setNewAccess(e.target.value)}>
-              {accessOptions(isAdmin)}
-            </select>
-          </label>
+          <div className={styles.field}>
+            <span aria-hidden="true">Acceso</span>
+            <Select aria-label="Acceso" value={newAccess} onChange={setNewAccess} options={accessOptions(isAdmin)} />
+          </div>
           {addError && (
             <p className={styles.error} role="alert">
               {addError}

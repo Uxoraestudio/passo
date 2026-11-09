@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CheckSmallIcon, MaterialIcon, PublishIcon } from "@/components/icons";
+import { SkeletonForm } from "@/components/Skeleton";
 import { listSeoPages, saveSeoPage, uploadSeoImage, type SeoPage } from "@/lib/seo-data";
 import styles from "./SeoContent.module.css";
 
@@ -44,27 +45,27 @@ function SeoPageCard({
 
       <div className={styles.fieldGrid}>
         <label className={`${styles.field} ${styles.fieldFull}`}>
-          <span className={styles.label}>Meta title</span>
+          <span className={styles.label}>Título en Google</span>
           <input type="text" value={page.metaTitle} onChange={(e) => update("metaTitle", e.target.value)} placeholder="Título para buscadores" />
         </label>
 
         <label className={`${styles.field} ${styles.fieldFull}`}>
-          <span className={styles.label}>Meta description</span>
+          <span className={styles.label}>Descripción en Google</span>
           <textarea rows={2} value={page.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} placeholder="Descripción para buscadores" />
         </label>
 
         <label className={styles.field}>
-          <span className={styles.label}>Open Graph — título</span>
+          <span className={styles.label}>Título al compartir el enlace</span>
           <input type="text" value={page.ogTitle} onChange={(e) => update("ogTitle", e.target.value)} placeholder="Título al compartir" />
         </label>
 
         <label className={styles.field}>
-          <span className={styles.label}>Open Graph — descripción</span>
+          <span className={styles.label}>Descripción al compartir el enlace</span>
           <input type="text" value={page.ogDescription} onChange={(e) => update("ogDescription", e.target.value)} placeholder="Descripción al compartir" />
         </label>
 
         <div className={`${styles.field} ${styles.fieldFull}`}>
-          <span className={styles.label}>Open Graph — imagen</span>
+          <span className={styles.label}>Imagen al compartir el enlace</span>
           <div className={styles.imageUpload}>
             <div className={styles.imagePreview}>
               {page.ogImageUrl ? (
@@ -150,9 +151,9 @@ export default function SeoContent() {
       </div>
 
       <div className={styles.list}>
-        {pages.map((page) => (
-          <SeoPageCard key={page.pageKey} page={page} onChange={updatePage} />
-        ))}
+        {loading
+          ? [0, 1, 2].map((i) => <SkeletonForm key={i} fields={4} label="Cargando SEO…" />)
+          : pages.map((page) => <SeoPageCard key={page.pageKey} page={page} onChange={updatePage} />)}
       </div>
     </div>
   );

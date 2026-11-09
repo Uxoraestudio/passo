@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlusIcon } from "@/components/icons";
+import { SkeletonChart, SkeletonKpis, SkeletonList, SkeletonTable } from "@/components/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { listEvents, type EventRecord } from "@/lib/events-data";
 import { clp, deltaLabel, fetchMetrics, int, orderKindLabels, timeAgo, type Metrics, type Period } from "@/lib/admin-data";
@@ -142,9 +143,17 @@ export default function OverviewContent() {
           </button>
         </div>
       ) : !data ? (
-        <div className={styles.stateCard} aria-busy="true">
-          <p>Cargando métricas…</p>
-        </div>
+        <>
+          <SkeletonKpis label="Cargando métricas…" />
+          <div className={styles.analyticsGrid}>
+            <SkeletonChart />
+            <SkeletonChart label="Cargando categorías…" />
+          </div>
+          <div className={styles.bottomGrid}>
+            <SkeletonTable rows={5} columns={4} label="Cargando próximos eventos…" />
+            <SkeletonList rows={5} label="Cargando actividad reciente…" />
+          </div>
+        </>
       ) : (
         <>
           <div className={styles.kpiGrid}>

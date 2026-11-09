@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MaterialIcon } from "@/components/icons";
+import { SkeletonTable } from "@/components/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import { useCanEdit } from "@/lib/access";
 import { createVenue, deleteVenue, listVenues, type Venue } from "@/lib/venues-data";
@@ -111,9 +112,7 @@ export default function VenuesContent() {
           </button>
         </div>
       ) : !venues ? (
-        <div className={pageStyles.stateCard} aria-busy="true">
-          <p>Cargando recintos…</p>
-        </div>
+        <SkeletonTable rows={6} columns={5} title={false} label="Cargando recintos…" />
       ) : (
         <section className={tableStyles.card} aria-label="Listado de recintos">
           <div className={tableStyles.tableWrap}>

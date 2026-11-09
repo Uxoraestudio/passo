@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonChart, SkeletonKpis, SkeletonList, SkeletonTable } from "@/components/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 import {
   clp,
@@ -159,17 +161,16 @@ export default function SalesContent() {
           <p className={pageStyles.pageSubtitle}>Ingresos, entradas y órdenes pagadas con Flow.</p>
         </div>
         <div className={pageStyles.heroActions}>
-          <label className={styles.eventSelect}>
-            <span className="sr-only">Evento</span>
-            <select value={eventId} onChange={(e) => setEventId(e.target.value)}>
-              <option value="">Todos los eventos</option>
-              {eventOptions.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.title}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className={styles.eventSelect}>
+            <Select
+              size="sm"
+              width="auto"
+              aria-label="Evento"
+              value={eventId}
+              onChange={setEventId}
+              options={[{ value: "", label: "Todos los eventos" }, ...eventOptions.map((e) => ({ value: e.id, label: e.title }))]}
+            />
+          </div>
           <PeriodSelect value={period} onChange={setPeriod} />
           <button type="button" className={styles.exportButton} onClick={exportCsv} disabled={exporting || !metrics}>
             <MaterialIcon decorative name="download" />
@@ -186,9 +187,14 @@ export default function SalesContent() {
           </button>
         </div>
       ) : !metrics ? (
-        <div className={pageStyles.stateCard} aria-busy="true">
-          <p>Cargando ventas…</p>
-        </div>
+        <>
+          <SkeletonKpis label="Cargando ventas…" />
+          <div className={pageStyles.analyticsGrid}>
+            <SkeletonChart />
+            <SkeletonList rows={4} thumb="none" label="Cargando ventas por evento…" />
+          </div>
+          <SkeletonTable rows={6} columns={6} label="Cargando órdenes…" />
+        </>
       ) : (
         <>
           <div className={pageStyles.kpiGrid}>

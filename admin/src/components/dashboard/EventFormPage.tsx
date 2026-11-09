@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { Skeleton, SkeletonForm, SkeletonHeader } from "@/components/Skeleton";
 import {
   EVENTS_FLASH_KEY,
   PlanLockedError,
@@ -28,6 +30,8 @@ import PlanSectorsEditor from "./PlanSectorsEditor";
 import { getVenueMap } from "@/lib/venue-maps-data";
 import { sectionCapacity, type VenueMap } from "@/lib/venue-map-types";
 import styles from "./EventFormPage.module.css";
+import DatePicker from "@/components/DatePicker";
+import { DateTimeField, TimePicker } from "@/components/TimePicker";
 
 const statusOptions: { value: EventStatus; label: string; hint: string; editOnly?: boolean }[] = [
   { value: "borrador", label: "Borrador", hint: "Solo visible para tu equipo." },
@@ -491,8 +495,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     { key: "venue" as const, label: "Recinto seleccionado", ok: hasVenue },
     { key: "map" as const, label: "Sectores con capacidad y precio", ok: perimetryOk },
     { key: "fecha" as const, label: "Fecha y hora", ok: !!(form.date && form.time) },
-    { key: "img" as const, label: "Banner Hero (16:9)", ok: !!form.hero_image_url, optional: true },
-    { key: "img" as const, label: "Banner interno (2.5:1)", ok: !!form.banner_image_url, optional: true },
+    { key: "img" as const, label: "Imagen de portada (16:9)", ok: !!form.hero_image_url, optional: true },
+    { key: "img" as const, label: "Imagen de la página del evento (2.5:1)", ok: !!form.banner_image_url, optional: true },
     { key: "img" as const, label: "Imagen de tarjeta (4:3)", ok: !!form.image_url, optional: true },
   ];
   const okCount = checks.filter((c) => c.ok).length;
@@ -683,11 +687,10 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
 
   if (loadState === "loading") {
     return (
-      <div className={styles.page}>
-        <div className={styles.stateCard} role="status">
-          <span className={styles.spinner} aria-hidden="true" />
-          Cargando evento…
-        </div>
+      <div className={styles.page} style={{ gap: 20 }}>
+        <SkeletonHeader actions={2} />
+        <SkeletonForm fields={10} label="Cargando evento…" />
+        <SkeletonForm fields={4} label="Cargando sectores y precios…" />
       </div>
     );
   }
@@ -897,14 +900,18 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </label>
             </div>
             <div className={`${styles.row} ${styles.c2}`}>
-              <label className={styles.field} htmlFor="f-category">
-                <span className={styles.label}>Categoría</span>
-                <select id="f-category" value={form.category} onChange={(e) => update("category", e.target.value)}>
-                  {["Concierto", "Festival", "Teatro", "Stand-up", "Deportes", "Otro"].map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </select>
-              </label>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="f-category">
+                  Categoría
+                </label>
+                <Select
+                  id="f-category"
+                  size="lg"
+                  value={form.category}
+                  onChange={(v) => update("category", v)}
+                  options={["Concierto", "Festival", "Teatro", "Stand-up", "Deportes", "Otro"].map((c) => ({ value: c, label: c }))}
+                />
+              </div>
               <label className={styles.field} htmlFor="f-artist">
                 <span className={styles.label}>Artista / Organizador</span>
                 <input id="f-artist" type="text" maxLength={80} value={form.artist} onChange={(e) => update("artist", e.target.value)} placeholder="Ej: Beéle" />
@@ -1117,9 +1124,10 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 )}
               </div>
             ) : planLoading ? (
-              <p className={styles.secDesc} aria-busy="true">
-                Cargando el plano del recinto…
-              </p>
+              <div role="status" aria-busy="true">
+                <span className="sr-only">Cargando el plano del recinto…</span>
+                <Skeleton height={320} radius={14} />
+              </div>
             ) : plan ? (
               <>
                 <PlanSectorsEditor plan={plan} sectors={sectors} onChange={setSectors} showErrors={invalid("map")} />
@@ -1164,7 +1172,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                     Fecha <i aria-hidden="true">*</i>
                   </span>
                 </span>
-                <input id="f-date" type="date" required aria-required="true" aria-invalid={invalid("date")} value={form.date} onChange={(e) => update("date", e.target.value)} />
+                <DatePicker id="f-date" clearable={false} aria-invalid={invalid("date")} value={form.date} onChange={(v) => update("date", v)} />
                 {invalid("date") && <span className={styles.fieldError}>Elige la fecha del evento.</span>}
               </label>
               <label className={styles.field} htmlFor="f-time">
@@ -1173,12 +1181,12 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                     Hora de inicio <i aria-hidden="true">*</i>
                   </span>
                 </span>
-                <input id="f-time" type="time" required aria-required="true" aria-invalid={invalid("time")} value={form.time} onChange={(e) => update("time", e.target.value)} />
+                <TimePicker id="f-time" aria-invalid={invalid("time")} value={form.time} onChange={(v) => update("time", v)} />
                 {invalid("time") && <span className={styles.fieldError}>Indica a qué hora comienza.</span>}
               </label>
               <label className={styles.field} htmlFor="f-doors">
                 <span className={styles.label}>Apertura de puertas</span>
-                <input id="f-doors" type="time" value={form.doorsOpen} onChange={(e) => update("doorsOpen", e.target.value)} aria-describedby={doorsAfterStart ? "w-doors" : undefined} />
+                <TimePicker id="f-doors" clearable value={form.doorsOpen} onChange={(v) => update("doorsOpen", v)} aria-describedby={doorsAfterStart ? "w-doors" : undefined} />
                 {doorsAfterStart && (
                   <span className={styles.fieldWarn} id="w-doors">
                     Las puertas abren después del inicio. ¿Es correcto?
@@ -1207,14 +1215,14 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </span>
             </div>
             <div className={styles.imageGroup}>
-              <EventImageField label="Banner Hero del home — 1600 × 900 px · 16:9" hint="Se usa en el carrusel principal de la portada en computadores y tablets." value={form.hero_image_url} onChange={(url) => update("hero_image_url", url)} />
+              <EventImageField label="Imagen de portada — 1600 × 900 px · 16:9" hint="Se usa en el carrusel principal de la portada en computadores y tablets." value={form.hero_image_url} onChange={(url) => update("hero_image_url", url)} />
               <EventImageField
-                label="Banner Hero para teléfonos — 1080 × 1620 px · 2:3 vertical"
-                hint="Opcional. En teléfonos reemplaza al banner horizontal (si falta, se recorta el horizontal). Deja el motivo principal en el tercio superior y central: abajo va el título del evento."
+                label="Imagen de portada para teléfonos — 1080 × 1620 px · 2:3 vertical"
+                hint="Opcional. En teléfonos reemplaza a la imagen horizontal (si falta, se recorta la horizontal). Deja el motivo principal en el tercio superior y central: abajo va el título del evento."
                 value={form.hero_mobile_image_url}
                 onChange={(url) => update("hero_mobile_image_url", url)}
               />
-              <EventImageField label="Banner interno del evento — 1280 × 500 px · ~2.5:1" hint="Cabecera de la página de detalle del evento." value={form.banner_image_url} onChange={(url) => update("banner_image_url", url)} />
+              <EventImageField label="Imagen de la página del evento — 1280 × 500 px · ~2.5:1" hint="Va arriba en la página del evento, donde la gente compra." value={form.banner_image_url} onChange={(url) => update("banner_image_url", url)} />
               <EventImageField label="Tarjeta destacada / listado — 800 × 560 px · 4:3" hint="Eventos destacados, Cerca de ti y listado de eventos." value={form.image_url} onChange={(url) => update("image_url", url)} />
             </div>
           </section>
@@ -1234,7 +1242,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             <div className={`${styles.row} ${styles.c2}`}>
               <label className={styles.field} htmlFor="f-sale">
                 <span className={styles.label}>Inicio de venta</span>
-                <input id="f-sale" type="datetime-local" value={form.saleStart} onChange={(e) => update("saleStart", e.target.value)} aria-describedby={saleAfterEvent ? "w-sale" : "h-sale"} />
+                <DateTimeField id="f-sale" value={form.saleStart} onChange={(v) => update("saleStart", v)} aria-label="Inicio de venta" aria-describedby={saleAfterEvent ? "w-sale" : "h-sale"} defaultTime="10:00" />
                 {saleAfterEvent ? (
                   <span className={styles.fieldWarn} id="w-sale">
                     La venta empieza después del evento. Revisa la fecha.
@@ -1283,8 +1291,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
               </div>
             )}
             {[
-              { key: "showInHero" as const, id: "t-hero", title: "Mostrar en banner Hero del home", desc: "El evento aparecerá en el carrusel principal de la portada." },
-              { key: "qrValidation" as const, id: "t-qr", title: "Validación con QR en puerta", desc: "Habilita el check-in desde la app de Validación." },
+              { key: "showInHero" as const, id: "t-hero", title: "Destacar en la portada", desc: "El evento aparecerá en el carrusel principal de la portada." },
+              { key: "qrValidation" as const, id: "t-qr", title: "Validación con QR en puerta", desc: "Permite escanear las entradas en la puerta desde la sección Validación." },
               { key: "ageRestriction" as const, id: "t-age", title: "Evento para mayores de 18", desc: "Se solicitará confirmación de edad al comprar." },
               {
                 key: "nominateTickets" as const,
@@ -1368,7 +1376,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           </div>
 
           <div className={styles.box}>
-            <h3 className={styles.boxTitle}>Checklist de publicación</h3>
+            <h3 className={styles.boxTitle}>Antes de publicar</h3>
             <div
               className={styles.progress}
               role="progressbar"

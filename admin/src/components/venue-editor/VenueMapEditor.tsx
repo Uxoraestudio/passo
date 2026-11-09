@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { Skeleton, SkeletonEditor } from "@/components/Skeleton";
 import { useCanEdit } from "@/lib/access";
 import { getVenueById, type Venue } from "@/lib/venues-data";
 import {
@@ -32,7 +34,7 @@ import styles from "./VenueEditor.module.css";
 
 const EditorCanvas = dynamic(() => import("./canvas/EditorCanvas"), {
   ssr: false,
-  loading: () => <div className={styles.canvasLoading}>Cargando lienzo…</div>,
+  loading: () => <Skeleton height="100%" radius={0} />,
 });
 
 const emptyContent: VenueMapContent = {
@@ -381,7 +383,7 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
     setGenerator(null);
   };
 
-  if (load.state === "loading") return <div className={styles.stateCard}>Cargando recinto…</div>;
+  if (load.state === "loading") return <SkeletonEditor label="Cargando recinto…" />;
   if (load.state === "error")
     return (
       <div className={styles.stateCard} role="alert">
@@ -410,19 +412,16 @@ export default function VenueMapEditor({ venueId }: { venueId: string }) {
         </div>
 
         {versions.length > 1 && (
-          <label className={styles.versionSelect}>
-            <span className="sr-only">Versión del plano</span>
-            <select
+          <div className={styles.versionSelect}>
+            <Select
+              size="sm"
+              width="auto"
+              aria-label="Versión del plano"
               value={map?.id ?? ""}
-              onChange={(e) => (dirty ? setConfirm({ kind: "switch", mapId: e.target.value }) : openMap(e.target.value))}
-            >
-              {versions.map((v) => (
-                <option key={v.id} value={v.id}>
-                  v{v.version} · {v.status === "draft" ? "Borrador" : "Publicada"}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={(id) => (dirty ? setConfirm({ kind: "switch", mapId: id }) : openMap(id))}
+              options={versions.map((v) => ({ value: v.id, label: `v${v.version} · ${v.status === "draft" ? "Borrador" : "Publicada"}` }))}
+            />
+          </div>
         )}
 
         <div className={styles.topActions}>

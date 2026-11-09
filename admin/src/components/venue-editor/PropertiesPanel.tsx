@@ -2,6 +2,7 @@
 
 import { useRef, type ReactNode } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
 import { mapCapacity, sectionCapacity, type ElementKind, type MapElement, type Section, type VenueMapContent } from "@/lib/venue-map-types";
 import { deleteItems, ELEMENT_COLORS, ELEMENT_LABELS, parseSeatRef, seatRef, updateElement, updateSeats, updateSection, type SelectionItem } from "./contentOps";
 import { MAP_IMAGE_TYPES } from "@/lib/venue-maps-data";
@@ -220,18 +221,20 @@ function SectionProps({ content, readOnly, onCommit, onOpenGenerator, section }:
       </div>
       <label className={styles.field}>
         <span>Tipo</span>
-        <select
+        <Select
+          size="sm"
           value={section.kind}
           disabled={readOnly}
-          onChange={(e) => {
-            const kind = e.target.value as Section["kind"];
+          onChange={(v) => {
+            const kind = v as Section["kind"];
             if (kind === "GENERAL_ADMISSION" && section.seats.length > 0 && !window.confirm(`Este sector tiene ${section.seats.length} asientos. Al pasarlo a entrada general se eliminarán. ¿Continuar?`)) return;
             set(kind === "GENERAL_ADMISSION" ? { kind, seats: [], rows: [], capacity: section.capacity ?? 100 } : { kind });
           }}
-        >
-          <option value="SEATED">Con asientos numerados</option>
-          <option value="GENERAL_ADMISSION">Entrada general (sin asientos)</option>
-        </select>
+          options={[
+            { value: "SEATED", label: "Con asientos numerados" },
+            { value: "GENERAL_ADMISSION", label: "Entrada general (sin asientos)" },
+          ]}
+        />
       </label>
       {section.kind === "GENERAL_ADMISSION" ? (
         <CommitField
@@ -297,13 +300,13 @@ function ElementProps({ content, readOnly, onCommit, element }: Props & { elemen
       </h3>
       <label className={styles.field}>
         <span>Tipo</span>
-        <select value={element.kind} disabled={readOnly} onChange={(e) => set({ kind: e.target.value as ElementKind })}>
-          {(Object.keys(ELEMENT_LABELS) as ElementKind[]).map((k) => (
-            <option key={k} value={k}>
-              {ELEMENT_LABELS[k]}
-            </option>
-          ))}
-        </select>
+        <Select
+          size="sm"
+          value={element.kind}
+          disabled={readOnly}
+          onChange={(v) => set({ kind: v as ElementKind })}
+          options={(Object.keys(ELEMENT_LABELS) as ElementKind[]).map((k) => ({ value: k, label: ELEMENT_LABELS[k] }))}
+        />
       </label>
       <CommitField label="Texto visible" value={element.label ?? ""} maxLength={40} disabled={readOnly} onCommit={(v) => set({ label: v.trim() || null })} />
       <label className={styles.field}>
@@ -314,10 +317,16 @@ function ElementProps({ content, readOnly, onCommit, element }: Props & { elemen
         <>
           <label className={styles.field}>
             <span>Forma</span>
-            <select value={g.shape} disabled={readOnly} onChange={(e) => set({ geometry: { ...g, shape: e.target.value as "rect" | "ellipse" } })}>
-              <option value="rect">Rectángulo</option>
-              <option value="ellipse">Elipse</option>
-            </select>
+            <Select
+              size="sm"
+              value={g.shape}
+              disabled={readOnly}
+              onChange={(v) => set({ geometry: { ...g, shape: v as "rect" | "ellipse" } })}
+              options={[
+                { value: "rect", label: "Rectángulo" },
+                { value: "ellipse", label: "Elipse" },
+              ]}
+            />
           </label>
           <CommitField
             label="Rotación (grados)"
@@ -385,22 +394,28 @@ function SeatProps({ content, selection, readOnly, onCommit, onSelect }: Props) 
       )}
       <label className={styles.field}>
         <span>Tipo</span>
-        <select value={same("kind")} disabled={readOnly} onChange={(e) => set({ kind: e.target.value as keyof typeof SEAT_KIND_LABELS })}>
-          {!same("kind") && <option value="">Varios</option>}
-          {(Object.keys(SEAT_KIND_LABELS) as (keyof typeof SEAT_KIND_LABELS)[]).map((k) => (
-            <option key={k} value={k}>
-              {SEAT_KIND_LABELS[k]}
-            </option>
-          ))}
-        </select>
+        <Select
+          size="sm"
+          value={same("kind")}
+          disabled={readOnly}
+          placeholder="Varios"
+          onChange={(v) => set({ kind: v as keyof typeof SEAT_KIND_LABELS })}
+          options={(Object.keys(SEAT_KIND_LABELS) as (keyof typeof SEAT_KIND_LABELS)[]).map((k) => ({ value: k, label: SEAT_KIND_LABELS[k] }))}
+        />
       </label>
       <label className={styles.field}>
         <span>Estado base</span>
-        <select value={same("baseStatus")} disabled={readOnly} onChange={(e) => set({ baseStatus: e.target.value as "AVAILABLE" | "BLOCKED" })}>
-          {!same("baseStatus") && <option value="">Varios</option>}
-          <option value="AVAILABLE">Disponible</option>
-          <option value="BLOCKED">Bloqueado (no se vende)</option>
-        </select>
+        <Select
+          size="sm"
+          value={same("baseStatus")}
+          disabled={readOnly}
+          placeholder="Varios"
+          onChange={(v) => set({ baseStatus: v as "AVAILABLE" | "BLOCKED" })}
+          options={[
+            { value: "AVAILABLE", label: "Disponible" },
+            { value: "BLOCKED", label: "Bloqueado (no se vende)" },
+          ]}
+        />
       </label>
       <p className={styles.hint}>Los asientos que edites quedan marcados como «editados a mano»: al regenerar el sector se conservan.</p>
       {!readOnly && (

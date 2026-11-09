@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckSmallIcon, PublishIcon, RestoreIcon } from "@/components/icons";
+import { SkeletonCards, SkeletonChart, SkeletonForm } from "@/components/Skeleton";
 import { colorFields, defaultColors, logoSlots, type ColorFieldId, type LogoSlotId } from "@/lib/appearance-data";
 import { getSiteSettings, saveSiteSettings } from "@/lib/site-settings";
 import ColorField from "./ColorField";
@@ -102,6 +103,17 @@ export default function AppearanceContent() {
         </div>
       </div>
 
+      {loading ? (
+        <div className={styles.grid}>
+          <div className={styles.leftColumn}>
+            <SkeletonCards count={2} label="Cargando logos…" />
+            <SkeletonForm fields={4} label="Cargando colores…" />
+          </div>
+          <div className={styles.rightColumn}>
+            <SkeletonChart height={360} label="Cargando vista previa…" />
+          </div>
+        </div>
+      ) : (
       <div className={styles.grid}>
         <div className={styles.leftColumn}>
           <section className={styles.section}>
@@ -154,6 +166,7 @@ export default function AppearanceContent() {
           <AppearancePreview colors={colors} />
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Select from "@/components/Select";
 import { MaterialIcon } from "@/components/icons";
 import type { ValidationEvent } from "@/lib/validation-data";
 import styles from "./ValidationHeader.module.css";
@@ -31,19 +32,16 @@ export default function ValidationHeader({
       </div>
 
       <div className={styles.eventRow}>
-        <label className={styles.eventPill}>
-          <MaterialIcon decorative name="confirmation_number" className={styles.eventIcon} />
-          <span className="sr-only">Evento a validar</span>
-          <select className={styles.eventSelect} value={eventId} onChange={(e) => onEvent(e.target.value)} disabled={events.length === 0}>
-            {events.length === 0 && <option value="">No hay eventos para validar</option>}
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.title} — {when(e.event_date)}
-              </option>
-            ))}
-          </select>
-          <MaterialIcon decorative name="expand_more" className={styles.chevronIcon} />
-        </label>
+        <Select
+          width="auto"
+          aria-label="Evento a validar"
+          icon={<MaterialIcon decorative name="confirmation_number" />}
+          value={eventId}
+          onChange={onEvent}
+          disabled={events.length === 0}
+          placeholder="No hay eventos para validar"
+          options={events.map((e) => ({ value: e.id, label: `${e.title} — ${when(e.event_date)}` }))}
+        />
       </div>
     </section>
   );

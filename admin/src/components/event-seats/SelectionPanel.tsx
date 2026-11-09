@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
 import { BLOCK_REASONS, type EventSeat, type EventSeatSector, type PriceZone, type SeatChanges } from "@/lib/event-seats-data";
 import { countSeats, currency } from "./seatStats";
 import editorStyles from "../venue-editor/VenueEditor.module.css";
@@ -77,13 +78,12 @@ export default function SelectionPanel({
       <div className={styles.quickRow}>
         <label className={editorStyles.field}>
           <span>Seleccionar sector completo</span>
-          <select value={sectorId} onChange={(e) => setSectorId(e.target.value)}>
-            {seated.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.seats.length.toLocaleString("es-CL")})
-              </option>
-            ))}
-          </select>
+          <Select
+            size="sm"
+            value={sectorId}
+            onChange={setSectorId}
+            options={seated.map((s) => ({ value: s.id, label: `${s.name} (${s.seats.length.toLocaleString("es-CL")})` }))}
+          />
         </label>
         <button type="button" className={editorStyles.secondaryButton} onClick={() => onSelectSector(sectorId)} disabled={!sectorId}>
           Seleccionar
@@ -134,13 +134,7 @@ export default function SelectionPanel({
             <div className={styles.quickRow}>
               <label className={editorStyles.field}>
                 <span>Motivo</span>
-                <select value={reason} onChange={(e) => setReason(e.target.value)}>
-                  {BLOCK_REASONS.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
+                <Select size="sm" value={reason} onChange={setReason} options={BLOCK_REASONS.map((r) => ({ value: r.value, label: r.label }))} />
               </label>
               <button
                 type="button"

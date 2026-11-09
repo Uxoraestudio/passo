@@ -158,7 +158,6 @@
   gap: 10px;
 }
 
-.filters select,
 .search {
   height: 42px;
   border-radius: 10px;
@@ -169,8 +168,10 @@
   color: var(--ink);
 }
 
-.filters select {
-  padding: 0 12px;
+.filterSelect {
+  display: flex;
+  flex: 0 1 190px;
+  min-width: 0;
 }
 
 .search {
@@ -385,7 +386,7 @@
     justify-content: center;
   }
 
-  .filters select {
+  .filterSelect {
     flex: 1 1 140px;
   }
 

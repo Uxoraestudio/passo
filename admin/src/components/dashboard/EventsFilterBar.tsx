@@ -1,3 +1,4 @@
+import Select from "@/components/Select";
 import { MaterialIcon } from "@/components/icons";
 import styles from "./EventsFilterBar.module.css";
 
@@ -48,16 +49,13 @@ export default function EventsFilterBar({
 
       <div className={styles.filters}>
         <div className={styles.selectWrap}>
-          <MaterialIcon name="location_on" className={styles.selectIcon} />
-          <select className={styles.select} value={venue} onChange={(e) => onVenueChange(e.target.value)}>
-            <option value="">Todos los recintos</option>
-            {venues.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
-          <MaterialIcon name="expand_more" className={styles.chevron} />
+          <Select
+            aria-label="Recinto"
+            icon={<MaterialIcon name="location_on" decorative />}
+            value={venue}
+            onChange={onVenueChange}
+            options={[{ value: "", label: "Todos los recintos" }, ...venues.map((v) => ({ value: v, label: v }))]}
+          />
         </div>
         <div className={styles.searchWrap}>
           <MaterialIcon name="search" className={styles.selectIcon} />

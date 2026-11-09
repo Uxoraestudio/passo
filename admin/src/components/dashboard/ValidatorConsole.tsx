@@ -115,7 +115,7 @@ export default function ValidatorConsole({
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <h2 className={styles.title}>Consola del Validador</h2>
+        <h2 className={styles.title}>Escanear entradas</h2>
         <div className={styles.headerActions}>
         <button
           type="button"

@@ -95,15 +95,8 @@
   color: #047857;
 }
 
-.versionSelect select {
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: #fff;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ink);
+.versionSelect {
+  display: flex;
 }
 
 .topActions {
@@ -413,7 +406,6 @@
 }
 
 .field input:not([type="color"]),
-.field select,
 .field textarea {
   width: 100%;
   padding: 8px 10px;

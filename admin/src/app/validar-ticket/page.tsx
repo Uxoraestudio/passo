@@ -7,7 +7,7 @@ import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
   title: "Validación QR | Aforiq Admin",
-  description: "Control de acceso y validación QR en vivo, con desglose de puertas, consola del validador y registro de incidencias.",
+  description: "Escanea las entradas en la puerta y sigue en vivo cuántas personas han ingresado por cada acceso.",
 };
 
 export default function ValidarTicketPage() {

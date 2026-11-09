@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { MaterialIcon } from "@/components/icons";
+import { Skeleton, SkeletonEditor } from "@/components/Skeleton";
 import { useCanEdit } from "@/lib/access";
 import { venueMapImageUrl } from "@/lib/venue-maps-data";
 import {
@@ -27,7 +28,7 @@ import styles from "./EventSeats.module.css";
 
 const SeatsCanvas = dynamic(() => import("./SeatsCanvas"), {
   ssr: false,
-  loading: () => <div className={editorStyles.canvasLoading}>Cargando plano…</div>,
+  loading: () => <Skeleton height="100%" radius={0} />,
 });
 
 type Load = { state: "loading" } | { state: "error"; message: string } | { state: "no-plan" } | { state: "ready"; map: EventSeatMap };
@@ -157,7 +158,7 @@ export default function EventSeatsEditor({ eventId }: { eventId: string }) {
 
   const backHref = `/eventos/${eventId}/editar/`;
 
-  if (load.state === "loading") return <div className={editorStyles.stateCard}>Cargando asientos del evento…</div>;
+  if (load.state === "loading") return <SkeletonEditor label="Cargando asientos del evento…" />;
   if (load.state !== "ready" || !map)
     return (
       <div className={editorStyles.stateCard} role={load.state === "error" ? "alert" : undefined}>

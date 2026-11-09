@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
+import Select from "@/components/Select";
+import { SkeletonKpis, SkeletonTable } from "@/components/Skeleton";
 import { clp, downloadCsv, fetchClients, formatDate, int, type ClientRow } from "@/lib/admin-data";
 import KpiCard, { type KpiDatum } from "./KpiCard";
 import pageStyles from "@/app/inicio/page.module.css";
@@ -106,9 +108,10 @@ export default function ClientsContent() {
           </button>
         </div>
       ) : !clients ? (
-        <div className={pageStyles.stateCard} aria-busy="true">
-          <p>Cargando clientes…</p>
-        </div>
+        <>
+          <SkeletonKpis label="Cargando clientes…" />
+          <SkeletonTable rows={8} columns={5} label="Cargando directorio de clientes…" />
+        </>
       ) : (
         <>
           <div className={pageStyles.kpiGrid}>
@@ -141,14 +144,20 @@ export default function ClientsContent() {
                     }}
                   />
                 </label>
-                <label className={tableStyles.eventSelect}>
-                  <span className="sr-only">Ordenar</span>
-                  <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-                    <option value="recientes">Registro más reciente</option>
-                    <option value="gasto">Mayor gasto</option>
-                    <option value="compras">Más compras</option>
-                  </select>
-                </label>
+                <div className={tableStyles.eventSelect}>
+                  <Select
+                    size="sm"
+                    width="auto"
+                    aria-label="Ordenar"
+                    value={sort}
+                    onChange={(v) => setSort(v as Sort)}
+                    options={[
+                      { value: "recientes", label: "Registro más reciente" },
+                      { value: "gasto", label: "Mayor gasto" },
+                      { value: "compras", label: "Más compras" },
+                    ]}
+                  />
+                </div>
                 <label className={styles.toggle}>
                   <input type="checkbox" checked={buyersOnly} onChange={(e) => setBuyersOnly(e.target.checked)} />
                   Solo compradores
