@@ -33,6 +33,8 @@ import { sectionCapacity, type VenueMap } from "@/lib/venue-map-types";
 import styles from "./EventFormPage.module.css";
 import DatePicker from "@/components/DatePicker";
 import { DateTimeField, TimePicker } from "@/components/TimePicker";
+import { managesProductoras, useAccess } from "@/lib/access";
+import { fetchProductoras, type Productora } from "@/lib/productoras-data";
 
 const statusOptions: { value: EventStatus; label: string; hint: string; editOnly?: boolean }[] = [
   { value: "borrador", label: "Borrador", hint: "Solo visible para tu equipo." },
@@ -302,6 +304,38 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
   const [creatingVenue, setCreatingVenue] = useState(false);
   const [pendingVenue, setPendingVenue] = useState<Venue | null>(null);
 
+  // Platform admins create events for any productora; members always for their own.
+  const access = useAccess();
+  const choosesProductora = mode === "create" && managesProductoras(access);
+  const [productoras, setProductoras] = useState<Productora[]>([]);
+  const [orgChoice, setOrgChoice] = useState("");
+
+  useEffect(() => {
+    if (!choosesProductora) return;
+    let active = true;
+    fetchProductoras()
+      .then((rows) => {
+        if (!active) return;
+        setProductoras(rows);
+        setOrgChoice((current) => current || (rows.find((p) => p.is_default) ?? rows[0])?.id || "");
+      })
+      // Before the productoras migration there is nothing to choose.
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [choosesProductora]);
+
+  const chooseOrg = (id: string) => {
+    setOrgChoice(id);
+    // A venue belongs to one productora: drop it if it isn't from the new one.
+    if (venue?.organization_id && venue.organization_id !== id) {
+      setVenue(null);
+      setPlan(null);
+      setSectors([]);
+    }
+  };
+
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [attemptLevel, setAttemptLevel] = useState<SaveLevel | null>(null);
@@ -440,8 +474,8 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
 
   const filteredVenues = useMemo(() => {
     const q = venueSearch.trim().toLowerCase();
-    return venues.filter((v) => !q || `${v.name} ${v.city}`.toLowerCase().includes(q));
-  }, [venues, venueSearch]);
+    return venues.filter((v) => (!orgChoice || !v.organization_id || v.organization_id === orgChoice) && (!q || `${v.name} ${v.city}`.toLowerCase().includes(q)));
+  }, [venues, venueSearch, orgChoice]);
 
   // Events saved before the venue catalog (or whose venue no longer exists): keep their stored venue/capacity/price.
   const legacy = loadedEvent && !venue ? loadedEvent : null;
@@ -577,6 +611,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       source_section_id: s.source_section_id ?? null,
     })),
     venue_map_id: plan?.id ?? null,
+    organization_id: choosesProductora && orgChoice ? orgChoice : null,
     capacity: loadedEvent?.capacity ?? 0,
     price_base: loadedEvent?.price_base ?? 0,
   });
@@ -695,7 +730,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     setCreatingVenue(true);
     setCustomError("");
     try {
-      const v = await createVenue({ name, city });
+      const v = await createVenue({ name, city, organizationId: choosesProductora ? orgChoice : null });
       setVenues((prev) => [...prev, v]);
       setCustomName("");
       selectVenue(v);
@@ -907,6 +942,23 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 <input id="f-subtitle" type="text" maxLength={120} value={form.subtitle} onChange={(e) => update("subtitle", e.target.value)} placeholder="Ej: Una noche única en Santiago" />
               </label>
             </div>
+            {choosesProductora && productoras.length > 1 && (
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="f-org">
+                    Productora
+                  </label>
+                  <Select
+                    id="f-org"
+                    size="lg"
+                    value={orgChoice}
+                    onChange={chooseOrg}
+                    options={productoras.map((p) => ({ value: p.id, label: p.name }))}
+                  />
+                  <span className={styles.hint}>El evento, sus ventas y sus clientes quedan en esta productora. Solo verás sus recintos.</span>
+                </div>
+              </div>
+            )}
             <div className={`${styles.row} ${styles.c2}`}>
               <div className={styles.field}>
                 <label className={styles.label} htmlFor="f-category">

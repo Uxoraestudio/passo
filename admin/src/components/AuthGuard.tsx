@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AccessContext, allows, firstAllowedHref, type Access, type ModuleKey } from "@/lib/access";
 import { SkeletonShell } from "./Skeleton";
+import { setOrgScope } from "@/lib/org-scope";
 import styles from "./AuthGuard.module.css";
 
 type State = { status: "checking" } | { status: "unauthorized" } | { status: "authorized"; access: Access };
@@ -23,12 +24,14 @@ async function loadAccess(): Promise<Access | null> {
   const { data, error } = await supabase.rpc("my_access");
   if (error || !data) {
     // Before the roles migration exists every panel user keeps full access.
-    return { role: profile.role, staffRoleName: null, permissions: null };
+    return { role: profile.role, staffRoleName: null, permissions: null, organization: null };
   }
   return {
     role: profile.role,
     staffRoleName: data.staff_role_name ?? null,
     permissions: data.permissions ?? null,
+    // Missing before the productoras migration: everyone is platform staff then.
+    organization: data.organization ?? null,
   };
 }
 
@@ -50,6 +53,7 @@ export default function AuthGuard({
 
     const check = async () => {
       const access = await loadAccess();
+      setOrgScope(access?.organization?.id ?? null);
       if (active) setState(access ? { status: "authorized", access } : { status: "unauthorized" });
     };
 

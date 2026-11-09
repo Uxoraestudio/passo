@@ -143,7 +143,8 @@ export default function DashboardTopbar() {
   };
 
   const name = account?.name ?? "";
-  const role = roleLabel(access.role, access.staffRoleName);
+  // Productora members also see which productora they're working in.
+  const role = access.organization ? `${roleLabel(access.role, access.staffRoleName)} · ${access.organization.name}` : roleLabel(access.role, access.staffRoleName);
 
   return (
     <header className={styles.topbar}>

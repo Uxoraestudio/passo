@@ -13,10 +13,11 @@ import {
   ScanIcon,
   SeoIcon,
   ShieldPersonIcon,
+  TeamIcon,
   UsersIcon,
   VenueIcon,
 } from "@/components/icons";
-import { MODULES, allows, useAccess, type ModuleKey } from "@/lib/access";
+import { MODULES, allows, managesProductoras, useAccess, type ModuleKey } from "@/lib/access";
 import { closeMobileMenu, useMobileMenu } from "@/lib/mobile-menu";
 import styles from "./AppSidebar.module.css";
 
@@ -40,6 +41,8 @@ export default function AppSidebar() {
     const item = { key: m.key as string, href: m.href as string, label: m.label as string, icon: icons[m.key] };
     return m.key === "eventos" ? [item, { key: "recintos", href: "/recintos/", label: "Recintos", icon: VenueIcon }] : [item];
   });
+  // Platform admins manage the productoras (each one only sees its own events).
+  if (managesProductoras(access)) navItems.push({ key: "productoras", href: "/productoras/", label: "Productoras", icon: TeamIcon });
 
   // Small screens: the sidebar slides in over the page when the top bar's menu button opens it.
   const open = useMobileMenu();

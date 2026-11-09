@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import { LAYOUTS, type BaseShape, type LayoutKey } from "@/lib/venue-layouts";
+import { orgScope } from "@/lib/org-scope";
 
 export type Venue = {
   id: string;
@@ -14,11 +15,17 @@ export type Venue = {
   address?: string | null;
   /** Latest published seat map (venue_maps), if the venue has one. */
   published_map_id?: string | null;
+  /** Productora that owns the venue (after the productoras migration). */
+  organization_id?: string | null;
 };
 
 export async function listVenues(): Promise<Venue[]> {
   const supabase = createClient();
-  const { data, error } = await supabase.from("venues").select("*").order("is_custom").order("name");
+  let query = supabase.from("venues").select("*").order("is_custom").order("name");
+  // Venues are public (the buyer's map needs them); a productora only manages its own.
+  const org = orgScope();
+  if (org) query = query.eq("organization_id", org);
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
@@ -30,7 +37,8 @@ export async function getVenueById(id: string): Promise<Venue | null> {
   return data;
 }
 
-export async function createVenue(input: { name: string; city: string; address?: string }): Promise<Venue> {
+/** organizationId: only platform staff pass it; otherwise the database uses the creator's productora. */
+export async function createVenue(input: { name: string; city: string; address?: string; organizationId?: string | null }): Promise<Venue> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("venues")
@@ -44,6 +52,7 @@ export async function createVenue(input: { name: string; city: string; address?:
       is_custom: true,
       base_shapes: [],
       address: input.address?.trim() || null,
+      ...(input.organizationId ? { organization_id: input.organizationId } : {}),
     })
     .select("*")
     .single();

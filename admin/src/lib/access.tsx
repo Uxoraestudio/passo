@@ -22,7 +22,12 @@ export type Access = {
   staffRoleName: string | null;
   /** null = full access (admins, and staff without a custom role). */
   permissions: Partial<Record<ModuleKey, PermissionLevel>> | null;
+  /** The productora this person works for; null = platform staff, who see every productora. */
+  organization: { id: string; name: string } | null;
 };
+
+/** Platform admins manage productoras (create them, give them an owner). */
+export const managesProductoras = (access: Access) => access.role === "admin" && !access.organization;
 
 const rank: Record<PermissionLevel, number> = { none: 0, view: 1, edit: 2 };
 

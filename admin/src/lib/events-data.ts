@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { orgScope } from "@/lib/org-scope";
 
 export const EVENTS_FLASH_KEY = "eventos:flash";
 
@@ -6,6 +7,8 @@ export type EventStatus = "borrador" | "en-venta" | "casi-agotado" | "proximamen
 
 export type EventRecord = {
   id: string;
+  /** Productora that owns the event (after the productoras migration). */
+  organization_id?: string | null;
   slug: string;
   title: string;
   subtitle: string | null;
@@ -68,6 +71,8 @@ export class PlanLockedError extends Error {}
 export type EventSectorRecord = SectorInput & { id: string; event_id: string; polygon: [number, number][] | null };
 
 export type EventInput = {
+  /** Only platform staff choose it; productora members always create in their own. */
+  organization_id?: string | null;
   title: string;
   subtitle: string;
   description: string;
@@ -194,7 +199,11 @@ async function syncSectors(eventId: string, sectors: SectorInput[]) {
 
 export async function listEvents(): Promise<EventRecord[]> {
   const supabase = createClient();
-  const { data, error } = await supabase.from("events").select("*").order("event_date", { ascending: false });
+  let query = supabase.from("events").select("*").order("event_date", { ascending: false });
+  // Other productoras' published events are public, but not part of this panel.
+  const org = orgScope();
+  if (org) query = query.eq("organization_id", org);
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
@@ -254,7 +263,8 @@ export async function createEvent(input: EventInput): Promise<string> {
 
   const { data, error } = await supabase
     .from("events")
-    .insert({ ...eventPayload(input), slug, producer_id: user?.id ?? null })
+    // organization_id: chosen by platform staff; otherwise the database puts the creator's productora.
+    .insert({ ...eventPayload(input), slug, producer_id: user?.id ?? null, ...(input.organization_id ? { organization_id: input.organization_id } : {}) })
     .select("id")
     .single();
   if (error) throw error;
