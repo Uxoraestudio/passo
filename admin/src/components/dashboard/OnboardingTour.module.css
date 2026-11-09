@@ -1,0 +1,235 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+}
+
+/* Dims everything except the highlighted element. */
+.spotlight {
+  position: fixed;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 3px rgba(249, 87, 33, 0.9),
+    0 0 0 9999px rgba(15, 14, 36, 0.62);
+  transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+}
+
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 16px;
+  border: 2px solid rgba(249, 87, 33, 0.7);
+  animation: pulse 1.6s ease-out infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 14, 36, 0.62);
+  backdrop-filter: blur(2px);
+}
+
+.card {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 48px rgba(15, 14, 36, 0.28), 0 2px 8px rgba(15, 14, 36, 0.12);
+  font-family: inherit;
+  animation: cardIn 0.22s ease-out both;
+}
+
+.card[data-side="right"] {
+  animation-name: cardInRight;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes cardInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .spotlight::after {
+    animation: none;
+  }
+
+  .spotlight {
+    transition: none;
+  }
+}
+
+.hero {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #fff1eb 0%, #f5f3ff 100%);
+  color: #f95721;
+  font-size: 28px;
+}
+
+.stepHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #f5f3ff;
+  color: #5b32e6;
+  font-size: 22px;
+}
+
+.count {
+  font-weight: 600;
+  font-size: 12px;
+  color: #94a3b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: -0.3px;
+  color: #0f172a;
+}
+
+.text {
+  font-size: 14px;
+  line-height: 21px;
+  color: #475569;
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.list li::marker {
+  font-weight: 700;
+  color: #5b32e6;
+}
+
+.progress {
+  display: flex;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.progress span {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  transition: background 0.2s ease;
+}
+
+.progress span[data-done] {
+  background: #5b32e6;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.nav {
+  display: flex;
+  gap: 8px;
+}
+
+.primary,
+.secondary,
+.skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 11px;
+  font: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.primary {
+  border: 0;
+  background: #5b32e6;
+  color: #fff;
+}
+
+.primary:hover {
+  background: #4c25d4;
+}
+
+.primary :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+.secondary {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+}
+
+.secondary:hover {
+  border-color: #c4b5fd;
+}
+
+.skip {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.skip:hover {
+  color: #0f172a;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible,
+.skip:focus-visible {
+  outline: 2px solid #f95721;
+  outline-offset: 2px;
+}

@@ -3,17 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BellIcon, ChevronDownIcon, GearIcon, LogoutIcon } from "@/components/icons";
+import { BellIcon, ChevronDownIcon, GearIcon, LogoutIcon, MaterialIcon } from "@/components/icons";
 import { Skeleton, SkeletonList } from "@/components/Skeleton";
 import { allows, useAccess } from "@/lib/access";
 import { timeAgo } from "@/lib/admin-data";
 import { logout } from "@/lib/auth";
 import { openMobileMenu, useMobileMenu } from "@/lib/mobile-menu";
+import { startOnboarding } from "@/lib/onboarding";
 import { fetchNotifications, hrefFor, markSeen, newestAt, onSeen, readSeenAt, type AdminNotification } from "@/lib/notifications-data";
 import { createClient } from "@/lib/supabase/client";
+import OnboardingTour from "./OnboardingTour";
 import styles from "./DashboardTopbar.module.css";
 
-type Account = { name: string; email: string };
+type Account = { id: string; name: string; email: string };
 
 const REFRESH_MS = 60_000;
 const PREVIEW = 8;
@@ -58,7 +60,7 @@ function useAccount(): Account | null {
       const { data } = await supabase.from("profiles").select("full_name, email").eq("id", session.user.id).single();
       const email = data?.email ?? session.user.email ?? "";
       const name = data?.full_name?.trim() || email.split("@")[0];
-      if (active) setAccount({ name, email });
+      if (active) setAccount({ id: session.user.id, name, email });
     })();
     return () => {
       active = false;
@@ -164,6 +166,7 @@ export default function DashboardTopbar() {
           <div className={styles.popoverAnchor} ref={notifRef}>
             <button
               type="button"
+              data-tour="notifications"
               className={`${styles.notifButton} ${panel === "notifications" ? styles.isOpen : ""}`}
               onClick={toggleNotifications}
               aria-label={unread > 0 ? `Notificaciones: ${unread} nuevas` : "Notificaciones"}
@@ -220,6 +223,7 @@ export default function DashboardTopbar() {
         <div className={styles.popoverAnchor} ref={accountRef}>
           <button
             type="button"
+            data-tour="account"
             className={`${styles.profile} ${panel === "account" ? styles.isOpen : ""}`}
             onClick={() => setPanel(panel === "account" ? "none" : "account")}
             aria-haspopup="menu"
@@ -248,6 +252,18 @@ export default function DashboardTopbar() {
                   Configuración
                 </Link>
               )}
+              <button
+                type="button"
+                className={styles.menuItem}
+                role="menuitem"
+                onClick={() => {
+                  close();
+                  startOnboarding();
+                }}
+              >
+                <MaterialIcon decorative name="tour" className={styles.menuItemIcon} />
+                Ver guía del panel
+              </button>
               <button type="button" className={`${styles.menuItem} ${styles.menuItemDanger}`} role="menuitem" onClick={handleLogout}>
                 <LogoutIcon className={styles.menuItemIcon} />
                 Cerrar sesión
@@ -256,6 +272,7 @@ export default function DashboardTopbar() {
           )}
         </div>
       </div>
+      {account && <OnboardingTour key={account.id} userId={account.id} name={account.name} access={access} />}
     </header>
   );
 }

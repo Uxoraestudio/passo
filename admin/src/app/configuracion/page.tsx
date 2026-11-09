@@ -7,7 +7,7 @@ import styles from "../inicio/page.module.css";
 
 export const metadata: Metadata = {
   title: "Configuración | Aforiq Admin",
-  description: "Configuración de la productora: perfil corporativo, pasarelas de pago, políticas de seguridad y liquidaciones bancarias.",
+  description: "Tu cuenta, tu contraseña y accesos a los ajustes del sitio.",
 };
 
 export default function ConfiguracionPage() {
