@@ -7,7 +7,6 @@ const exploreLinks = [
   { label: "Eventos", href: "/eventos" },
   { label: "Ciudades", href: "/eventos" },
   { label: "Categorías", href: "/eventos" },
-  { label: "Ayuda", href: "/proximamente?title=Ayuda" },
 ];
 const aboutLinks = [
   { label: "Nosotros", href: "/proximamente?title=Nosotros" },
@@ -19,7 +18,6 @@ const legalLinks = [
   { label: "Términos y condiciones", href: "/proximamente?title=Términos%20y%20condiciones" },
   { label: "Política de privacidad", href: "/proximamente?title=Política%20de%20privacidad" },
   { label: "Política de cookies", href: "/proximamente?title=Política%20de%20cookies" },
-  { label: "Centro de ayuda", href: "/proximamente?title=Centro%20de%20ayuda" },
 ];
 
 const socials = [

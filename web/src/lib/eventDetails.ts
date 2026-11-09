@@ -263,6 +263,6 @@ export const genericFaqs = [
   },
   {
     q: "¿Hay accesos para personas con movilidad reducida?",
-    a: "Sí, todos los recintos cuentan con accesos y sectores habilitados para personas con movilidad reducida. Escríbenos a soporte para coordinar tu ingreso.",
+    a: "Sí, todos los recintos cuentan con accesos y sectores habilitados para personas con movilidad reducida.",
   },
 ];

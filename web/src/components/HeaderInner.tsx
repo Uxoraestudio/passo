@@ -43,9 +43,6 @@ export default function HeaderInner({
             </Link>
             <nav className={styles.nav}>
               <CategoriesMenu scrolled={scrolled} />
-              <Link href="#" className={styles.navLink}>
-                Ayuda
-              </Link>
             </nav>
           </div>
           <div className={styles.right}>

@@ -123,29 +123,6 @@
   gap: 22px;
 }
 
-.navLink {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--header-ink);
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 6px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: text-decoration-color 180ms ease;
-}
-
-.navLink:hover {
-  text-decoration-color: currentColor;
-}
-
-.navLink:focus-visible {
-  outline: 2px solid var(--header-ink);
-  outline-offset: 3px;
-  border-radius: 2px;
-}
-
 .right {
   display: flex;
   align-items: center;

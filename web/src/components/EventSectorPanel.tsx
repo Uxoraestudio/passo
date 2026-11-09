@@ -144,23 +144,6 @@ export default function EventSectorPanel({
           </p>
         </section>
 
-        <div className={pageStyles.assistCard}>
-          <div className={pageStyles.assistIcon}>
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M8.5 12.5a3.5 3.5 0 117 0M12 3a9 9 0 00-9 9v3a2 2 0 002 2h1v-6H5a7 7 0 0114 0h-1v6h1a2 2 0 002-2v-3a9 9 0 00-9-9z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <div>
-            <p className={pageStyles.assistTitle}>¿Necesitas asistencia?</p>
-            <p className={pageStyles.assistText}>Atención telefónica y WhatsApp 24/7 de nuestro Concierge de Eventos.</p>
-          </div>
-        </div>
       </aside>
     </div>
   );

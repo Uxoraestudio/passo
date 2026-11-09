@@ -73,27 +73,6 @@ export default async function MiCuentaPage({ searchParams }: PageProps<"/mi-cuen
             )}
           </header>
 
-          <aside className={styles.helpCard} aria-labelledby="ayuda-titulo">
-            <span className={styles.helpIcon} aria-hidden="true">
-              <svg viewBox="0 0 40 40" fill="none">
-                <rect x="2" y="4" width="24" height="18" rx="5" fill="var(--color-purple)" />
-                <path d="M8 11h12M8 15.5h7" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-                <rect x="14" y="16" width="24" height="18" rx="5" fill="var(--color-orange)" />
-                <path d="M20 23h12M20 27.5h8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </span>
-            <h2 id="ayuda-titulo" className={styles.helpTitle}>
-              ¿Necesitas ayuda?
-            </h2>
-            <p className={styles.helpText}>Estamos aquí para ayudarte en todo momento.</p>
-            <Link href="/proximamente/?title=Centro%20de%20ayuda" className={styles.helpButton}>
-              Centro de ayuda
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3.3 8h9.4M8.7 4 12.7 8l-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </Link>
-          </aside>
-
           <section className={styles.content} aria-label={title}>
             {section === "entradas" && <MyTickets view={view} tickets={await getAccountTickets()} />}
             {section === "favoritos" && <AccountFavorites events={await getAllEvents()} />}
