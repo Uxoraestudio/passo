@@ -66,15 +66,19 @@ export default function AuthGuard({
     };
   }, []);
 
-  useEffect(() => {
-    if (state.status === "unauthorized") {
-      router.replace("/login-admin/");
-    }
-  }, [state.status, router]);
+  // A section the role can't see at all (e.g. a door operator landing on
+  // Resumen after signing in) sends them to the first one they can use.
+  const redirectTo =
+    state.status === "authorized" && module && !allows(state.access, module) ? firstAllowedHref(state.access) : null;
 
-  // While the session is checked (and during the redirect to login) show the
-  // panel's outline instead of a blank screen.
-  if (state.status !== "authorized") return <SkeletonShell />;
+  useEffect(() => {
+    if (state.status === "unauthorized") router.replace("/login-admin/");
+    else if (redirectTo) router.replace(redirectTo);
+  }, [state.status, redirectTo, router]);
+
+  // While the session is checked (and during a redirect) show the panel's
+  // outline instead of a blank screen.
+  if (state.status !== "authorized" || redirectTo) return <SkeletonShell />;
 
   if (module && !allows(state.access, module, level)) {
     const fallback = firstAllowedHref(state.access);

@@ -308,7 +308,7 @@
 /* Layout: steps | form | aside */
 .grid {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 24px;
   align-items: start;
 }
@@ -1896,5 +1896,230 @@
 @media (max-width: 640px) {
   .seatsLink {
     flex-wrap: wrap;
+  }
+}
+
+/* Step-by-step: one section at a time */
+.form [hidden] {
+  display: none !important;
+}
+
+.stepLink {
+  width: 100%;
+  font: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stepLink:disabled {
+  color: #a3a6bd;
+  cursor: not-allowed;
+}
+
+.stepLink:disabled:hover {
+  background: none;
+}
+
+.wizardNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 24px;
+}
+
+.boxHint {
+  margin-top: 12px;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: #6b6e88;
+}
+
+
+/* Stepper across the top */
+.stepper {
+  grid-column: 1 / -1;
+  padding: 20px 24px 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.stepper ol {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stepper li {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Line to the next step; filled once this step is behind you. */
+.stepper li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 21px;
+  left: calc(50% + 30px);
+  right: calc(-50% + 30px);
+  height: 3px;
+  border-radius: 999px;
+  background: #e8e9f2;
+  transition: background 0.3s ease;
+}
+
+.stepper li[data-passed]::after {
+  background: var(--color-orange);
+}
+
+.stepperItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.stepperItem:disabled {
+  cursor: not-allowed;
+}
+
+.stepperDot {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #e2e3ee;
+  background: #fff;
+  color: #8a8da6;
+  font-size: 21px;
+  font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.stepperDot :global(.material-symbols-outlined) {
+  font-size: 21px;
+}
+
+.stepperItem:hover:not(:disabled) .stepperDot {
+  border-color: var(--color-orange);
+  color: var(--color-orange-dark);
+}
+
+li[data-state="active"] .stepperDot {
+  border-color: var(--color-orange);
+  background: var(--color-orange);
+  color: #fff;
+  box-shadow: 0 0 0 6px rgba(249, 87, 33, 0.16), 0 6px 14px rgba(249, 87, 33, 0.3);
+  transform: scale(1.06);
+}
+
+li[data-state="done"] .stepperDot {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: #fff;
+}
+
+li[data-state="error"] .stepperDot {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+li[data-state="locked"] .stepperItem {
+  opacity: 0.5;
+}
+
+.stepperText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepperNum {
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a9cb3;
+}
+
+.stepperLabel {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 17px;
+  color: #3a3c55;
+}
+
+li[data-state="active"] .stepperNum,
+li[data-state="active"] .stepperLabel {
+  color: var(--color-orange-dark);
+}
+
+li[data-state="error"] .stepperLabel {
+  color: var(--danger);
+}
+
+.stepperItem:focus-visible {
+  outline: none;
+}
+
+.stepperItem:focus-visible .stepperDot {
+  outline: 2px solid var(--color-orange);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .stepper {
+    padding: 16px 12px 14px;
+  }
+
+  .stepper li:not(:last-child)::after {
+    top: 17px;
+    left: calc(50% + 22px);
+    right: calc(-50% + 22px);
+  }
+
+  .stepperDot {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stepperDot :global(.material-symbols-outlined) {
+    font-size: 18px;
+  }
+
+  /* Only the current step keeps its name on phones. */
+  .stepper li:not([data-state="active"]) .stepperText {
+    display: none;
+  }
+
+  .stepperNum {
+    display: none;
+  }
+
+  .stepperLabel {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepperDot,
+  .stepper li::after {
+    transition: none;
   }
 }

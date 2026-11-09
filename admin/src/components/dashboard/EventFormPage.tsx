@@ -51,19 +51,32 @@ const statusBadge: Record<EventStatus, string> = {
 
 const steps = [
   { key: "info", label: "Información" },
-  { key: "venue", label: "Recinto" },
-  { key: "map", label: "Perimetría" },
+  { key: "venue", label: "Recinto y sectores" },
+  { key: "map", label: "Sectores y precios" },
   { key: "fecha", label: "Fecha y hora" },
   { key: "img", label: "Imágenes" },
-  { key: "conf", label: "Configuración" },
+  { key: "conf", label: "Venta y publicación" },
 ] as const;
 
 type StepKey = (typeof steps)[number]["key"];
+/** Wizard steps: the form sections, plus presales, coupons and courtesies once the event exists. */
+type FlowKey = StepKey | "extras";
+const extrasStep = { key: "extras" as const, label: "Preventas, cupones y cortesías" };
+
+const stepIcons: Record<FlowKey, string> = {
+  info: "edit_note",
+  venue: "location_on",
+  map: "grid_on",
+  fecha: "calendar_month",
+  img: "image",
+  conf: "rocket_launch",
+  extras: "confirmation_number",
+};
 
 const areaLabels: Record<StepKey | "status", string> = {
   info: "Información del evento",
   venue: "Recinto",
-  map: "Perimetría y precios",
+  map: "Sectores y precios",
   fecha: "Fecha y hora",
   img: "Imágenes",
   conf: "Configuración de venta",
@@ -292,9 +305,11 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
   const [saveError, setSaveError] = useState("");
   const [attemptLevel, setAttemptLevel] = useState<SaveLevel | null>(null);
   const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState<StepKey>("info");
-  // The courtesies block lives outside the form steps (it doesn't take part in saving).
-  const [inCourtesies, setInCourtesies] = useState(false);
+  // One step at a time. A new event unlocks the next step once the current one is complete.
+  const [step, setStep] = useState<FlowKey>("info");
+  const [maxReached, setMaxReached] = useState(eventId ? 99 : 0);
+  // While moving forward, only the steps already passed are checked.
+  const [stepLimit, setStepLimit] = useState<number | null>(null);
 
   const pageRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -383,32 +398,6 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     return () => observer.disconnect();
   }, [loadState]);
 
-  useEffect(() => {
-    if (loadState !== "ready") return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          if (entry.target.id === "s-cortesias") {
-            setInCourtesies(true);
-            return;
-          }
-          const key = steps.find((s) => `s-${s.key}` === entry.target.id)?.key;
-          if (key) {
-            setActiveStep(key);
-            setInCourtesies(false);
-          }
-        });
-      },
-      { rootMargin: "-35% 0px -60% 0px" }
-    );
-    [...steps.map((s) => `s-${s.key}`), "s-cortesias"].forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, [loadState]);
-
   const current = useMemo(() => partsOf(form, venue?.id ?? null, sectors, plan?.id ?? null), [form, venue, sectors, plan]);
   const changedAreas = useMemo(
     () => (baseline ? (Object.keys(current) as (keyof typeof areaLabels)[]).filter((k) => current[k] !== baseline[k]) : []),
@@ -486,7 +475,13 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
   };
 
   const levelForSubmit: SaveLevel = mode === "create" || form.status !== "borrador" ? "full" : "minimal";
-  const issues = attemptLevel ? issuesFor(attemptLevel) : [];
+  // Sectors and prices show right under the chosen venue, in the same step.
+  const shown = steps.filter((x) => x.key !== "map");
+  const flow: { key: FlowKey; label: string }[] = mode === "edit" ? [...shown, extrasStep] : [...shown];
+  const toFlow = (key: FlowKey): FlowKey => (key === "map" ? "venue" : key);
+  const stepIndex = (key: FlowKey) => flow.findIndex((x) => x.key === toFlow(key));
+  const currentIndex = stepIndex(step);
+  const issues = attemptLevel ? issuesFor(attemptLevel).filter((i) => stepLimit === null || stepIndex(i.step) <= stepLimit) : [];
   const issueIds = new Set(issues.map((i) => i.id));
   const invalid = (id: string) => issueIds.has(id);
 
@@ -500,18 +495,43 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     { key: "img" as const, label: "Imagen de tarjeta (4:3)", ok: !!form.image_url, optional: true },
   ];
   const okCount = checks.filter((c) => c.ok).length;
-  const doneSteps = new Set(steps.filter((s) => s.key !== "conf" && checks.some((c) => c.key === s.key) && checks.filter((c) => c.key === s.key).every((c) => c.ok)).map((s) => s.key));
-  const errorSteps = new Set(issues.map((i) => i.step));
+  const doneSteps = new Set(
+    steps
+      .filter((s) => s.key !== "conf" && checks.some((c) => toFlow(c.key) === s.key) && checks.filter((c) => toFlow(c.key) === s.key).every((c) => c.ok))
+      .map((s) => s.key)
+  );
+  const errorSteps = new Set(issues.map((i) => toFlow(i.step)));
 
-  const scrollToStep = (key: StepKey) => {
-    setActiveStep(key);
-    setInCourtesies(false);
-    document.getElementById(`s-${key}`)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+  const scrollToStep = (target: FlowKey) => {
+    const key = toFlow(target);
+    setStep(key);
+    setMaxReached((m) => Math.max(m, stepIndex(key)));
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
   const focusIssue = (issue: Issue) => {
     scrollToStep(issue.step);
-    window.setTimeout(() => document.getElementById(issue.target)?.focus({ preventScroll: true }), prefersReducedMotion() ? 0 : 350);
+    // Wait for the step to show before focusing its field.
+    window.setTimeout(() => document.getElementById(issue.target)?.focus({ preventScroll: true }), 60);
+  };
+
+  const goNext = () => {
+    if (mode === "create") {
+      const missing = issuesFor("full").filter((i) => toFlow(i.step) === step);
+      if (missing.length > 0) {
+        setAttemptLevel("full");
+        setStepLimit(currentIndex);
+        focusIssue(missing[0]);
+        return;
+      }
+    }
+    const next = flow[currentIndex + 1];
+    if (next) scrollToStep(next.key);
+  };
+
+  const goBack = () => {
+    const prev = flow[currentIndex - 1];
+    if (prev) scrollToStep(prev.key);
   };
 
   const buildInput = (status: EventStatus): EventInput => ({
@@ -564,6 +584,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
     const level: SaveLevel = kind === "draft" ? "minimal" : levelForSubmit;
     const status: EventStatus = kind === "draft" ? "borrador" : form.status;
     const found = issuesFor(level);
+    setStepLimit(null);
     if (found.length > 0) {
       setAttemptLevel(level);
       setLeaveTarget(null);
@@ -772,10 +793,12 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 Guardar borrador
               </button>
             )}
-            <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => save("submit")} disabled={saving}>
-              <MaterialIcon decorative name={saving ? "progress_activity" : "check"} className={`${styles.btnIcon} ${saving ? styles.spin : ""}`} />
-              {saving ? "Guardando…" : mode === "edit" ? "Guardar cambios" : "Crear evento"}
-            </button>
+            {mode === "edit" && (
+              <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => save("submit")} disabled={saving}>
+                <MaterialIcon decorative name={saving ? "progress_activity" : "check"} className={`${styles.btnIcon} ${saving ? styles.spin : ""}`} />
+                {saving ? "Guardando…" : "Guardar cambios"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -808,50 +831,34 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
       </div>
 
       <div className={styles.grid}>
-        <nav className={styles.steps} aria-label="Secciones del formulario">
-          {steps.map((s, i) => (
-            <a
-              key={s.key}
-              href={`#s-${s.key}`}
-              className={styles.stepLink}
-              data-active={!inCourtesies && activeStep === s.key}
-              data-done={doneSteps.has(s.key)}
-              data-error={errorSteps.has(s.key)}
-              aria-current={!inCourtesies && activeStep === s.key ? "step" : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToStep(s.key);
-              }}
-            >
-              <span className={styles.stepNumber} aria-hidden="true">
-                {errorSteps.has(s.key) ? "!" : doneSteps.has(s.key) ? <MaterialIcon decorative name="check" /> : i + 1}
-              </span>
-              {s.label}
-              {errorSteps.has(s.key) && <span className={styles.srOnly}> (tiene errores)</span>}
-            </a>
-          ))}
-          {mode === "edit" && (
-            <a
-              href="#s-cortesias"
-              className={styles.stepLink}
-              data-active={inCourtesies}
-              aria-current={inCourtesies ? "step" : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                setInCourtesies(true);
-                document.getElementById("s-cortesias")?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
-              }}
-            >
-              <span className={styles.stepNumber} aria-hidden="true">
-                <MaterialIcon decorative name="confirmation_number" />
-              </span>
-              Cortesías y prensa
-            </a>
-          )}
+        <nav className={styles.stepper} aria-label="Pasos del evento">
+          <ol>
+            {flow.map((x, i) => {
+              const locked = i > maxReached;
+              const active = step === x.key;
+              const done = !active && x.key !== "extras" && doneSteps.has(x.key);
+              const error = x.key !== "extras" && errorSteps.has(x.key);
+              const state = error ? "error" : active ? "active" : done ? "done" : locked ? "locked" : "todo";
+              return (
+                <li key={x.key} data-state={state} data-passed={i < currentIndex || undefined}>
+                  <button type="button" className={styles.stepperItem} aria-current={active ? "step" : undefined} disabled={locked} onClick={() => scrollToStep(x.key)}>
+                    <span className={styles.stepperDot} aria-hidden="true">
+                      {error ? "!" : done ? <MaterialIcon decorative name="check" /> : <MaterialIcon decorative name={stepIcons[x.key]} />}
+                    </span>
+                    <span className={styles.stepperText}>
+                      <span className={styles.stepperNum}>Paso {i + 1}</span>
+                      <span className={styles.stepperLabel}>{x.label}</span>
+                    </span>
+                    <span className={styles.srOnly}>{error ? " (tiene errores)" : done ? " (listo)" : ""}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
         </nav>
 
         <form className={styles.form} onSubmit={(e) => e.preventDefault()} noValidate>
-          <section className={styles.sec} id="s-info" aria-labelledby="h-info">
+          <section hidden={step !== "info"} className={styles.sec} id="s-info" aria-labelledby="h-info">
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="orange" aria-hidden="true">
                 <MaterialIcon decorative name="notes" />
@@ -930,7 +937,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             </div>
           </section>
 
-          <section className={styles.sec} id="s-venue" aria-labelledby="h-venue" data-invalid={invalid("venue")}>
+          <section hidden={step !== "venue"} className={styles.sec} id="s-venue" aria-labelledby="h-venue" data-invalid={invalid("venue")}>
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="purple" aria-hidden="true">
                 <MaterialIcon decorative name="location_on" />
@@ -939,7 +946,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 <h2 className={styles.secTitle} id="h-venue" tabIndex={-1}>
                   Recinto <i className={styles.req} aria-hidden="true">*</i>
                 </h2>
-                <p className={styles.secDesc}>Elige dónde se realiza el evento. Su perimetría (plano y sectores) se carga automáticamente.</p>
+                <p className={styles.secDesc}>Elige dónde se realiza el evento. Sus sectores y su plano se cargan solos.</p>
               </div>
             </div>
 
@@ -1078,14 +1085,14 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             )}
           </section>
 
-          <section className={styles.sec} id="s-map" aria-labelledby="h-map" data-invalid={invalid("map")}>
+          <section hidden={step !== "venue" || !(venue || legacy)} className={styles.sec} id="s-map" aria-labelledby="h-map" data-invalid={invalid("map")}>
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="orange" aria-hidden="true">
                 <MaterialIcon decorative name="grid_on" />
               </div>
               <div>
                 <h2 className={styles.secTitle} id="h-map" tabIndex={-1}>
-                  Perimetría y entradas
+                  Sectores y precios
                 </h2>
                 <p className={styles.secDesc}>
                   {plan
@@ -1153,7 +1160,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             )}
           </section>
 
-          <section className={styles.sec} id="s-fecha" aria-labelledby="h-fecha">
+          <section hidden={step !== "fecha"} className={styles.sec} id="s-fecha" aria-labelledby="h-fecha">
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="blue" aria-hidden="true">
                 <MaterialIcon decorative name="calendar_month" />
@@ -1196,7 +1203,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             </div>
           </section>
 
-          <section className={styles.sec} id="s-img" aria-labelledby="h-img">
+          <section hidden={step !== "img"} className={styles.sec} id="s-img" aria-labelledby="h-img">
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="green" aria-hidden="true">
                 <MaterialIcon decorative name="image" />
@@ -1227,7 +1234,7 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
             </div>
           </section>
 
-          <section className={styles.sec} id="s-conf" aria-labelledby="h-conf">
+          <section hidden={step !== "conf"} className={styles.sec} id="s-conf" aria-labelledby="h-conf">
             <div className={styles.secHead}>
               <div className={styles.secIcon} data-tone="neutral" aria-hidden="true">
                 <MaterialIcon decorative name="tune" />
@@ -1321,21 +1328,42 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
           </section>
 
           {mode === "edit" && eventId && (
+            <div hidden={step !== "extras"}>
             <EventPresales
               eventId={eventId}
               saleStart={form.saleStart ? new Date(form.saleStart).toISOString() : null}
               sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name, price: Number(s.price) || 0 }))}
             />
-          )}
-
-          {mode === "edit" && eventId && <EventCoupons eventId={eventId} />}
-
-          {mode === "edit" && eventId && (
+            <EventCoupons eventId={eventId} />
             <EventCourtesies eventId={eventId} sectors={sectors.filter((s) => s.id && s.is_active).map((s) => ({ id: s.id!, name: s.name }))} />
+            </div>
           )}
+
+          <div className={styles.wizardNav}>
+            {currentIndex > 0 ? (
+              <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={goBack}>
+                <MaterialIcon decorative name="arrow_back" className={styles.btnIcon} />
+                Atrás
+              </button>
+            ) : (
+              <span />
+            )}
+            {currentIndex < flow.length - 1 ? (
+              <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={goNext}>
+                Siguiente: {flow[currentIndex + 1].label}
+                <MaterialIcon decorative name="arrow_forward" className={styles.btnIcon} />
+              </button>
+            ) : mode === "create" ? (
+              <button type="button" className={`${styles.btn} ${styles.btnOrange}`} onClick={() => save("submit")} disabled={saving}>
+                <MaterialIcon decorative name={saving ? "progress_activity" : "check"} className={`${styles.btnIcon} ${saving ? styles.spin : ""}`} />
+                {saving ? "Guardando…" : form.status === "borrador" ? "Guardar como borrador" : "Crear evento"}
+              </button>
+            ) : null}
+          </div>
         </form>
 
         <aside className={styles.aside} aria-label="Resumen del evento">
+          {(mode === "edit" || step === "conf") && (
           <div className={styles.box}>
             <h3 className={styles.boxTitle} id="estado-title">
               Estado
@@ -1351,7 +1379,9 @@ export default function EventFormPage({ eventId }: { eventId?: string }) {
                 </label>
               ))}
             </div>
+            {mode === "create" && <p className={styles.boxHint}>Elige «En venta» para vender apenas lo crees, o déjalo en «Borrador» para terminarlo después.</p>}
           </div>
+          )}
 
           <div className={styles.box}>
             <h3 className={styles.boxTitle}>Vista previa</h3>
