@@ -50,6 +50,9 @@ export default function HeaderInner({
               <CategoriesMenu compact scrolled={scrolled} />
             </div>
             <SearchBar compact={scrolled} events={events} />
+            <Link href="/organizadores/" className={styles.producerButton}>
+              ¿Eres productor?
+            </Link>
             <LanguageSwitcher />
             {account ? (
               <Link href="/mi-cuenta/" className={styles.accountChip} aria-label={`Mi cuenta, ${account.firstName}`}>

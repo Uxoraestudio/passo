@@ -207,9 +207,9 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         id: "publicar-evento",
         q: "Quiero vender entradas en Aforiq, ¿qué debo hacer?",
         a: [
-          "Escríbenos a organizadores@aforiq.cl con los datos de tu evento y te ayudaremos a publicarlo.",
+          "Completa la solicitud en nuestra página para productores con tus datos y los de tu evento. Te contactaremos y te daremos acceso al panel con tu cuenta Aforiq para que crees tu evento.",
         ],
-        links: [{ label: "Ver más para organizadores", href: "/organizadores/" }],
+        links: [{ label: "Enviar solicitud", href: "/organizadores/#solicitud" }],
       },
     ],
   },
