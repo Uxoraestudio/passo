@@ -214,6 +214,7 @@ const memberErrors: Record<string, string> = {
   ROLE_NOT_FOUND: "Ese rol ya no existe. Recarga la página.",
   FORBIDDEN: "Tu rol no permite administrar el equipo.",
   OTHER_TEAM: "Esa persona ya trabaja con otra productora o en el equipo de la plataforma.",
+  PRODUCTORA_ACCOUNT: "Es una cuenta de productora: solo puede tener roles dentro de su propia productora.",
 };
 
 export function friendlyError(error: { message?: string; code?: string } | null, fallback: string) {

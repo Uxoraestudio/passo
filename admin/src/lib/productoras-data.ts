@@ -5,13 +5,20 @@ import { missingFunction } from "@/lib/validation-data";
 // them and give each one its owner (database functions in
 // 20261111120000_productoras.sql).
 
-export type ProductoraMember = { name: string; email: string; role: string };
+/** pending: invited but never signed in (the invitation can be sent again). */
+export type ProductoraMember = { name: string; email: string; role: string; pending?: boolean };
+
+export type ProductoraContact = { first_name: string | null; last_name: string | null; email: string; phone: string | null };
 
 export type Productora = {
   id: string;
   name: string;
   is_default: boolean;
   created_at: string;
+  /** ISO code, "CL" by default. Missing before the productora profile migration. */
+  country?: string;
+  /** Representative (legal representative or person in charge); null for older productoras. */
+  contact?: ProductoraContact | null;
   events: number;
   events_on_sale: number;
   team: ProductoraMember[];
@@ -25,9 +32,48 @@ const messages: Record<string, string> = {
   INVALID_NAME: "Escribe un nombre de al menos 2 letras.",
   NAME_TAKEN: "Ya existe una productora con ese nombre.",
   ORG_NOT_FOUND: "Esa productora ya no existe. Recarga la página.",
-  USER_NOT_FOUND: "No existe una cuenta con ese correo. La persona debe registrarse primero en aforiq.cl.",
-  OTHER_TEAM: "Esa cuenta ya es del equipo de la plataforma o de otra productora.",
+  OTHER_TEAM: "Ese correo ya es del equipo de la plataforma o de otra productora.",
 };
+
+const inviteMessages: Record<string, string> = {
+  ...messages,
+  INVALID_EMAIL: "Revisa el correo: no parece válido.",
+  IS_CUSTOMER: "Ese correo ya es de un cliente de Aforiq. Usa otro correo para la cuenta de la productora.",
+  ALREADY_ACTIVE: "Esa persona ya activó su cuenta y puede entrar al panel.",
+  RATE_LIMITED: "Se enviaron demasiados correos seguidos. Espera unos minutos y vuelve a intentarlo.",
+  UNAUTHENTICATED: "Tu sesión expiró. Vuelve a iniciar sesión.",
+  NOT_CONFIGURED: "Falta configurar la clave de servicio de Supabase en el panel (SUPABASE_SERVICE_ROLE_KEY).",
+  MIGRATION_PENDING: "Falta aplicar la actualización de base de datos de productoras.",
+  INVALID_COUNTRY: "Elige el país de la productora.",
+  INVALID_FIRST_NAME: "Escribe el nombre del representante.",
+  INVALID_LAST_NAME: "Escribe el apellido del representante.",
+  INVALID_PHONE: "Revisa el teléfono: no tiene el largo de un número de ese país.",
+  CREATE_FAILED: "No pudimos crear la productora. Inténtalo de nuevo.",
+};
+
+async function post<T>(url: string, payload: unknown, fallback: string): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  } catch {
+    throw new Error("No hay conexión. Revisa tu internet e inténtalo de nuevo.");
+  }
+  const body = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok || body.error) throw new ProductoraError(body.error ?? "", inviteMessages[body.error ?? ""] ?? fallback);
+  return body;
+}
+
+/** A failed request, with the server's code (e.g. IS_CUSTOMER) to point at the field. */
+export class ProductoraError extends Error {
+  constructor(
+    readonly code: string,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+export type NewProductora = { country: string; name: string; firstName: string; lastName: string; email: string; phone: string };
 
 function fail(error: { code?: string; message?: string }, fn: string, fallback: string): never {
   if (missingFunction(error, fn)) throw new ProductorasUnavailable();
@@ -41,13 +87,21 @@ export async function fetchProductoras(): Promise<Productora[]> {
   return (data ?? []) as Productora[];
 }
 
-export async function createProductora(name: string): Promise<string> {
-  const { data, error } = await createClient().rpc("create_organization", { p_name: name.trim() });
-  if (error) fail(error, "create_organization", "No pudimos crear la productora. Inténtalo de nuevo.");
-  return data as string;
+/** Creates the productora with its profile and e-mails the invitation to its representative. */
+export async function createProductora(data: NewProductora): Promise<string> {
+  const body = await post<{ id: string }>("/api/productoras/", data, "No pudimos crear la productora. Inténtalo de nuevo.");
+  return body.id;
 }
 
-export async function setProductoraOwner(orgId: string, email: string) {
-  const { error } = await createClient().rpc("set_organization_owner", { p_org_id: orgId, p_email: email.trim() });
-  if (error) fail(error, "set_organization_owner", "No pudimos asignar el dueño. Inténtalo de nuevo.");
+/**
+ * Creates the owner's productora account and e-mails the invitation (or sends
+ * it again if they haven't accepted yet). The e-mail doesn't need an Aforiq account.
+ */
+export async function inviteProductoraOwner(orgId: string, email: string): Promise<"invited" | "resent"> {
+  const body = await post<{ status: "invited" | "resent" }>(
+    "/api/productoras/invitar/",
+    { orgId, email: email.trim() },
+    "No pudimos enviar la invitación. Inténtalo de nuevo."
+  );
+  return body.status;
 }

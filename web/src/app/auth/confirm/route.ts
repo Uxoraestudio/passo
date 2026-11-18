@@ -26,6 +26,17 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash: tokenHash });
     if (!error) {
+      // Productora accounts live in the admin panel (a password reset still finishes here).
+      if (type !== "recovery") {
+        const { data } = await supabase.auth.getUser();
+        const { data: profile } = data.user
+          ? await supabase.from("profiles").select("account_type").eq("id", data.user.id).maybeSingle()
+          : { data: null };
+        if (profile?.account_type === "productora") {
+          await supabase.auth.signOut();
+          return NextResponse.redirect(new URL("/login-admin/", process.env.ADMIN_URL || "https://admin.aforiq.cl"));
+        }
+      }
       const target = new URL(next, url.origin);
       if (type === "signup" || type === "email") target.searchParams.set("bienvenida", "1");
       return NextResponse.redirect(target);

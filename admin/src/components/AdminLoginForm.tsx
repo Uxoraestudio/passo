@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { login } from "@/lib/auth";
 import styles from "./AdminLoginForm.module.css";
 
-export default function AdminLoginForm() {
+export default function AdminLoginForm({ invalidLink = false }: { invalidLink?: boolean }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -132,7 +132,17 @@ export default function AdminLoginForm() {
             </div>
           </div>
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error ? (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          ) : (
+            invalidLink && (
+              <p className={styles.error} role="status">
+                El enlace ya se usó o venció. Si ya creaste tu contraseña, inicia sesión; si no, pide que te reenvíen la invitación.
+              </p>
+            )
+          )}
 
           <button type="submit" className={styles.submit} disabled={submitting}>
             <span>{submitting ? "Ingresando..." : "Ingresar al Panel Admin"}</span>

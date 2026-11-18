@@ -8,14 +8,15 @@ export const metadata: Metadata = {
   description: "Ingresa tus credenciales corporativas para gestionar la plataforma Aforiq.",
 };
 
-export default function LoginAdminPage() {
+export default async function LoginAdminPage({ searchParams }: PageProps<"/login-admin">) {
+  const { enlace } = await searchParams;
   return (
     <>
       <AdminLoginHeader />
       <main className={styles.main}>
         <div className={styles.glowTop} aria-hidden="true" />
         <div className={styles.glowBottom} aria-hidden="true" />
-        <AdminLoginForm />
+        <AdminLoginForm invalidLink={enlace === "invalido"} />
       </main>
     </>
   );

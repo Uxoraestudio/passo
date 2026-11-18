@@ -201,3 +201,150 @@
   font-size: 12.5px;
   color: #64748b;
 }
+
+.pendingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 2px;
+}
+.pending {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 700;
+}
+.linkBtn {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: #f95721;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.linkBtn:hover:not(:disabled) {
+  text-decoration: underline;
+}
+.linkBtn:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+.linkBtn:focus-visible {
+  outline: 2px solid #f95721;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.cardError {
+  margin: 0;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/* «Nueva productora» sheet */
+.sheet {
+  gap: 18px;
+}
+.group {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.group legend {
+  margin-bottom: 12px;
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.rowWide {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+}
+@media (max-width: 560px) {
+  .row,
+  .rowWide {
+    grid-template-columns: 1fr;
+  }
+}
+.field > label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c1a2a;
+}
+.field input {
+  width: 100%;
+  min-height: 44px;
+}
+.field[data-invalid] input {
+  border-color: #f04438;
+  background: #fffbfa;
+}
+.prefixed {
+  display: flex;
+  align-items: stretch;
+}
+.prefixed > span {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid #e5dff7;
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+  background: #f1eefb;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a4560;
+}
+.prefixed input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 0 10px 10px 0 !important;
+}
+.fieldError {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b42318;
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.contact b {
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f172a;
+}
+.contact small {
+  font-size: 12.5px;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+.contact a {
+  color: inherit;
+  text-decoration: none;
+}
+.contact a:hover {
+  text-decoration: underline;
+}
+.country {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}

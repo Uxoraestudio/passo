@@ -20,10 +20,10 @@ export default function LoginForm({ next, invalidLink = false }: { next: string 
     setError("");
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    setSubmitting(false);
     if (signInError) {
+      setSubmitting(false);
       setError(
         signInError.code === "email_not_confirmed"
           ? "Aún no confirmas tu cuenta. Abre el enlace que te enviamos por correo (revisa también spam)."
@@ -31,6 +31,17 @@ export default function LoginForm({ next, invalidLink = false }: { next: string 
       );
       return;
     }
+
+    // Productora accounts only use the admin panel; they don't sign in or buy here.
+    const { data: profile } = await supabase.from("profiles").select("account_type").eq("id", data.user.id).maybeSingle();
+    if (profile?.account_type === "productora") {
+      await supabase.auth.signOut();
+      setSubmitting(false);
+      setError("Esta es una cuenta de productora: entra con ella en admin.aforiq.cl. Para comprar entradas usa un correo personal.");
+      return;
+    }
+
+    setSubmitting(false);
 
     router.push(next ?? "/mi-cuenta/");
     router.refresh();
