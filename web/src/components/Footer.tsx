@@ -7,12 +7,14 @@ const exploreLinks = [
   { label: "Eventos", href: "/eventos" },
   { label: "Ciudades", href: "/eventos" },
   { label: "Categorías", href: "/eventos" },
+  { label: "Preguntas frecuentes", href: "/preguntas-frecuentes/" },
 ];
 const aboutLinks = [
   { label: "Nosotros", href: "/proximamente?title=Nosotros" },
   { label: "Para organizadores", href: "/organizadores" },
   { label: "Trabaja con nosotros", href: "/proximamente?title=Trabaja%20con%20nosotros" },
   { label: "Prensa", href: "/proximamente?title=Prensa" },
+  { label: "Contacto", href: "/contacto/" },
 ];
 const legalLinks = [
   { label: "Términos y condiciones", href: "/proximamente?title=Términos%20y%20condiciones" },

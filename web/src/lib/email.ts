@@ -6,18 +6,18 @@ import "server-only";
  */
 const FROM = process.env.EMAIL_FROM || "Aforiq <no-reply@aforiq.cl>";
 
-export type Email = { to: string; subject: string; html: string; text: string };
+export type Email = { to: string; subject: string; html: string; text: string; replyTo?: string };
 
 export class EmailNotConfigured extends Error {}
 
-export async function sendEmail({ to, subject, html, text }: Email): Promise<{ id: string }> {
+export async function sendEmail({ to, subject, html, text, replyTo }: Email): Promise<{ id: string }> {
   const key = process.env.RESEND_API_KEY;
   if (!key) throw new EmailNotConfigured("RESEND_API_KEY no está configurada.");
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: FROM, to: [to], subject, html, text }),
+    body: JSON.stringify({ from: FROM, to: [to], subject, html, text, ...(replyTo ? { reply_to: replyTo } : {}) }),
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) {
