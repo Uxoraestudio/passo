@@ -209,7 +209,7 @@ export default async function OrganizadoresPage() {
           </div>
         </section>
 
-        <section className={styles.section} aria-labelledby="dudas">
+        <section className={`${styles.section} ${styles.faqSection}`} aria-labelledby="dudas">
           <div className={styles.sectionHead}>
             <h2 id="dudas">¿Aún tienes dudas?</h2>
           </div>

@@ -285,6 +285,20 @@
 
 /* FAQ */
 
+.faqSection .sectionHead {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.faqSection .faqs {
+  margin: 0 auto;
+}
+
+.faqSection .mailNote {
+  text-align: center;
+}
+
 .faqs {
   display: flex;
   flex-direction: column;
