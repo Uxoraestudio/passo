@@ -11,6 +11,7 @@ import styles from "./Checkout.module.css";
 
 export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
   const [accepted, setAccepted] = useState(false);
+  const [marketing, setMarketing] = useState(order.marketingOptIn);
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<{ message: string; code?: string } | null>(null);
   const [expired, setExpired] = useState(!order.editable);
@@ -24,7 +25,7 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
     if (!accepted || paying || expired) return;
     setPaying(true);
     setError(null);
-    const result = await payOrder(order.id);
+    const result = await payOrder(order.id, marketing);
     if (!result.ok) {
       setError({ message: result.error, code: result.code });
       if (result.code === "ORDER_EXPIRED") setExpired(true);
@@ -186,6 +187,14 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
                 Políticas de devolución
               </a>
               .
+            </span>
+          </label>
+
+          <label className={`${styles.termsRow} ${styles.consentRow}`}>
+            <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} disabled={expired} />
+            <span>
+              Quiero recibir por correo novedades y preventas de <strong>{order.organizer ?? "la productora de este evento"}</strong>.{" "}
+              <small>Opcional. Puedes pedir que dejen de escribirte cuando quieras.</small>
             </span>
           </label>
         </div>

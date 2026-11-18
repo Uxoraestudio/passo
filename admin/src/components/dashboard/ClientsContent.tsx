@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MaterialIcon } from "@/components/icons";
 import Select from "@/components/Select";
 import { SkeletonKpis, SkeletonTable } from "@/components/Skeleton";
+import { useAccess } from "@/lib/access";
 import { clp, downloadCsv, fetchClients, formatDate, int, type ClientRow } from "@/lib/admin-data";
 import KpiCard, { type KpiDatum } from "./KpiCard";
 import pageStyles from "@/app/inicio/page.module.css";
@@ -15,6 +16,8 @@ const PAGE = 25;
 const DAY = 86_400_000;
 
 export default function ClientsContent() {
+  // A productora sees which of its buyers accepted its news (consent ticked at checkout).
+  const showConsent = Boolean(useAccess().organization);
   const [clients, setClients] = useState<ClientRow[] | null>(null);
   const [loadedAt, setLoadedAt] = useState(0);
   const [error, setError] = useState("");
@@ -81,8 +84,17 @@ export default function ClientsContent() {
 
   const exportCsv = () =>
     downloadCsv(`clientes-${new Date().toISOString().slice(0, 10)}.csv`, [
-      ["Nombre", "Correo", "Registro", "Órdenes pagadas", "Entradas", "Total gastado", "Última compra"],
-      ...filtered.map((c) => [c.full_name ?? "", c.email, formatDate(c.created_at), c.orders_paid, c.tickets, c.total_spent, c.last_purchase_at ? formatDate(c.last_purchase_at) : ""]),
+      ["Nombre", "Correo", "Registro", "Órdenes pagadas", "Entradas", "Total gastado", "Última compra", ...(showConsent ? ["Acepta novedades"] : [])],
+      ...filtered.map((c) => [
+        c.full_name ?? "",
+        c.email,
+        formatDate(c.created_at),
+        c.orders_paid,
+        c.tickets,
+        c.total_spent,
+        c.last_purchase_at ? formatDate(c.last_purchase_at) : "",
+        ...(showConsent ? [c.marketing_opt_in ? "Sí" : "No"] : []),
+      ]),
     ]);
 
   return (
@@ -179,6 +191,7 @@ export default function ClientsContent() {
                         <th className={tableStyles.num}>Entradas</th>
                         <th className={tableStyles.num}>Total gastado</th>
                         <th>Última compra</th>
+                        {showConsent && <th>Novedades</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -200,6 +213,15 @@ export default function ClientsContent() {
                           <td className={tableStyles.num}>{int(c.tickets)}</td>
                           <td className={tableStyles.num}>{c.total_spent > 0 ? clp(c.total_spent) : "—"}</td>
                           <td>{c.last_purchase_at ? formatDate(c.last_purchase_at) : <span className={tableStyles.sub}>Sin compras</span>}</td>
+                          {showConsent && (
+                            <td>
+                              {c.marketing_opt_in ? (
+                                <span className={styles.consentYes}>Acepta</span>
+                              ) : (
+                                <span className={tableStyles.sub}>No aceptó</span>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

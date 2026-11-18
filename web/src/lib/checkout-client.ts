@@ -30,9 +30,9 @@ export async function reserveTickets(eventId: string, items: CheckoutLine[]): Pr
 }
 
 /** Starts the Flow payment for a reserved order and sends the browser there. Resolves only on failure. */
-export async function payOrder(orderId: string): Promise<Failure | { ok: true }> {
+export async function payOrder(orderId: string, marketingOptIn = false): Promise<Failure | { ok: true }> {
   try {
-    const { response, body } = await post("/api/checkout/pagar/", { orderId });
+    const { response, body } = await post("/api/checkout/pagar/", { orderId, marketingOptIn });
     if (!response.ok || !body?.redirectUrl) {
       return { ok: false, error: body?.error ?? "No pudimos iniciar el pago. Inténtalo de nuevo.", code: body?.code };
     }

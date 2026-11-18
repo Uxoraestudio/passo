@@ -167,6 +167,8 @@ export type ClientRow = {
   tickets: number;
   total_spent: number;
   last_purchase_at: string | null;
+  /** Productoras only: accepted its news in their latest paid purchase. null for platform staff. */
+  marketing_opt_in?: boolean | null;
 };
 
 export async function fetchClients(): Promise<ClientRow[]> {

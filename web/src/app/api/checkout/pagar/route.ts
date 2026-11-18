@@ -16,8 +16,9 @@ export async function POST(request: NextRequest) {
     return json(403, { error: "Origen no permitido." });
   }
 
-  const body = (await request.json().catch(() => null)) as { orderId?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { orderId?: unknown; marketingOptIn?: unknown } | null;
   const orderId = body?.orderId;
+  const marketingOptIn = body?.marketingOptIn === true;
   if (typeof orderId !== "string" || !UUID.test(orderId)) {
     return json(400, { error: "La solicitud no es válida." });
   }
@@ -37,6 +38,16 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = createAdminClient();
+
+  // The buyer's answer to «Quiero recibir novedades de …», as it was when they pressed «Pagar».
+  // Never blocks the payment.
+  const { error: consentError } = await admin
+    .from("orders")
+    .update({ marketing_opt_in: marketingOptIn, marketing_consent_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("status", "pending");
+  if (consentError) console.warn("Marketing consent not saved", orderId, consentError.message);
+
   const { data: order, error } = await admin.rpc("begin_order_payment", { p_order_id: orderId, p_minutes: HOLD_MINUTES });
   if (error || !order) {
     const failure = orderErrorFor(error?.message);

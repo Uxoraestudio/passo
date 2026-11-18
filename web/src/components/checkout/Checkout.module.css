@@ -1326,3 +1326,17 @@
   font-weight: 600;
   color: #b91c1c;
 }
+
+.consentRow {
+  margin-top: 12px;
+}
+.consentRow strong {
+  font-weight: 700;
+  color: var(--color-gray-900, #211333);
+}
+.consentRow small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--color-gray-500, #6b6680);
+}

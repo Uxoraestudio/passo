@@ -42,6 +42,10 @@ export type CheckoutOrder = {
   total: number;
   /** The event asks for each attendee's name and ID; when false only the buyer's. */
   nominate: boolean;
+  /** Productora behind the event, named in the marketing consent box. */
+  organizer: string | null;
+  /** The buyer ticked «Quiero recibir novedades» (last time they pressed «Pagar»). */
+  marketingOptIn: boolean;
   buyer: { email: string; firstName: string; lastName: string; document: string; phone: string };
   event: {
     slug: string;
@@ -79,6 +83,7 @@ type OrderRow = {
   buyer_last_name: string | null;
   buyer_document: string | null;
   buyer_phone: string | null;
+  marketing_opt_in: boolean | null;
   event: {
     slug: string;
     title: string;
@@ -115,13 +120,14 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
   const { data } = await supabase
     .from("orders")
     .select(
-      "id, code, status, expires_at, flow_token, subtotal, service_fee, total, discount, coupon_code, buyer_email, buyer_name, buyer_first_name, buyer_last_name, buyer_document, buyer_phone, event:events(slug, title, subtitle, image_url, banner_image_url, venue, city, event_date, nominate_tickets), order_items(sector_id, sector_name, quantity, unit_price, seat_labels), order_attendees(position, sector_id, seat_label, first_name, last_name, document, birth_date)"
+      "id, code, status, expires_at, flow_token, subtotal, service_fee, total, discount, coupon_code, buyer_email, buyer_name, buyer_first_name, buyer_last_name, buyer_document, buyer_phone, marketing_opt_in, event:events(slug, title, subtitle, image_url, banner_image_url, venue, city, event_date, nominate_tickets), order_items(sector_id, sector_name, quantity, unit_price, seat_labels), order_attendees(position, sector_id, seat_label, first_name, last_name, document, birth_date)"
     )
     .eq("id", orderId)
     .maybeSingle();
 
   const row = data as unknown as OrderRow | null;
   if (!row || !row.event) return null;
+  const { data: organizer } = await supabase.rpc("order_organizer_name", { p_order_id: orderId });
 
   const expired = row.status === "pending" && new Date(row.expires_at).getTime() <= now;
   const status: OrderStatus = expired ? "expired" : row.status;
@@ -180,6 +186,8 @@ export async function getCheckoutOrder(orderId: string, now = Date.now()): Promi
     serviceFee: row.service_fee,
     total: row.total,
     nominate: row.event.nominate_tickets ?? true,
+    organizer: typeof organizer === "string" && organizer.trim() ? organizer.trim() : null,
+    marketingOptIn: row.marketing_opt_in ?? false,
     buyer: {
       email: row.buyer_email,
       firstName: row.buyer_first_name ?? fallbackFirst ?? "",
