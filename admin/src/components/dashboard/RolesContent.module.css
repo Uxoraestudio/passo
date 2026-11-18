@@ -356,3 +356,61 @@
 .roleLocked :global(.material-symbols-outlined) {
   font-size: 16px;
 }
+
+/* Team table: fits the card instead of scrolling sideways */
+.teamWrap {
+  container-type: inline-size;
+}
+
+.teamTable {
+  min-width: 0;
+}
+
+.teamTable td:first-child {
+  overflow-wrap: anywhere;
+}
+
+.teamTable .since {
+  white-space: nowrap;
+}
+
+.teamTable .actionsCell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+/* Narrow card: the date goes first */
+@container (max-width: 640px) {
+  .teamTable .since {
+    display: none;
+  }
+}
+
+/* Phone width: each person is a small block (name, then access and action) */
+@container (max-width: 460px) {
+  .teamTable thead {
+    display: none;
+  }
+
+  .teamTable tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .teamTable td {
+    padding: 0;
+    border: 0;
+  }
+
+  .teamTable td:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .teamTable .actionsCell {
+    width: auto;
+  }
+}

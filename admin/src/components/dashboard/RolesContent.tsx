@@ -290,14 +290,14 @@ export default function RolesContent() {
                 ? "Para sumar a alguien, invítalo por correo: tendrá una cuenta solo para el panel de tu productora."
                 : "Para sumar a alguien, primero debe tener una cuenta en Aforiq."}
             </p>
-            <div className={tableStyles.tableWrap}>
-              <table className={tableStyles.table}>
+            <div className={`${tableStyles.tableWrap} ${styles.teamWrap}`}>
+              <table className={`${tableStyles.table} ${styles.teamTable}`}>
                 <thead>
                   <tr>
                     <th>Persona</th>
                     <th>Acceso</th>
-                    <th>Miembro desde</th>
-                    {canEdit && <th className={tableStyles.num}>Acciones</th>}
+                    <th className={styles.since}>Miembro desde</th>
+                    {canEdit && <th className={`${tableStyles.num} ${styles.actionsCell}`}>Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -340,9 +340,9 @@ export default function RolesContent() {
                             </span>
                           )}
                         </td>
-                        <td>{formatDate(m.created_at)}</td>
+                        <td className={styles.since}>{formatDate(m.created_at)}</td>
                         {canEdit && (
-                          <td className={tableStyles.num}>
+                          <td className={`${tableStyles.num} ${styles.actionsCell}`}>
                             {!locked && (
                               <button
                                 type="button"
