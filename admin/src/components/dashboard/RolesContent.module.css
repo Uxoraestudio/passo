@@ -296,3 +296,63 @@
   font-weight: 600;
   color: #b42318;
 }
+
+/* Pending invitation in the team table */
+.pendingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.pending {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.linkButton {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b32e6;
+  cursor: pointer;
+}
+
+.linkButton:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.linkButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.linkButton:focus-visible {
+  outline: 2px solid #6534f5;
+  outline-offset: 2px;
+}
+
+/* The owner's role: shown, not editable by the productora */
+.roleLocked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.roleLocked :global(.material-symbols-outlined) {
+  font-size: 16px;
+}

@@ -196,13 +196,25 @@ export type TeamMember = {
   role: "admin" | "staff";
   staff_role_id: string | null;
   created_at: string;
+  /** "productora": a panel-only account, invited by e-mail. */
+  account_type?: "cliente" | "productora";
+  /** Invited and hasn't created their password yet. */
+  pending?: boolean;
 };
 
-export async function fetchTeam(): Promise<{ members: TeamMember[]; roles: StaffRole[] }> {
+/** The owner's role in a productora, managed by the platform. */
+export const OWNER_ROLE_NAME = "Productor";
+
+/**
+ * The team in Roles: a productora's own team and roles, or for platform staff
+ * the platform team and its roles (each productora's team is in Productoras).
+ */
+export async function fetchTeam(orgId: string | null): Promise<{ members: TeamMember[]; roles: StaffRole[] }> {
   const supabase = createClient();
+  const rolesQuery = supabase.from("staff_roles").select("id, name, description, color, permissions").order("created_at");
   const [members, roles] = await Promise.all([
-    supabase.from("profiles").select("id, email, full_name, role, staff_role_id, created_at").in("role", ["admin", "staff"]).order("created_at"),
-    supabase.from("staff_roles").select("id, name, description, color, permissions").order("created_at"),
+    supabase.rpc("team_overview"),
+    orgId ? rolesQuery.eq("organization_id", orgId) : rolesQuery.is("organization_id", null),
   ]);
   if (members.error) throw members.error;
   if (roles.error) throw roles.error;
@@ -217,7 +229,52 @@ const memberErrors: Record<string, string> = {
   FORBIDDEN: "Tu rol no permite administrar el equipo.",
   OTHER_TEAM: "Esa persona ya trabaja con otra productora o en el equipo de la plataforma.",
   PRODUCTORA_ACCOUNT: "Es una cuenta de productora: solo puede tener roles dentro de su propia productora.",
+  USE_INVITE: "Esa persona no es de tu equipo. Usa «Agregar miembro» para invitarla por correo.",
+  OWNER_ROLE: "El rol Productor es el del dueño de la productora y lo gestiona Aforiq.",
 };
+
+const inviteErrors: Record<string, string> = {
+  ...memberErrors,
+  INVALID_EMAIL: "Revisa el correo: no parece válido.",
+  IS_CUSTOMER: "Ese correo ya es de un cliente de Aforiq. Usa otro correo para la cuenta del equipo, por ejemplo uno de trabajo.",
+  OTHER_TEAM: "Ese correo ya es del equipo de otra productora o de la plataforma.",
+  ALREADY_ACTIVE: "Esa persona ya está en tu equipo y activó su cuenta.",
+  RATE_LIMITED: "Se enviaron demasiados correos seguidos. Espera unos minutos y vuelve a intentarlo.",
+  UNAUTHENTICATED: "Tu sesión expiró. Vuelve a iniciar sesión.",
+  NOT_CONFIGURED: "Falta configurar la clave de servicio de Supabase en el panel (SUPABASE_SERVICE_ROLE_KEY).",
+  SELF: "No puedes quitarte el acceso a ti mismo.",
+  NOT_PRODUCTORA_ACCOUNT: "Esta persona entra con su cuenta de cliente. Recarga la página e inténtalo de nuevo.",
+  USER_NOT_FOUND: "Esa persona ya no está en tu equipo. Recarga la página.",
+  INVITE_FAILED: "No pudimos enviar la invitación. Inténtalo de nuevo.",
+  REMOVE_FAILED: "No pudimos quitar el acceso. Inténtalo de nuevo.",
+};
+
+async function teamPost<T>(url: string, payload: unknown, fallback: string): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  } catch {
+    throw new Error("No hay conexión. Revisa tu internet e inténtalo de nuevo.");
+  }
+  const body = (await res.json().catch(() => ({}))) as T & { error?: string };
+  if (!res.ok || body.error) throw new Error(inviteErrors[body.error ?? ""] ?? fallback);
+  return body;
+}
+
+/** A productora invites someone to its team by e-mail (null role = full access), or re-sends a pending invitation. */
+export async function inviteTeamMember(email: string, staffRoleId: string | null): Promise<"invited" | "resent"> {
+  const body = await teamPost<{ status: "invited" | "resent" }>(
+    "/api/equipo/invitar/",
+    { email: email.trim(), staffRoleId },
+    "No pudimos enviar la invitación. Inténtalo de nuevo."
+  );
+  return body.status;
+}
+
+/** A productora removes a panel-only account (or a pending invitation) from its team. */
+export async function removeTeamMember(userId: string): Promise<void> {
+  await teamPost("/api/equipo/quitar/", { userId }, "No pudimos quitar el acceso. Inténtalo de nuevo.");
+}
 
 export function friendlyError(error: { message?: string; code?: string } | null, fallback: string) {
   const key = Object.keys(memberErrors).find((k) => error?.message?.includes(k));

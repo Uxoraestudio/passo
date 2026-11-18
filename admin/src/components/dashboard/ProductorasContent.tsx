@@ -5,7 +5,7 @@ import { MaterialIcon } from "@/components/icons";
 import { countryByCode, formatPhone } from "@/lib/countries";
 import { SkeletonCards } from "@/components/Skeleton";
 import { managesProductoras, useAccess } from "@/lib/access";
-import { ProductorasUnavailable, fetchProductoras, inviteProductoraOwner, type Productora, type ProductoraMember } from "@/lib/productoras-data";
+import { ProductorasUnavailable, deleteProductora, fetchProductoras, inviteProductoraOwner, type Productora, type ProductoraMember } from "@/lib/productoras-data";
 import ConfirmDialog from "./ConfirmDialog";
 import NewProductoraDialog from "./NewProductoraDialog";
 import pageStyles from "@/app/inicio/page.module.css";
@@ -36,6 +36,12 @@ export default function ProductorasContent() {
   // Resend a pending invitation
   const [resending, setResending] = useState<string | null>(null);
   const [cardError, setCardError] = useState<{ org: string; message: string } | null>(null);
+
+  // Delete (only without events; the name is typed to confirm)
+  const [toDelete, setToDelete] = useState<Productora | null>(null);
+  const [confirmName, setConfirmName] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     if (!allowed) return;
@@ -102,6 +108,41 @@ export default function ProductorasContent() {
       setCardError({ org: p.id, message: e instanceof Error ? e.message : "No pudimos reenviar la invitación." });
     } finally {
       setResending(null);
+    }
+  };
+
+  const openDelete = (p: Productora) => {
+    setConfirmName("");
+    setDeleteError("");
+    setCardError(null);
+    setFlash("");
+    setToDelete(p);
+  };
+
+  const closeDelete = () => {
+    if (!deleting) setToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    if (confirmName.trim() !== toDelete.name) {
+      setDeleteError("El nombre no coincide. Escríbelo tal como aparece.");
+      return;
+    }
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const result = await deleteProductora(toDelete.id, confirmName.trim());
+      const accounts = result.accounts_deleted;
+      setToDelete(null);
+      refresh(
+        `Productora «${toDelete.name}» eliminada` +
+          (accounts ? ` junto con ${accounts === 1 ? "la cuenta de su equipo" : `las ${accounts} cuentas de su equipo`}.` : ".")
+      );
+    } catch (e) {
+      setDeleteError(e instanceof Error ? e.message : "No pudimos eliminar la productora.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -231,6 +272,25 @@ export default function ProductorasContent() {
                   )}
                 </div>
 
+                {p.team.length > owners.length && (
+                  <div className={styles.owners}>
+                    <span className={styles.label}>Resto del equipo</span>
+                    <ul>
+                      {p.team
+                        .filter((m) => m.role !== "Productor")
+                        .map((m) => (
+                          <li key={m.email}>
+                            <b>{m.pending ? m.email : m.name}</b>
+                            <small>
+                              {m.role}
+                              {m.pending ? " · invitación pendiente" : ` · ${m.email}`}
+                            </small>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+
                 {cardError?.org === p.id && (
                   <p className={styles.cardError} role="alert">
                     {cardError.message}
@@ -241,6 +301,13 @@ export default function ProductorasContent() {
                   <MaterialIcon decorative name="person_add" />
                   {owners.length === 0 ? "Invitar dueño" : "Invitar otro dueño"}
                 </button>
+
+                {!p.is_default && (
+                  <button type="button" className={styles.deleteBtn} onClick={() => openDelete(p)} aria-label={`Eliminar la productora ${p.name}`}>
+                    <MaterialIcon decorative name="delete" />
+                    Eliminar productora
+                  </button>
+                )}
               </article>
             );
           })}
@@ -286,6 +353,72 @@ export default function ProductorasContent() {
             </p>
           )}
         </div>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        kind={toDelete && toDelete.events === 0 ? "form" : "alert"}
+        icon={toDelete && toDelete.events > 0 ? "info" : "delete"}
+        title={
+          toDelete && toDelete.events > 0 ? `«${toDelete.name}» tiene eventos` : `¿Eliminar «${toDelete?.name ?? ""}»?`
+        }
+        busy={deleting}
+        onClose={closeDelete}
+        actions={
+          toDelete && toDelete.events > 0
+            ? [{ label: "Entendido", variant: "soft", onClick: closeDelete, autoFocus: true }]
+            : [
+                { label: "Cancelar", variant: "soft", onClick: closeDelete },
+                { label: "Eliminar productora", variant: "danger", onClick: confirmDelete, busyLabel: "Eliminando…" },
+              ]
+        }
+      >
+        {toDelete && toDelete.events > 0 ? (
+          <p>
+            Tiene <b>{toDelete.events.toLocaleString("es-CL")}</b> {toDelete.events === 1 ? "evento" : "eventos"}. Para no perder ventas ni
+            entradas, una productora solo se puede eliminar cuando no tiene eventos: elimínalos primero desde Eventos.
+          </p>
+        ) : toDelete ? (
+          <div className={formStyles.form}>
+            <p>Se elimina la productora con su ficha y sus roles. No se puede deshacer.</p>
+            {toDelete.team.length > 0 && (
+              <>
+                <p>Su equipo pierde el acceso al panel:</p>
+                <ul className={styles.deleteList}>
+                  {toDelete.team.map((m) => (
+                    <li key={m.email}>
+                      <b>{m.pending ? m.email : m.name}</b> · {m.role}
+                      {!m.pending && <small> {m.email}</small>}
+                    </li>
+                  ))}
+                </ul>
+                <p className={styles.hint}>
+                  Las cuentas creadas para esta productora se borran. Si alguien del equipo también es cliente, conserva su cuenta de cliente.
+                </p>
+              </>
+            )}
+            <label className={formStyles.field}>
+              <span>Para confirmar, escribe «{toDelete.name}»</span>
+              <input
+                data-autofocus
+                value={confirmName}
+                autoComplete="off"
+                spellCheck={false}
+                aria-invalid={deleteError ? true : undefined}
+                onChange={(e) => {
+                  setConfirmName(e.target.value);
+                  if (deleteError) setDeleteError("");
+                }}
+                onKeyDown={(e) => e.key === "Enter" && confirmDelete()}
+              />
+            </label>
+            {deleteError && (
+              <p className={formStyles.error} role="alert">
+                {deleteError}
+              </p>
+            )}
+          </div>
+        ) : null}
       </ConfirmDialog>
     </main>
   );

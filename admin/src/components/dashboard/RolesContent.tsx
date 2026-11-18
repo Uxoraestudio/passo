@@ -5,7 +5,18 @@ import { MaterialIcon } from "@/components/icons";
 import Select from "@/components/Select";
 import { SkeletonList, SkeletonTable } from "@/components/Skeleton";
 import { MODULES, useAccess, useCanEdit, type ModuleKey, type PermissionLevel } from "@/lib/access";
-import { deleteRole, fetchTeam, formatDate, saveRole, setMember, type StaffRole, type TeamMember } from "@/lib/admin-data";
+import {
+  OWNER_ROLE_NAME,
+  deleteRole,
+  fetchTeam,
+  formatDate,
+  inviteTeamMember,
+  removeTeamMember,
+  saveRole,
+  setMember,
+  type StaffRole,
+  type TeamMember,
+} from "@/lib/admin-data";
 import ConfirmDialog from "./ConfirmDialog";
 import pageStyles from "@/app/inicio/page.module.css";
 import tableStyles from "./SalesContent.module.css";
@@ -29,9 +40,12 @@ const emptyRole = (): RoleDraft => ({
   permissions: { resumen: "view", eventos: "view" },
 });
 
-function summary(role: StaffRole) {
-  const editable = MODULES.filter((m) => role.permissions[m.key] === "edit").map((m) => m.label);
-  const viewable = MODULES.filter((m) => role.permissions[m.key] === "view").map((m) => m.label);
+/** Sections a productora's team can never enter, whatever its role says. */
+const PLATFORM_ONLY: ModuleKey[] = ["apariencia", "seo"];
+
+function summary(role: StaffRole, modules: readonly (typeof MODULES)[number][]) {
+  const editable = modules.filter((m) => role.permissions[m.key] === "edit").map((m) => m.label);
+  const viewable = modules.filter((m) => role.permissions[m.key] === "view").map((m) => m.label);
   if (editable.length === 0 && viewable.length === 0) return "Sin acceso a ninguna sección";
   return [editable.length ? `Edita: ${editable.join(", ")}` : null, viewable.length ? `Ve: ${viewable.join(", ")}` : null].filter(Boolean).join(" · ");
 }
@@ -45,6 +59,10 @@ export default function RolesContent() {
   const access = useAccess();
   const canEdit = useCanEdit("roles");
   const isAdmin = access.role === "admin";
+  const orgId = access.organization?.id ?? null;
+  // A productora's team: invitations, its owner role locked, no Apariencia/SEO.
+  const isProductora = orgId !== null;
+  const modules = isProductora ? MODULES.filter((m) => !PLATFORM_ONLY.includes(m.key)) : MODULES;
 
   const [members, setMembers] = useState<TeamMember[] | null>(null);
   const [roles, setRoles] = useState<StaffRole[]>([]);
@@ -66,14 +84,14 @@ export default function RolesContent() {
 
   const load = useCallback(async () => {
     try {
-      const team = await fetchTeam();
+      const team = await fetchTeam(orgId);
       setMembers(team.members);
       setRoles(team.roles);
       setLoadError("");
     } catch {
       setLoadError("No pudimos cargar el equipo. Revisa tu conexión e inténtalo de nuevo.");
     }
-  }, []);
+  }, [orgId]);
 
   useEffect(() => {
     const id = window.setTimeout(load, 0);
@@ -103,9 +121,15 @@ export default function RolesContent() {
     if (!memberToRemove) return;
     setSavingMember(true);
     try {
-      await setMember(memberToRemove.email, "cliente", null);
+      if (removesAccount(memberToRemove)) await removeTeamMember(memberToRemove.id);
+      else await setMember(memberToRemove.email, "cliente", null);
       await load();
-      flash("ok", `${memberToRemove.full_name || memberToRemove.email} ya no tiene acceso al panel.`);
+      flash(
+        "ok",
+        memberToRemove.pending
+          ? `Cancelamos la invitación a ${memberToRemove.email}.`
+          : `${memberToRemove.full_name || memberToRemove.email} ya no tiene acceso al panel.`
+      );
       setMemberToRemove(null);
     } catch (e) {
       flash("error", e instanceof Error ? e.message : "No pudimos quitar el acceso.");
@@ -123,10 +147,21 @@ export default function RolesContent() {
     setSavingMember(true);
     setAddError("");
     try {
-      if (newAccess === ADMIN) await setMember(newEmail, "admin", null);
-      else await setMember(newEmail, "staff", newAccess === FULL ? null : newAccess);
-      await load();
-      flash("ok", `${newEmail.trim()} ahora tiene acceso al panel.`);
+      if (isProductora) {
+        const status = await inviteTeamMember(newEmail, newAccess === FULL ? null : newAccess);
+        await load();
+        flash(
+          "ok",
+          status === "resent"
+            ? `Volvimos a enviar la invitación a ${newEmail.trim()}.`
+            : `Enviamos la invitación a ${newEmail.trim()}. Podrá entrar al panel cuando cree su contraseña.`
+        );
+      } else {
+        if (newAccess === ADMIN) await setMember(newEmail, "admin", null);
+        else await setMember(newEmail, "staff", newAccess === FULL ? null : newAccess);
+        await load();
+        flash("ok", `${newEmail.trim()} ahora tiene acceso al panel.`);
+      }
       setAdding(false);
       setNewEmail("");
       setNewAccess(FULL);
@@ -172,13 +207,31 @@ export default function RolesContent() {
     }
   };
 
+  const resend = async (m: TeamMember) => {
+    setBusyId(m.id);
+    try {
+      await inviteTeamMember(m.email, m.staff_role_id);
+      flash("ok", `Volvimos a enviar la invitación a ${m.email}.`);
+    } catch (e) {
+      flash("error", e instanceof Error ? e.message : "No pudimos reenviar la invitación.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // The owner role is the platform's to manage; a productora can't assign it, edit it or take it away.
+  const ownerRoleId = isProductora ? roles.find((r) => r.name === OWNER_ROLE_NAME)?.id : undefined;
+  const isOwner = (m: TeamMember) => ownerRoleId !== undefined && m.staff_role_id === ownerRoleId;
+  // A productora's panel-only account is deleted when it leaves the team; a customer keeps theirs.
+  const removesAccount = (m: TeamMember) => isProductora && m.account_type === "productora";
+
   const membersWith = (roleId: string) => (members ?? []).filter((m) => m.role === "staff" && m.staff_role_id === roleId).length;
   const admins = (members ?? []).filter((m) => m.role === "admin").length;
 
   const accessOptions = (includeAdmin: boolean) => [
     ...(includeAdmin ? [{ value: ADMIN, label: "Administrador" }] : []),
     { value: FULL, label: "Equipo · acceso completo" },
-    ...roles.map((r) => ({ value: r.id, label: r.name })),
+    ...roles.filter((r) => r.id !== ownerRoleId).map((r) => ({ value: r.id, label: r.name })),
   ];
 
   return (
@@ -232,7 +285,10 @@ export default function RolesContent() {
               Equipo con acceso al panel
             </h3>
             <p className={tableStyles.cardSubtitle}>
-              {members.length} {members.length === 1 ? "persona" : "personas"}. Para sumar a alguien, primero debe tener una cuenta en Aforiq.
+              {members.length} {members.length === 1 ? "persona" : "personas"}.{" "}
+              {isProductora
+                ? "Para sumar a alguien, invítalo por correo: tendrá una cuenta solo para el panel de tu productora."
+                : "Para sumar a alguien, primero debe tener una cuenta en Aforiq."}
             </p>
             <div className={tableStyles.tableWrap}>
               <table className={tableStyles.table}>
@@ -247,14 +303,26 @@ export default function RolesContent() {
                 <tbody>
                   {members.map((m) => {
                     const lockedAdmin = m.role === "admin" && (!isAdmin || admins <= 1);
+                    const locked = lockedAdmin || isOwner(m);
                     return (
                       <tr key={m.id}>
                         <td>
-                          <span className={tableStyles.buyer}>{m.full_name || "Sin nombre"}</span>
-                          <span className={tableStyles.sub}>{m.email}</span>
+                          <span className={tableStyles.buyer}>{m.pending ? m.email : m.full_name || "Sin nombre"}</span>
+                          {m.pending ? (
+                            <span className={styles.pendingRow}>
+                              <span className={styles.pending}>Invitación pendiente</span>
+                              {canEdit && isProductora && !isOwner(m) && (
+                                <button type="button" className={styles.linkButton} onClick={() => resend(m)} disabled={busyId === m.id}>
+                                  {busyId === m.id ? "Enviando…" : "Reenviar"}
+                                </button>
+                              )}
+                            </span>
+                          ) : (
+                            <span className={tableStyles.sub}>{m.email}</span>
+                          )}
                         </td>
                         <td>
-                          {canEdit && !lockedAdmin ? (
+                          {canEdit && !locked ? (
                             <div className={tableStyles.eventSelect}>
                               <Select
                                 size="sm"
@@ -267,7 +335,7 @@ export default function RolesContent() {
                               />
                             </div>
                           ) : (
-                            <span className={styles.badge} data-admin={m.role === "admin"}>
+                            <span className={styles.badge} data-admin={m.role === "admin"} title={isOwner(m) ? "Dueño de la productora. Lo gestiona Aforiq." : undefined}>
                               {m.role === "admin" ? "Administrador" : roles.find((r) => r.id === m.staff_role_id)?.name ?? "Equipo · acceso completo"}
                             </span>
                           )}
@@ -275,9 +343,14 @@ export default function RolesContent() {
                         <td>{formatDate(m.created_at)}</td>
                         {canEdit && (
                           <td className={tableStyles.num}>
-                            {!lockedAdmin && (
-                              <button type="button" className={styles.linkDanger} onClick={() => setMemberToRemove(m)}>
-                                Quitar acceso
+                            {!locked && (
+                              <button
+                                type="button"
+                                className={styles.linkDanger}
+                                onClick={() => setMemberToRemove(m)}
+                                aria-label={m.pending ? `Cancelar la invitación a ${m.email}` : `Quitar el acceso de ${m.full_name || m.email}`}
+                              >
+                                {m.pending ? "Cancelar" : "Quitar acceso"}
                               </button>
                             )}
                           </td>
@@ -295,21 +368,27 @@ export default function RolesContent() {
               Roles
             </h2>
             <div className={styles.roleGrid}>
-              <article className={styles.roleCard} style={{ "--role": "#110d29" } as React.CSSProperties}>
-                <div className={styles.roleTop}>
-                  <span className={styles.roleDot} aria-hidden="true" />
-                  <h3>Administrador</h3>
-                  <span className={styles.roleCount}>{admins}</span>
-                </div>
-                <p>Acceso total, incluida la gestión de administradores. No se puede editar.</p>
-              </article>
+              {!isProductora && (
+                <article className={styles.roleCard} style={{ "--role": "#110d29" } as React.CSSProperties}>
+                  <div className={styles.roleTop}>
+                    <span className={styles.roleDot} aria-hidden="true" />
+                    <h3>Administrador</h3>
+                    <span className={styles.roleCount}>{admins}</span>
+                  </div>
+                  <p>Acceso total, incluida la gestión de administradores. No se puede editar.</p>
+                </article>
+              )}
               <article className={styles.roleCard} style={{ "--role": "#94a3b8" } as React.CSSProperties}>
                 <div className={styles.roleTop}>
                   <span className={styles.roleDot} aria-hidden="true" />
                   <h3>Equipo · acceso completo</h3>
                   <span className={styles.roleCount}>{members.filter((m) => m.role === "staff" && !m.staff_role_id).length}</span>
                 </div>
-                <p>Puede ver y editar todas las secciones, excepto otorgar el nivel de administrador.</p>
+                <p>
+                  {isProductora
+                    ? "Puede ver y editar todas las secciones de la productora."
+                    : "Puede ver y editar todas las secciones, excepto otorgar el nivel de administrador."}
+                </p>
               </article>
               {roles.map((role) => (
                 <article key={role.id} className={styles.roleCard} style={{ "--role": role.color } as React.CSSProperties}>
@@ -321,8 +400,13 @@ export default function RolesContent() {
                     </span>
                   </div>
                   {role.description && <p>{role.description}</p>}
-                  <p className={styles.roleSummary}>{summary(role)}</p>
-                  {canEdit && (
+                  <p className={styles.roleSummary}>{summary(role, modules)}</p>
+                  {role.id === ownerRoleId ? (
+                    <p className={styles.roleLocked}>
+                      <MaterialIcon decorative name="lock" />
+                      Rol del dueño. Lo gestiona Aforiq.
+                    </p>
+                  ) : canEdit && (
                     <div className={styles.roleActions}>
                       <button
                         type="button"
@@ -407,7 +491,7 @@ export default function RolesContent() {
                 </tr>
               </thead>
               <tbody>
-                {MODULES.map((m) => {
+                {modules.map((m) => {
                   const current = roleDraft.permissions[m.key] ?? "none";
                   return (
                     <tr key={m.key}>
@@ -449,13 +533,22 @@ export default function RolesContent() {
         onClose={() => setAdding(false)}
         actions={[
           { label: "Cancelar", variant: "soft", onClick: () => setAdding(false) },
-          { label: "Dar acceso", variant: "primary", onClick: addMember, busyLabel: "Guardando…" },
+          {
+            label: isProductora ? "Enviar invitación" : "Dar acceso",
+            variant: "primary",
+            onClick: addMember,
+            busyLabel: isProductora ? "Enviando…" : "Guardando…",
+          },
         ]}
       >
         <div className={styles.form}>
-          <p>La persona debe haberse registrado antes en Aforiq con este correo.</p>
+          <p>
+            {isProductora
+              ? "Le enviaremos una invitación para que cree su contraseña. Es una cuenta solo para el panel de tu productora: no puede ser un correo con el que compra entradas en Aforiq."
+              : "La persona debe haberse registrado antes en Aforiq con este correo."}
+          </p>
           <label className={styles.field}>
-            <span>Correo de la cuenta</span>
+            <span>{isProductora ? "Correo" : "Correo de la cuenta"}</span>
             <input data-autofocus type="email" value={newEmail} placeholder="nombre@empresa.cl" onChange={(e) => setNewEmail(e.target.value)} />
           </label>
           <div className={styles.field}>
@@ -473,16 +566,36 @@ export default function RolesContent() {
       <ConfirmDialog
         open={memberToRemove !== null}
         icon="person_remove"
-        title="¿Quitar acceso al panel?"
+        title={memberToRemove?.pending ? "¿Cancelar la invitación?" : "¿Quitar acceso al panel?"}
         busy={savingMember}
         onClose={() => setMemberToRemove(null)}
         actions={[
-          { label: "Cancelar", variant: "soft", onClick: () => setMemberToRemove(null), autoFocus: true },
-          { label: "Quitar acceso", variant: "danger", onClick: removeMember, busyLabel: "Quitando…" },
+          { label: memberToRemove?.pending ? "Volver" : "Cancelar", variant: "soft", onClick: () => setMemberToRemove(null), autoFocus: true },
+          {
+            label: memberToRemove?.pending ? "Cancelar invitación" : "Quitar acceso",
+            variant: "danger",
+            onClick: removeMember,
+            busyLabel: "Quitando…",
+          },
         ]}
       >
         <p>
-          <b>{memberToRemove?.full_name || memberToRemove?.email}</b> seguirá teniendo su cuenta de cliente, pero ya no podrá entrar al panel.
+          {memberToRemove && removesAccount(memberToRemove) ? (
+            memberToRemove.pending ? (
+              <>
+                El enlace que le enviamos a <b>{memberToRemove.email}</b> dejará de funcionar.
+              </>
+            ) : (
+              <>
+                Se elimina la cuenta del panel de <b>{memberToRemove.full_name || memberToRemove.email}</b>. Si vuelves a necesitarla, invítala de
+                nuevo.
+              </>
+            )
+          ) : (
+            <>
+              <b>{memberToRemove?.full_name || memberToRemove?.email}</b> seguirá teniendo su cuenta de cliente, pero ya no podrá entrar al panel.
+            </>
+          )}
         </p>
       </ConfirmDialog>
 

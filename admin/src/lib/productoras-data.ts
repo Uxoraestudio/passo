@@ -51,6 +51,11 @@ const inviteMessages: Record<string, string> = {
   CREATE_FAILED: "No pudimos crear la productora. Inténtalo de nuevo.",
   REQUEST_NOT_FOUND: "Esa solicitud ya no existe. Recarga la página.",
   REQUEST_ALREADY_APPROVED: "Esa solicitud ya fue aprobada.",
+  IS_DEFAULT: "La productora principal de la plataforma no se puede eliminar.",
+  NAME_MISMATCH: "El nombre no coincide. Escríbelo tal como aparece.",
+  HAS_EVENTS: "Esta productora tiene eventos. Elimínalos primero desde Eventos.",
+  HAS_DATA: "Esta productora todavía tiene datos asociados y no se puede eliminar.",
+  DELETE_FAILED: "No pudimos eliminar la productora. Inténtalo de nuevo.",
 };
 
 async function post<T>(url: string, payload: unknown, fallback: string): Promise<T> {
@@ -109,4 +114,12 @@ export async function inviteProductoraOwner(orgId: string, email: string): Promi
     "No pudimos enviar la invitación. Inténtalo de nuevo."
   );
   return body.status;
+}
+
+/**
+ * Deletes a productora without events. Accounts created only for its panel are
+ * deleted too; anyone else on its team goes back to being a customer.
+ */
+export async function deleteProductora(orgId: string, name: string): Promise<{ accounts_deleted: number; members_detached: number }> {
+  return post("/api/productoras/eliminar/", { orgId, name }, "No pudimos eliminar la productora. Inténtalo de nuevo.");
 }

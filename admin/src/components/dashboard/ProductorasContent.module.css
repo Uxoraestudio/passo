@@ -348,3 +348,45 @@
   font-weight: 600;
   color: #64748b;
 }
+
+.deleteBtn {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: -4px;
+  padding: 6px 4px;
+  border: 0;
+  background: none;
+  color: #b42318;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.deleteBtn :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+.deleteBtn:hover {
+  text-decoration: underline;
+}
+
+.deleteBtn:focus-visible {
+  outline: 2px solid #b42318;
+  outline-offset: 2px;
+}
+
+.deleteList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.deleteList small {
+  color: #64748b;
+}
