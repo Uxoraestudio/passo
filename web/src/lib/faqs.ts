@@ -207,7 +207,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         id: "publicar-evento",
         q: "Quiero vender entradas en Aforiq, ¿qué debo hacer?",
         a: [
-          "Completa la solicitud en nuestra página para productores con tus datos y los de tu evento. Te contactaremos y te daremos acceso al panel con tu cuenta Aforiq para que crees tu evento.",
+          "Completa la solicitud en nuestra página para productores con tus datos y los de tu evento. Te contactaremos y, al aprobarla, te enviaremos una invitación por correo para que entres a tu panel y crees tu evento.",
         ],
         links: [{ label: "Enviar solicitud", href: "/organizadores/#solicitud" }],
       },

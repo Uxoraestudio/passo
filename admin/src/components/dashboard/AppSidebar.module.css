@@ -213,3 +213,20 @@
   height: 34px;
   max-width: 100%;
 }
+
+.navBadge {
+  margin-left: auto;
+  min-width: 20px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #f95721;
+  color: #fff;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.navLink[data-active="true"] .navBadge {
+  background: #fff;
+  color: #f95721;
+}

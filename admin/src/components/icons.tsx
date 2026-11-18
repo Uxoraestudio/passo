@@ -556,3 +556,17 @@ export function VenueIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function InboxIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path
+        d="M2.5 11.667h3.75l1.25 2.083h5l1.25-2.083h3.75M2.5 11.667V15a1.667 1.667 0 0 0 1.667 1.667h11.666A1.667 1.667 0 0 0 17.5 15v-3.333M2.5 11.667l2.083-6.25A1.667 1.667 0 0 1 6.165 4.25h7.67a1.667 1.667 0 0 1 1.582 1.167l2.083 6.25"
+        stroke="currentColor"
+        strokeWidth="1.66667"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

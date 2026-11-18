@@ -1,0 +1,352 @@
+.notice,
+.flash {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.notice {
+  background: #f3f0fd;
+  color: #4c2fb8;
+}
+.flash {
+  background: #ecfdf3;
+  color: #05603a;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: #f1f5f9;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.tab:focus-visible,
+.primary:focus-visible,
+.secondary:focus-visible,
+.ghost:focus-visible {
+  outline: 2px solid #f95721;
+  outline-offset: 2px;
+}
+.count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: #475569;
+}
+.count[data-strong="true"] {
+  background: #f95721;
+  color: #fff;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 260px;
+  max-width: 360px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #94a3b8;
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: #0f172a;
+}
+.search:focus-within {
+  border-color: #f95721;
+}
+
+.empty {
+  padding: 40px 16px;
+  border: 1px dashed #e2e8f0;
+  border-radius: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+.card[data-status="nuevo"] {
+  border-left: 4px solid #f95721;
+}
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.cardTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.cardTitle h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+.status {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status[data-status="nuevo"] {
+  background: #fff1eb;
+  color: #c2410c;
+}
+.status[data-status="contactado"] {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.status[data-status="aprobado"] {
+  background: #ecfdf3;
+  color: #05603a;
+}
+.status[data-status="descartado"] {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.when {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.person {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+.person b {
+  font-weight: 700;
+  color: #0f172a;
+}
+.person span {
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+.person a,
+.details a {
+  color: #5b32e6;
+  text-decoration: none;
+}
+.person a:hover,
+.details a:hover {
+  text-decoration: underline;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+.details div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  min-width: 0;
+}
+.details dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.details dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid #e5dff7;
+  border-radius: 0 12px 12px 0;
+  background: #faf9ff;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #334155;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notes {
+  display: grid;
+  gap: 6px;
+}
+.notes label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1c1a2a;
+}
+.notes textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5dff7;
+  border-radius: 10px;
+  background: #fafbfd;
+  font: inherit;
+  font-size: 14px;
+  color: #1c1a2a;
+  resize: vertical;
+}
+.notes textarea:focus {
+  outline: 2px solid #f95721;
+  outline-offset: 1px;
+}
+.notesActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b42318;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+.primary,
+.secondary,
+.ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+.primary {
+  border: 0;
+  background: #f95721;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(249, 87, 33, 0.25);
+}
+.primary:hover:not(:disabled) {
+  background: #e84b17;
+}
+.secondary {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+}
+.secondary:hover:not(:disabled) {
+  background: #f8fafc;
+}
+.ghost {
+  border: 0;
+  background: none;
+  color: #64748b;
+}
+.ghost:hover:not(:disabled) {
+  color: #b42318;
+}
+.primary:disabled,
+.secondary:disabled,
+.ghost:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.primary :global(.material-symbols-outlined),
+.secondary :global(.material-symbols-outlined) {
+  font-size: 18px;
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 16px;
+  }
+  .search {
+    max-width: none;
+  }
+  .actions > * {
+    flex: 1 1 auto;
+  }
+}

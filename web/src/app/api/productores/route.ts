@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { EVENT_CATEGORIES, EXPECTED_ATTENDEES, PRODUCER_MESSAGE_MAX, TENTATIVE_DATES, includes } from "@/lib/producers";
+import { EVENT_CATEGORIES, EXPECTED_ATTENDEES, PRODUCER_MESSAGE_MAX, TENTATIVE_DATES, includes, producerCountry } from "@/lib/producers";
 
 const NOTIFY_EMAIL = process.env.PRODUCER_REQUESTS_EMAIL || "organizadores@aforiq.cl";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     company: field(body.company, 120),
     email: field(body.email, 160).toLowerCase(),
     phone: field(body.phone, 30),
+    country: producerCountry(body.country)?.code ?? null,
     city: field(body.city, 80) || null,
     event_name: field(body.eventName, 160) || null,
     category: includes(EVENT_CATEGORIES, body.category) ? body.category : null,
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     message: field(body.message, PRODUCER_MESSAGE_MAX) || null,
   };
 
-  if (!data.first_name || !data.last_name || !data.company || !EMAIL.test(data.email) || data.phone.replace(/\D/g, "").length < 8 || body.consent !== true) {
+  if (!data.country || !data.first_name || !data.last_name || !data.company || !EMAIL.test(data.email) || data.phone.replace(/\D/g, "").length < 8 || body.consent !== true) {
     return json(400, { error: "Revisa el formulario: hay datos obligatorios incompletos o no válidos." });
   }
 
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
     ["Productora / empresa", data.company],
     ["Correo", data.email],
     ["Teléfono", data.phone],
+    ["País", producerCountry(data.country)?.name ?? data.country],
     ["Ciudad", data.city ?? "—"],
     ["Evento", data.event_name ?? "—"],
     ["Categoría", data.category ?? "—"],
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
     .join("")}</table>
 <p style="margin:16px 0 4px;color:#6b7280">Mensaje</p>
 <p style="white-space:pre-wrap;margin:0">${escapeHtml(data.message ?? "—")}</p>
-<p style="margin-top:20px;color:#9ca3af;font-size:12px">Para darle acceso, crea la productora en el admin con este correo como dueño. Responde a este correo para contactarle.</p>
+<p style="margin-top:20px;color:#9ca3af;font-size:12px">Revísala en el admin, en Solicitudes: al aprobarla se crea la productora y se le envía la invitación al panel. Responde a este correo para contactarle.</p>
 </div>`;
 
   let emailed = false;

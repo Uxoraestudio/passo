@@ -33,3 +33,22 @@ export const PRODUCER_MESSAGE_MAX = 2000;
 
 export const includes = (list: readonly string[], value: unknown): value is string =>
   typeof value === "string" && list.includes(value);
+
+/** Countries a productora can be from (same list as the admin). Chile first and by default. */
+export const PRODUCER_COUNTRIES = [
+  { code: "CL", name: "Chile", dial: "56", phoneExample: "9 1234 5678" },
+  { code: "AR", name: "Argentina", dial: "54", phoneExample: "11 2345 6789" },
+  { code: "BO", name: "Bolivia", dial: "591", phoneExample: "7123 4567" },
+  { code: "CO", name: "Colombia", dial: "57", phoneExample: "321 123 4567" },
+  { code: "EC", name: "Ecuador", dial: "593", phoneExample: "99 123 4567" },
+  { code: "ES", name: "España", dial: "34", phoneExample: "612 34 56 78" },
+  { code: "US", name: "Estados Unidos", dial: "1", phoneExample: "201 555 0123" },
+  { code: "MX", name: "México", dial: "52", phoneExample: "55 1234 5678" },
+  { code: "PY", name: "Paraguay", dial: "595", phoneExample: "981 123 456" },
+  { code: "PE", name: "Perú", dial: "51", phoneExample: "912 345 678" },
+  { code: "UY", name: "Uruguay", dial: "598", phoneExample: "94 123 456" },
+] as const;
+
+export const DEFAULT_PRODUCER_COUNTRY = "CL";
+
+export const producerCountry = (code: unknown) => PRODUCER_COUNTRIES.find((c) => c.code === code);

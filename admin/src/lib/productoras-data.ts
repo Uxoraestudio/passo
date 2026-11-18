@@ -49,6 +49,8 @@ const inviteMessages: Record<string, string> = {
   INVALID_LAST_NAME: "Escribe el apellido del representante.",
   INVALID_PHONE: "Revisa el teléfono: no tiene el largo de un número de ese país.",
   CREATE_FAILED: "No pudimos crear la productora. Inténtalo de nuevo.",
+  REQUEST_NOT_FOUND: "Esa solicitud ya no existe. Recarga la página.",
+  REQUEST_ALREADY_APPROVED: "Esa solicitud ya fue aprobada.",
 };
 
 async function post<T>(url: string, payload: unknown, fallback: string): Promise<T> {
@@ -75,6 +77,9 @@ export class ProductoraError extends Error {
 
 export type NewProductora = { country: string; name: string; firstName: string; lastName: string; email: string; phone: string };
 
+/** «Aprobar» in Solicitudes: also marks that producer request as approved. */
+export type NewProductoraRequest = NewProductora & { requestId?: string };
+
 function fail(error: { code?: string; message?: string }, fn: string, fallback: string): never {
   if (missingFunction(error, fn)) throw new ProductorasUnavailable();
   const key = Object.keys(messages).find((k) => error.message?.includes(k));
@@ -88,7 +93,7 @@ export async function fetchProductoras(): Promise<Productora[]> {
 }
 
 /** Creates the productora with its profile and e-mails the invitation to its representative. */
-export async function createProductora(data: NewProductora): Promise<string> {
+export async function createProductora(data: NewProductoraRequest): Promise<string> {
   const body = await post<{ id: string }>("/api/productoras/", data, "No pudimos crear la productora. Inténtalo de nuevo.");
   return body.id;
 }

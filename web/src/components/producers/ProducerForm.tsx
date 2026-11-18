@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
-import { EVENT_CATEGORIES, EXPECTED_ATTENDEES, PRODUCER_MESSAGE_MAX, TENTATIVE_DATES } from "@/lib/producers";
+import {
+  DEFAULT_PRODUCER_COUNTRY,
+  EVENT_CATEGORIES,
+  EXPECTED_ATTENDEES,
+  PRODUCER_COUNTRIES,
+  PRODUCER_MESSAGE_MAX,
+  TENTATIVE_DATES,
+  producerCountry,
+} from "@/lib/producers";
 import styles from "./ProducerForm.module.css";
 
 type Values = {
@@ -11,6 +18,7 @@ type Values = {
   company: string;
   email: string;
   phone: string;
+  country: string;
   city: string;
   eventName: string;
   category: string;
@@ -22,7 +30,7 @@ type Values = {
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const STEP_ONE: (keyof Values)[] = ["firstName", "lastName", "company", "email", "phone"];
+const STEP_ONE: (keyof Values)[] = ["firstName", "lastName", "company", "country", "email", "phone"];
 
 function errorsOf(v: Values) {
   return {
@@ -31,13 +39,31 @@ function errorsOf(v: Values) {
     company: v.company.trim() ? null : "Ingresa el nombre de tu productora o empresa.",
     email: EMAIL.test(v.email.trim()) ? null : "Ingresa un correo válido.",
     phone: v.phone.replace(/\D/g, "").length >= 8 ? null : "Ingresa un teléfono de contacto.",
+    country: producerCountry(v.country) ? null : "Elige el país de tu productora.",
     consent: v.consent ? null : "Debes aceptar para enviar tu solicitud.",
   } as Partial<Record<keyof Values, string | null>>;
 }
 
-function Field({ id, label, error, hint, optional, children }: { id: string; label: string; error?: string | null; hint?: ReactNode; optional?: boolean; children: ReactNode }) {
+function Field({
+  id,
+  label,
+  error,
+  hint,
+  optional,
+  wide,
+  children,
+}: {
+  id: string;
+  label: string;
+  error?: string | null;
+  hint?: ReactNode;
+  optional?: boolean;
+  /** Takes the whole row of the two-column grid. */
+  wide?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className={styles.field} data-invalid={Boolean(error)}>
+    <div className={wide ? `${styles.field} ${styles.wide}` : styles.field} data-invalid={Boolean(error)}>
       <label htmlFor={id}>
         {label}
         {optional ? <span className={styles.optional}> (opcional)</span> : <span aria-hidden="true"> *</span>}
@@ -66,8 +92,10 @@ export default function ProducerForm({ initial }: { initial: { firstName: string
     firstName: initial.firstName,
     lastName: initial.lastName,
     company: "",
-    email: initial.email,
+    // Not the signed-in customer's e-mail: a productora account needs its own (see the hint).
+    email: "",
     phone: "",
+    country: DEFAULT_PRODUCER_COUNTRY,
     city: "",
     eventName: "",
     category: "",
@@ -143,15 +171,9 @@ export default function ProducerForm({ initial }: { initial: { firstName: string
           </span>
           <h3>¡Recibimos tu solicitud!</h3>
           <p>
-            Nuestro equipo revisará los datos de <strong>{values.company.trim()}</strong> y te contactará a <strong>{values.email.trim()}</strong> para darte
-            acceso al panel de productores.
+            Nuestro equipo revisará los datos de <strong>{values.company.trim()}</strong> y te contactará a <strong>{values.email.trim()}</strong>.
           </p>
-          {!initial.signedIn && (
-            <p className={styles.tip}>
-              Para darte acceso necesitas una cuenta Aforiq con ese mismo correo.{" "}
-              <Link href="/registro/">Crea tu cuenta aquí</Link> si aún no la tienes.
-            </p>
-          )}
+          <p className={styles.tip}>No necesitas crear una cuenta: si aprobamos tu productora te llegará a ese correo la invitación para entrar a tu panel.</p>
         </div>
       </div>
     );
@@ -188,8 +210,17 @@ export default function ProducerForm({ initial }: { initial: { firstName: string
           <Field id="lastName" label="Apellido" error={err("lastName")}>
             <input id="lastName" autoComplete="family-name" maxLength={80} value={values.lastName} onChange={(e) => set("lastName", e.target.value)} />
           </Field>
-          <Field id="company" label="Productora o empresa" error={err("company")}>
+          <Field id="company" label="Productora o empresa" error={err("company")} wide>
             <input id="company" autoComplete="organization" maxLength={120} value={values.company} onChange={(e) => set("company", e.target.value)} placeholder="Ej. Producciones Pacífico" />
+          </Field>
+          <Field id="country" label="País" error={err("country")}>
+            <select id="country" autoComplete="country" value={values.country} onChange={(e) => set("country", e.target.value)}>
+              {PRODUCER_COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field id="city" label="Ciudad" optional>
             <input id="city" autoComplete="address-level2" maxLength={80} value={values.city} onChange={(e) => set("city", e.target.value)} placeholder="Ej. Santiago" />
@@ -198,12 +229,24 @@ export default function ProducerForm({ initial }: { initial: { firstName: string
             id="email"
             label="Correo"
             error={err("email")}
-            hint={initial.signedIn ? "Es el correo de tu cuenta: con él te daremos acceso al panel." : "Usa el correo de tu cuenta Aforiq: con él te daremos acceso al panel."}
+            hint="Aquí te enviaremos la invitación al panel. Usa un correo de trabajo, distinto al que usas para comprar entradas en Aforiq."
           >
-            <input id="email" type="email" autoComplete="email" maxLength={160} value={values.email} onChange={(e) => set("email", e.target.value)} placeholder="tu@productora.cl" />
+            <input id="email" type="email" autoComplete="work email" maxLength={160} value={values.email} onChange={(e) => set("email", e.target.value)} placeholder="tu@productora.cl" />
           </Field>
           <Field id="phone" label="Teléfono" error={err("phone")}>
-            <input id="phone" type="tel" inputMode="tel" autoComplete="tel" maxLength={30} value={values.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+56 9 1234 5678" />
+            <input
+              id="phone"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={30}
+              value={values.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder={(() => {
+                const c = producerCountry(values.country);
+                return c ? `+${c.dial} ${c.phoneExample}` : "";
+              })()}
+            />
           </Field>
         </div>
       ) : (

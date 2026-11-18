@@ -42,7 +42,7 @@ export default function AdminLoginForm({ invalidLink = false }: { invalidLink?: 
                 strokeLinejoin="round"
               />
             </svg>
-            Acceso panel admin
+            Acceso panel admin y productoras
           </span>
           <h1 className={styles.title}>
             Inicia <span className={styles.accent}>sesión</span>

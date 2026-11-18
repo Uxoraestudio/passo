@@ -1,7 +1,7 @@
 "use client";
 
 import { BrandLogo } from "@/components/BrandProvider";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,6 +9,7 @@ import {
   CalendarIcon,
   GearIcon,
   HomeIcon,
+  InboxIcon,
   PaletteIcon,
   ScanIcon,
   SeoIcon,
@@ -19,6 +20,7 @@ import {
 } from "@/components/icons";
 import { MODULES, allows, managesProductoras, useAccess, type ModuleKey } from "@/lib/access";
 import { closeMobileMenu, useMobileMenu } from "@/lib/mobile-menu";
+import { countNewProducerRequests } from "@/lib/producer-requests-data";
 import styles from "./AppSidebar.module.css";
 
 const icons: Record<ModuleKey, typeof HomeIcon> = {
@@ -42,7 +44,24 @@ export default function AppSidebar() {
     return m.key === "eventos" ? [item, { key: "recintos", href: "/recintos/", label: "Recintos", icon: VenueIcon }] : [item];
   });
   // Platform admins manage the productoras (each one only sees its own events).
-  if (managesProductoras(access)) navItems.push({ key: "productoras", href: "/productoras/", label: "Productoras", icon: TeamIcon });
+  const platform = managesProductoras(access);
+  if (platform) {
+    navItems.push(
+      { key: "productoras", href: "/productoras/", label: "Productoras", icon: TeamIcon },
+      { key: "solicitudes", href: "/solicitudes/", label: "Solicitudes", icon: InboxIcon }
+    );
+  }
+
+  // Producer requests waiting for an answer, as a badge on «Solicitudes».
+  const [newRequests, setNewRequests] = useState(0);
+  useEffect(() => {
+    if (!platform) return;
+    let active = true;
+    countNewProducerRequests().then((n) => active && setNewRequests(n));
+    return () => {
+      active = false;
+    };
+  }, [platform, pathname]);
 
   // Small screens: the sidebar slides in over the page when the top bar's menu button opens it.
   const open = useMobileMenu();
@@ -102,6 +121,11 @@ export default function AppSidebar() {
             >
               <Icon className={styles.navIcon} />
               <span>{item.label}</span>
+              {item.key === "solicitudes" && newRequests > 0 && (
+                <span className={styles.navBadge} aria-label={`${newRequests} ${newRequests === 1 ? "nueva" : "nuevas"}`}>
+                  {newRequests}
+                </span>
+              )}
             </Link>
           );
         })}

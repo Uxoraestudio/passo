@@ -92,7 +92,7 @@ const features = [
 const steps = [
   { title: "Envía tu solicitud", text: "Completa el formulario con tus datos y los de tu evento." },
   { title: "Te contactamos", text: "Nuestro equipo revisa tu solicitud y conversa contigo las condiciones." },
-  { title: "Activamos tu productora", text: "Te damos acceso al panel con tu cuenta Aforiq y el rol de productor." },
+  { title: "Activamos tu productora", text: "Te enviamos una invitación por correo para que crees tu contraseña y entres a tu panel de productora." },
   { title: "Publica y vende", text: "Crea tu evento, configura tus sectores y empieza a vender." },
 ];
 
@@ -103,7 +103,7 @@ const producerFaqs = [
   },
   {
     q: "¿Necesito una cuenta Aforiq?",
-    a: "Sí. Te damos acceso al panel de productores con el correo de tu cuenta Aforiq, así que conviene que envíes el formulario con ese mismo correo. Si aún no tienes cuenta, puedes crearla gratis.",
+    a: "No. Cuando aprobamos tu solicitud creamos la cuenta de tu productora y te enviamos una invitación al correo que indicaste para que crees tu contraseña. Usa un correo de trabajo, distinto al que usas para comprar entradas: la cuenta de productora es solo para el panel.",
   },
   {
     q: "¿Tiene costo vender entradas con Aforiq?",
@@ -199,7 +199,7 @@ export default async function OrganizadoresPage() {
               <p>Completa el formulario y te contactaremos para activar tu productora en Aforiq.</p>
               <ul className={styles.checks}>
                 <li>Te contactamos para conversar las condiciones</li>
-                <li>Te damos acceso con tu cuenta Aforiq</li>
+                <li>Te enviamos la invitación a tu panel por correo</li>
                 <li>Creas y administras tus eventos desde tu panel</li>
               </ul>
             </div>
