@@ -179,7 +179,7 @@ export default function ConfirmOrder({ order }: { order: CheckoutOrder }) {
             <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} disabled={expired} />
             <span>
               He leído y acepto los{" "}
-              <a href="/proximamente/?title=T%C3%A9rminos%20y%20condiciones" target="_blank" rel="noopener">
+              <a href="/terminos-y-condiciones/" target="_blank" rel="noopener">
                 Términos y Condiciones del servicio
               </a>{" "}
               y las{" "}

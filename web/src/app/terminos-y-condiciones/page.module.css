@@ -1,0 +1,268 @@
+.layout {
+  max-width: 1280px;
+  margin: -40px auto 72px;
+  padding: 0 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Index */
+
+.toc {
+  padding: 20px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid var(--color-gray-100);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+}
+
+.tocTitle {
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--color-gray-900);
+}
+
+.toc ol {
+  list-style: none;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.toc a {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--color-gray-600);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.toc a span {
+  min-width: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gray-400);
+}
+
+.toc a:hover {
+  background: #f4f0ff;
+  color: var(--color-purple);
+}
+
+.toc a:focus-visible,
+.help a:focus-visible {
+  outline: 2px solid var(--color-purple);
+  outline-offset: 2px;
+}
+
+/* Document */
+
+.doc {
+  min-width: 0;
+  padding: 28px 20px;
+  border-radius: 24px;
+  background: #fff;
+  border: 1px solid var(--color-gray-100);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 30px 60px -40px rgba(36, 14, 92, 0.35);
+}
+
+.doc p {
+  max-width: 72ch;
+  margin-top: 12px;
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--color-gray-700);
+}
+
+.intro {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.intro p:first-child {
+  margin-top: 0;
+  font-size: 17px;
+  color: var(--color-gray-900);
+}
+
+.section {
+  padding: 28px 0 4px;
+  scroll-margin-top: 100px;
+}
+
+.section + .section {
+  border-top: 1px solid var(--color-gray-100);
+}
+
+.section h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-gray-900);
+}
+
+.num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #fff3ec;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-orange);
+}
+
+.bullets,
+.ordered {
+  max-width: 72ch;
+  margin-top: 12px;
+  padding-left: 22px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--color-gray-700);
+}
+
+.bullets li::marker {
+  color: var(--color-orange);
+}
+
+.ordered li::marker {
+  font-weight: 800;
+  color: var(--color-purple);
+}
+
+.bullets li + li,
+.ordered li + li {
+  margin-top: 4px;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 72ch;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--color-gray-50);
+  border: 1px solid var(--color-gray-100);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-gray-800, var(--color-gray-900));
+  font-variant-numeric: tabular-nums;
+}
+
+.checks {
+  list-style: none;
+  max-width: 72ch;
+  margin-top: 12px;
+}
+
+.checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f2ff;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-gray-800, var(--color-gray-900));
+}
+
+.checkBox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border-radius: 5px;
+  border: 2px solid var(--color-purple);
+  background: #fff;
+}
+
+.help {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-top: 32px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: #f4f0ff;
+  border: 1px solid #e4dcfd;
+}
+
+.help p {
+  margin: 0;
+  font-weight: 700;
+  color: var(--color-gray-900);
+}
+
+.help a {
+  padding: 11px 20px;
+  border-radius: 9999px;
+  background: var(--color-purple);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+@media (min-width: 768px) {
+  .layout {
+    padding: 0 32px;
+  }
+
+  .doc {
+    padding: 40px 44px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .toc {
+    position: sticky;
+    top: 96px;
+    width: 290px;
+    flex-shrink: 0;
+  }
+
+  .toc ol {
+    max-height: calc(100vh - 200px);
+  }
+
+  .doc {
+    flex: 1;
+  }
+}
+
+@media print {
+  .toc,
+  .help {
+    display: none;
+  }
+
+  .doc {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}

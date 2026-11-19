@@ -17,7 +17,7 @@ const aboutLinks = [
   { label: "Contacto", href: "/contacto/" },
 ];
 const legalLinks = [
-  { label: "Términos y condiciones", href: "/proximamente?title=Términos%20y%20condiciones" },
+  { label: "Términos y condiciones", href: "/terminos-y-condiciones/" },
   { label: "Política de privacidad", href: "/proximamente?title=Política%20de%20privacidad" },
   { label: "Política de cookies", href: "/proximamente?title=Política%20de%20cookies" },
 ];
